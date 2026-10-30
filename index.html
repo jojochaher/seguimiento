@@ -286,6 +286,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .body .sil * { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
 .body .m { fill: var(--line); stroke: var(--surface); stroke-width: 1; cursor: pointer; transition: fill .15s; }
 .body .m:hover { fill: var(--muted); }
+.body .ln { fill: none; stroke: var(--surface); stroke-width: 1; pointer-events: none; }
 .body .m.p { fill: var(--day); }
 .body .m.s { fill: var(--day); fill-opacity: .4; }
 .body .m.sel { stroke: var(--ink); stroke-width: 2; }
@@ -311,8 +312,8 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .cam video.mirror { transform: scaleX(-1); }
 .cam-guide { position: absolute; inset: 8% 0; width: 100%; height: 84%; pointer-events: none; }
 .cam-guide svg { width: 100%; height: 100%; display: block; }
-.cam-guide .halo path, .cam-guide .halo circle, .cam-guide .halo rect { fill: none; stroke: rgba(0,0,0,.55); stroke-width: 7; }
-.cam-guide .line path, .cam-guide .line circle, .cam-guide .line rect { fill: rgba(255,255,255,.1); stroke: #fff; stroke-width: 2.5; stroke-dasharray: 8 6; }
+.cam-guide .halo path, .cam-guide .halo circle, .cam-guide .halo rect, .cam-guide .halo ellipse { fill: none; stroke: rgba(0,0,0,.55); stroke-width: 7; }
+.cam-guide .line path, .cam-guide .line circle, .cam-guide .line rect, .cam-guide .line ellipse { fill: rgba(255,255,255,.1); stroke: #fff; stroke-width: 2.5; stroke-dasharray: 8 6; }
 .cam-top { position: absolute; top: max(10px, env(safe-area-inset-top, 0px)); left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
 .cam-top .toggle, .cam-bottom .toggle { color: #fff; border-color: #888; background: rgba(0,0,0,.4); }
 .cam-label { color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 1px 4px #000; }
@@ -1577,39 +1578,40 @@ const MUSCLE_KEYS = [
   ['flexores de cadera', 'flexores'], ['glúteo medio', 'gluteo-medio'], ['glúteo', 'gluteo'], ['aductor', 'aductores'], ['cuádriceps', 'cuadriceps'], ['isquio', 'isquios'], ['gemelo', 'gemelos'], ['sóleo', 'soleo'], ['cuello', 'cuello']
 ];
 function muscleIds(list) { const out = new Set(); (list || []).forEach(s => { const k = MUSCLE_KEYS.find(([key]) => s.toLowerCase().includes(key)); if (k) out.add(k[1]); }); return [...out]; }
-const SIL = `<circle cx="100" cy="30" r="18"/><rect x="91" y="44" width="18" height="18" rx="4"/><path d="M62 62h76c4 0 6 2 6 6l-4 56-4 66c0 4-4 6-8 6H72c-4 0-8-2-8-6l-4-66-4-56c0-4 2-6 6-6z"/><path d="M62 66c-10 2-18 8-20 16l-8 116c0 6 12 8 14 2l8-52 10-28z"/><path d="M138 66c10 2 18 8 20 16l8 116c0 6-12 8-14 2l-8-52-10-28z"/><path d="M68 196h30l-2 112-3 84c0 6-14 6-14 0l-4-84c-4-36-8-74-7-112z"/><path d="M132 196h-30l2 112 3 84c0 6 14 6 14 0l4-84c4-36 8-74 7-112z"/>`;
+const SIL = `<ellipse cx="100" cy="27" rx="16" ry="19"/><path d="M92 42 L108 42 C108 50 109 56 112 60 L88 60 C91 56 92 50 92 42 Z"/><path d="M100 58 C118 58 132 60 139 66 C140 68 141 70 140 72 C137 84 134 94 133 106 C128 126 122 146 121 166 C124 178 130 190 129 202 C120 212 110 215 100 216 Z M 100 58 C 82 58 68 60 61 66 C 60 68 59 70 60 72 C 63 84 66 94 67 106 C 72 126 78 146 79 166 C 76 178 70 190 71 202 C 80 212 90 215 100 216 Z"/><path d="M133 70 C148 66 158 78 158 94 C160 112 161 132 159 152 C163 172 165 194 163 214 C163 224 158 231 151 229 C146 218 144 202 143 186 C140 168 138 152 138 140 C136 122 134 110 133 100 Z M 67 70 C 52 66 42 78 42 94 C 40 112 39 132 41 152 C 37 172 35 194 37 214 C 37 224 42 231 49 229 C 54 218 56 202 57 186 C 60 168 62 152 62 140 C 64 122 66 110 67 100 Z"/><path d="M100 212 C112 212 124 206 128 200 C136 230 139 262 134 292 C134 302 134 312 132 322 C134 352 132 382 128 398 C134 404 132 411 122 411 L111 411 C107 405 108 398 108 390 C104 360 102 330 105 300 C102 280 100 250 100 214 Z M 100 212 C 88 212 76 206 72 200 C 64 230 61 262 66 292 C 66 302 66 312 68 322 C 66 352 68 382 72 398 C 66 404 68 411 78 411 L 89 411 C 93 405 92 398 92 390 C 96 360 98 330 95 300 C 98 280 100 250 100 214 Z"/>`;
+const DEC_F = `<path d="M100 118 L100 190 M91 136 L109 136 M91 154 L109 154 M91 172 L109 172"/>`;
 const FRONT = [
-  ['cuello', 'M93 48h5v14h-5zM102 48h5v14h-5z'],
-  ['trapecio', 'M84 60h32l20 12H64z'],
-  ['deltoides', 'M62 70c-10 0-16 8-16 18s6 16 14 16 14-8 14-18-4-16-12-16zM138 70c10 0 16 8 16 18s-6 16-14 16-14-8-14-18 4-16 12-16z'],
-  ['pectoral', 'M76 76c12 0 22 2 22 2v32c-10 8-24 6-30-2-6-8-6-18 0-26 2-3 5-6 8-6zM124 76c-12 0-22 2-22 2v32c10 8 24 6 30-2 6-8 6-18 0-26-2-3-5-6-8-6z'],
-  ['biceps', 'M46 100c6-2 12 2 14 12l2 28c-2 8-12 10-16 2l-4-30c0-6 1-10 4-12zM154 100c-6-2-12 2-14 12l-2 28c2 8 12 10 16 2l4-30c0-6-1-10-4-12z'],
-  ['antebrazo', 'M40 148c6-2 12 2 12 10l-4 40c-2 6-10 6-12 0l-2-40c0-6 2-9 6-10zM160 148c-6-2-12 2-12 10l4 40c2 6 10 6 12 0l2-40c0-6-2-9-6-10z'],
-  ['abdominales', 'M88 112h24v68c0 6-24 6-24 0z'],
-  ['oblicuos', 'M70 116l16 2v62l-12-4c-6-18-6-40-4-60zM130 116l-16 2v62l12-4c6-18 6-40 4-60z'],
-  ['flexores', 'M78 184l18 14-4 8-16-6zM122 184l-18 14 4 8 16-6z'],
-  ['aductores', 'M96 206l4 6-2 60-10-4 2-54zM104 206l-4 6 2 60 10-4-2-54z'],
-  ['cuadriceps', 'M66 204c12-6 22-4 28 6l-2 74c-6 8-20 8-26 0-6-24-6-56 0-80zM134 204c-12-6-22-4-28 6l2 74c6 8 20 8 26 0 6-24 6-56 0-80z'],
-  ['gemelos', 'M70 300c8-4 16-2 18 6l-4 44c-4 6-12 6-14 0l-4-40c0-4 1-8 4-10zM130 300c-8-4-16-2-18 6l4 44c4 6 12 6 14 0l4-40c0-4-1-8-4-10z']
+  ['cuello', 'M94 44 C93 50 92 56 91 61 L97 61 C97 55 98 49 99 44 Z M 106 44 C 107 50 108 56 109 61 L 103 61 C 103 55 102 49 101 44 Z'],
+  ['trapecio', 'M100 60 C114 60 126 62 138 68 C128 71 114 74 100 74 Z M 100 60 C 86 60 74 62 62 68 C 72 71 86 74 100 74 Z'],
+  ['deltoides', 'M134 70 C144 66 155 72 156 86 C155 97 149 105 141 105 C137 99 134 86 134 70 Z M 66 70 C 56 66 45 72 44 86 C 45 97 51 105 59 105 C 63 99 66 86 66 70 Z'],
+  ['pectoral', 'M102 76 C116 76 128 78 133 84 C137 96 133 110 121 116 C111 118 104 114 102 110 Z M 98 76 C 84 76 72 78 67 84 C 63 96 67 110 79 116 C 89 118 96 114 98 110 Z'],
+  ['biceps', 'M140 108 C150 106 156 116 156 130 C156 144 152 154 146 156 C141 152 139 142 139 128 Z M 60 108 C 50 106 44 116 44 130 C 44 144 48 154 54 156 C 59 152 61 142 61 128 Z'],
+  ['antebrazo', 'M143 160 C153 158 161 166 161 180 C161 196 159 210 153 216 C148 212 145 200 144 186 Z M 57 160 C 47 158 39 166 39 180 C 39 196 41 210 47 216 C 52 212 55 200 56 186 Z'],
+  ['abdominales', 'M90 118 C96 116 104 116 110 118 L110 190 C106 196 94 196 90 190 Z'],
+  ['oblicuos', 'M112 120 C118 124 124 134 124 150 C124 168 120 182 114 190 L112 190 Z M 88 120 C 82 124 76 134 76 150 C 76 168 80 182 86 190 L 88 190 Z'],
+  ['flexores', 'M104 196 C112 196 120 200 126 206 L118 214 C112 210 106 206 104 204 Z M 96 196 C 88 196 80 200 74 206 L 82 214 C 88 210 94 206 96 204 Z'],
+  ['aductores', 'M103 218 C108 220 112 226 112 236 L110 272 C106 272 103 268 102 262 Z M 97 218 C 92 220 88 226 88 236 L 90 272 C 94 272 97 268 98 262 Z'],
+  ['cuadriceps', 'M114 212 C126 210 134 222 134 244 C134 268 132 290 126 302 C120 306 112 304 110 298 C108 272 108 240 114 212 Z M 86 212 C 74 210 66 222 66 244 C 66 268 68 290 74 302 C 80 306 88 304 90 298 C 92 272 92 240 86 212 Z'],
+  ['gemelos', 'M109 318 C121 314 130 322 130 340 C130 356 126 372 120 376 C113 374 109 362 109 348 Z M 91 318 C 79 314 70 322 70 340 C 70 356 74 372 80 376 C 87 374 91 362 91 348 Z']
 ];
 const BACK = [
-  ['trapecio', 'M85 58h30l24 16-18 10-21 34-21-34-18-10z'],
-  ['deltoides-post', 'M62 70c-10 0-16 8-16 18s6 16 14 16 14-8 14-18-4-16-12-16zM138 70c10 0 16 8 16 18s-6 16-14 16-14-8-14-18 4-16 12-16z'],
-  ['romboides', 'M88 86h24l-2 38h-20z'],
-  ['dorsal', 'M60 98l26 6 6 20-2 36-16 14c-6-10-14-30-14-50zM140 98l-26 6-6 20 2 36 16 14c6-10 14-30 14-50z'],
-  ['triceps', 'M46 100c6-2 12 2 14 12l2 28c-2 8-12 10-16 2l-4-30c0-6 1-10 4-12zM154 100c-6-2-12 2-14 12l-2 28c2 8 12 10 16 2l4-30c0-6-1-10-4-12z'],
-  ['antebrazo', 'M40 148c6-2 12 2 12 10l-4 40c-2 6-10 6-12 0l-2-40c0-6 2-9 6-10zM160 148c-6-2-12 2-12 10l4 40c2 6 10 6 12 0l2-40c0-6-2-9-6-10z'],
-  ['lumbar', 'M90 148h20v40c0 4-20 4-20 0z'],
-  ['gluteo-medio', 'M66 186c8-4 18-2 22 4l-4 10-20-2zM134 186c-8-4-18-2-22 4l4 10 20-2z'],
-  ['gluteo', 'M66 200c14-4 28-2 32 8l-2 24c-10 8-26 8-32-2-4-10-4-22 2-30zM134 200c-14-4-28-2-32 8l2 24c10 8 26 8 32-2 4-10 4-22-2-30z'],
-  ['isquios', 'M68 236c12-4 22-2 26 6l-2 50c-6 8-18 8-24 0-6-18-6-38 0-56zM132 236c-12-4-22-2-26 6l2 50c6 8 18 8 24 0 6-18 6-38 0-56z'],
-  ['gemelos', 'M68 302c10-4 20-2 22 6l-4 40c-4 6-14 6-16 0l-4-36c0-4 0-8 2-10zM132 302c-10-4-20-2-22 6l4 40c4 6 14 6 16 0l4-36c0-4 0-8-2-10z'],
-  ['soleo', 'M74 350c6-2 12 0 12 6l-2 24c-2 4-8 4-10 0l-2-24c0-3 0-5 2-6zM126 350c-6-2-12 0-12 6l2 24c2 4 8 4 10 0l2-24c0-3 0-5-2-6z']
+  ['trapecio', 'M100 56 C116 58 130 64 140 70 C130 78 120 84 112 92 C108 98 104 102 100 106 C96 102 92 98 88 92 C80 84 70 78 60 70 C70 64 84 58 100 56 Z'],
+  ['deltoides-post', 'M134 70 C144 66 155 72 156 86 C155 97 149 105 141 105 C137 99 134 86 134 70 Z M 66 70 C 56 66 45 72 44 86 C 45 97 51 105 59 105 C 63 99 66 86 66 70 Z'],
+  ['romboides', 'M100 104 C108 104 114 106 115 110 L112 140 C106 142 94 142 88 140 L85 110 C86 106 92 104 100 104 Z'],
+  ['dorsal', 'M114 102 C126 102 134 110 134 122 C134 148 126 168 114 186 C108 186 104 180 104 174 C108 152 112 130 112 110 Z M 86 102 C 74 102 66 110 66 122 C 66 148 74 168 86 186 C 92 186 96 180 96 174 C 92 152 88 130 88 110 Z'],
+  ['triceps', 'M140 108 C150 106 156 116 156 130 C156 144 152 154 146 156 C141 152 139 142 139 128 Z M 60 108 C 50 106 44 116 44 130 C 44 144 48 154 54 156 C 59 152 61 142 61 128 Z'],
+  ['antebrazo', 'M143 160 C153 158 161 166 161 180 C161 196 159 210 153 216 C148 212 145 200 144 186 Z M 57 160 C 47 158 39 166 39 180 C 39 196 41 210 47 216 C 52 212 55 200 56 186 Z'],
+  ['lumbar', 'M92 172 C98 170 102 170 108 172 L110 198 C104 202 96 202 90 198 Z'],
+  ['gluteo-medio', 'M110 196 C120 194 128 200 130 210 L117 216 C112 212 110 206 110 196 Z M 90 196 C 80 194 72 200 70 210 L 83 216 C 88 212 90 206 90 196 Z'],
+  ['gluteo', 'M102 210 C116 210 130 218 132 236 C132 252 122 264 108 264 C102 262 100 252 101 242 Z M 98 210 C 84 210 70 218 68 236 C 68 252 78 264 92 264 C 98 262 100 252 99 242 Z'],
+  ['isquios', 'M106 266 C120 264 132 274 132 294 C132 312 128 326 120 334 C112 336 108 328 108 316 C106 298 104 282 106 266 Z M 94 266 C 80 264 68 274 68 294 C 68 312 72 326 80 334 C 88 336 92 328 92 316 C 94 298 96 282 94 266 Z'],
+  ['gemelos', 'M108 328 C120 324 132 332 132 350 C132 364 126 374 118 378 C112 374 108 364 108 350 Z M 92 328 C 80 324 68 332 68 350 C 68 364 74 374 82 378 C 88 374 92 364 92 350 Z'],
+  ['soleo', 'M112 380 C120 378 126 382 126 390 L124 404 C118 406 112 404 112 398 Z M 88 380 C 80 378 74 382 74 390 L 76 404 C 82 406 88 404 88 398 Z']
 ];
 let bodySel = null;
 const SHORT = { deltoides: 'Deltoides', 'deltoides-post': 'Deltoides post.', lumbar: 'Lumbar', gluteo: 'Glúteo', 'gluteo-medio': 'Glúteo medio', dorsal: 'Dorsal', antebrazo: 'Antebrazo', abdominales: 'Abdominales', flexores: 'Flex. cadera' };
 function drawBody(svgId, parts) {
-  $(svgId).innerHTML = `<g class="fig" transform="translate(90 0)"><g class="sil">${SIL}</g>` + parts.map(([id, d]) => `<path class="m" data-m="${id}" d="${d}"><title>${esc(MUSCLES[id].n)}</title></path>`).join('') + '</g><g class="labels"></g>';
+  $(svgId).innerHTML = `<g class="fig" transform="translate(90 0)"><g class="sil">${SIL}</g>` + parts.map(([id, d]) => `<path class="m" data-m="${id}" d="${d}"><title>${esc(MUSCLES[id].n)}</title></path>`).join('') + (parts === FRONT ? `<g class="ln">${DEC_F}</g>` : '') + '</g><g class="labels"></g>';
   $(svgId).querySelectorAll('.m').forEach(p => p.addEventListener('click', () => bodySelect(p.dataset.m)));
 }
 function bodyLabels(svg, side) {
