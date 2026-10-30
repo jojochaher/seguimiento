@@ -306,7 +306,8 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .thumbs a { display: block; width: 64px; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
 .thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cam, .crop { position: fixed; inset: 0; z-index: 75; background: #000; display: grid; }
-.cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cam video { object-fit: cover; background: #111; }
+.cam-hint { position: absolute; top: calc(max(10px, env(safe-area-inset-top, 0px)) + 44px); left: 0; right: 0; text-align: center; color: #fff; font-size: .9rem; text-shadow: 0 1px 4px #000; z-index: 2; pointer-events: none; }
 .cam video.mirror { transform: scaleX(-1); }
 .cam-guide { position: absolute; inset: 8% 0; width: 100%; height: 84%; pointer-events: none; }
 .cam-guide svg { width: 100%; height: 100%; display: block; }
@@ -321,7 +322,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .cam-shutter { width: 72px; height: 72px; border-radius: 50%; border: 5px solid #fff; background: rgba(255,255,255,.3); cursor: pointer; }
 .cam-count { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 9rem; color: #fff; text-shadow: 0 2px 12px #000; pointer-events: none; }
 .crop-stage { position: absolute; inset: 0; display: grid; place-items: center; touch-action: none; }
-.crop-stage canvas, .crop-stage .crop-guide { grid-area: 1 / 1; width: min(100vw, calc(100vh * 3 / 4)); height: calc(min(100vw, calc(100vh * 3 / 4)) * 4 / 3); }
+.crop-stage canvas, .crop-stage video, .crop-stage .crop-guide { grid-area: 1 / 1; width: min(100vw, calc(100vh * 3 / 4)); height: calc(min(100vw, calc(100vh * 3 / 4)) * 4 / 3); }
 .crop-stage canvas { background: #111; }
 .crop-stage .crop-guide { position: static; inset: auto; padding: 0; z-index: 2; }
 .crop .pm { width: 48px; height: 40px; font-size: 1.3rem; background: rgba(255,255,255,.15); color: #fff; border-color: #888; }
@@ -482,7 +483,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
           <div class="shot" data-k="perfil"><div class="ph" id="ph-perfil"><span>Perfil</span></div><label class="btn ghost small">📷 Perfil<input type="file" accept="image/*" capture="environment" data-k="perfil" hidden></label></div>
           <div class="shot" data-k="espalda"><div class="ph" id="ph-espalda"><span>Espalda</span></div><label class="btn ghost small">📷 Espalda<input type="file" accept="image/*" capture="environment" data-k="espalda" hidden></label></div>
         </div>
-        <button class="btn ghost small" type="button" id="cam-seq" style="margin-top:8px;width:100%">⏱ Las 3 seguidas (5 s entre cada una)</button>
+        <button class="btn ghost small" type="button" id="cam-seq" style="margin-top:8px;width:100%">⏱ Las 3 seguidas (5 s, después 10 s entre cada una)</button>
       </details>
       <label>Nota<input type="text" id="fis-nota" placeholder="Opcional"></label>
       <div class="row"><button class="btn" type="submit">Guardar</button><span class="status" id="fis-status"></span></div>
@@ -527,9 +528,9 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 </div>
 
 <div class="cam" id="cam" hidden>
-  <video id="cam-video" autoplay playsinline muted></video>
-  <div class="cam-guide" id="cam-guide"></div>
+  <div class="crop-stage"><video id="cam-video" autoplay playsinline muted></video><div class="cam-guide crop-guide" id="cam-guide"></div></div>
   <div class="cam-top"><button class="toggle" type="button" id="cam-close">Cancelar</button><span class="cam-label" id="cam-label"></span><button class="toggle" type="button" id="cam-flip">↺ Cámara</button></div>
+  <div class="cam-hint" id="cam-hint"></div>
   <div class="cam-count" id="cam-count" hidden></div>
   <div class="cam-bottom">
     <button class="toggle" type="button" id="cam-timer" aria-pressed="true">⏱ 5 s</button>
@@ -1804,7 +1805,8 @@ async function shrink(file) {
 }
 /* cámara dentro de la app con silueta guía; si no se puede, cae al selector nativo */
 const CAM = { stream: null, k: null, facing: 'user', timer: true, busy: false };
-const SIL_SIDE = `<circle cx="100" cy="30" r="18"/><rect x="92" y="46" width="16" height="18" rx="4"/><path d="M84 64h32c6 0 10 6 12 14 4 18 6 36 2 54l-4 60c0 4-4 6-8 6H84c-4 0-8-2-8-6l-4-60c-4-18-2-36 2-54 2-8 6-14 10-14z"/><path d="M108 70c6 2 10 8 10 14l2 60c0 8-8 10-10 0z"/><path d="M86 196h30l-2 108-2 86c0 6-14 6-14 0l-4-86c-4-36-8-72-8-108z"/><path d="M84 390h34c6 0 8 4 8 8v4H84z"/>`;
+const SIL_SIDE = `<path d="M150 200l18 0m-6-6l6 6-6 6" fill="none"/><path d="M86 30c0-12 8-20 18-20 8 0 14 6 16 12l4 2c2 1 2 3 0 4l-3 2c0 8-6 16-14 18-10 2-21-6-21-18z"/><rect x="92" y="46" width="16" height="18" rx="4"/><path d="M84 64h32c6 0 10 6 12 14 4 18 6 36 2 54l-4 60c0 4-4 6-8 6H84c-4 0-8-2-8-6l-4-60c-4-18-2-36 2-54 2-8 6-14 10-14z"/><path d="M108 70c6 2 10 8 10 14l2 60c0 8-8 10-10 0z"/><path d="M86 196h30l-2 108-2 86c0 6-14 6-14 0l-4-86c-4-36-8-72-8-108z"/><path d="M84 390h26c10 0 18 4 22 8l2 4H84z"/>`;
+const HINT = { frente: 'de frente, brazos relajados a los costados', perfil: 'de costado: la nariz apunta hacia la derecha de la pantalla →', espalda: 'de espaldas a la cámara, brazos relajados' };
 function guideFor(k) { const g = k === 'perfil' ? SIL_SIDE : SIL; return `<svg viewBox="0 0 200 420" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><g class="halo">${g}</g><g class="line">${g}</g></svg>`; }
 function loadImage(file) {
   return new Promise((resolve, reject) => {
@@ -1823,7 +1825,7 @@ async function camOpen(k, fallbackInput) {
   CAM.k = k;
   if (!camAllowed()) { fallbackInput.click(); return; }
   $('cam').hidden = false; document.body.classList.add('locked');
-  $('cam-label').textContent = k; $('cam-guide').innerHTML = guideFor(k);
+  $('cam-label').textContent = k; $('cam-guide').innerHTML = guideFor(k); $('cam-hint').textContent = HINT[k] || '';
   const ok = await camStart();
   if (!ok) { camClose(); fallbackInput.click(); }
 }
@@ -1864,14 +1866,14 @@ async function camSequence(fallbackInput) {
   if (!camAllowed()) { setStatus('fis-status', 'La secuencia necesita la cámara en vivo. Abrí la app desde la pantalla de inicio.', 'err'); return; }
   CAM.k = 'frente';
   $('cam').hidden = false; document.body.classList.add('locked');
-  $('cam-label').textContent = 'frente'; $('cam-guide').innerHTML = guideFor('frente');
+  $('cam-label').textContent = 'frente'; $('cam-guide').innerHTML = guideFor('frente'); $('cam-hint').textContent = HINT.frente;
   if (!(await camStart())) { camClose(); setStatus('fis-status', 'No se pudo abrir la cámara.', 'err'); return; }
   CAM.busy = true;
   const shots = [];
   for (let i = 0; i < SEQ.length; i++) {
     const k = SEQ[i]; CAM.k = k;
-    $('cam-guide').innerHTML = guideFor(k);
-    if (!(await camCountdown(5, `${k} · ${i + 1}/3`))) return;
+    $('cam-guide').innerHTML = guideFor(k); $('cam-hint').textContent = HINT[k];
+    if (!(await camCountdown(i === 0 ? 5 : 10, `${k} · ${i + 1}/3`))) return;
     shots.push([k, camCapture()]);
     if (i < SEQ.length - 1) { $('cam-label').textContent = 'ahora ' + SEQ[i + 1]; beep(2); await new Promise(r => setTimeout(r, 700)); if (!CAM.stream) return; }
   }
@@ -1952,7 +1954,7 @@ $('fis-form').addEventListener('submit', async e => {
       assetsApi = assetsApi || (window.claude && window.claude.use ? await window.claude.use('assets') : null);
       if (!assetsApi) { setStatus('fis-status', 'No se pueden subir fotos desde esta vista. Abrí la app con tu cuenta.', 'err'); return; }
       const prev = S.fotos.find(x => x.id === fecha) || {};
-      const body = { fecha, kg, frente: prev.frente || '', perfil: prev.perfil || '', espalda: prev.espalda || '', nota: kg == null && !anyMed ? nota : (prev.nota || ''), img: Object.assign({}, prev.img || {}) };
+      const body = { fecha, kg: kg != null ? kg : (prev.kg != null ? prev.kg : null), frente: prev.frente || '', perfil: prev.perfil || '', espalda: prev.espalda || '', nota: kg == null && !anyMed ? nota : (prev.nota || ''), img: Object.assign({}, prev.img || {}) };
       for (const k of toUpload) { setStatus('fis-status', 'Subiendo ' + k + '…'); const r = await assetsApi.upload(PENDING[k], { type: 'image/jpeg' }); body.img[k] = r.id; }
       await S.db.collection('fotos').doc(fecha).set(body);
     }
