@@ -1,0 +1,1608 @@
+{
+ "dias": {
+  "azul": {
+   "color": "azul",
+   "elong": "azul",
+   "modo": "alternado",
+   "nombre": "Brazos",
+   "orden": 4
+  },
+  "naranja": {
+   "color": "naranja",
+   "elong": "naranja",
+   "modo": "orden",
+   "nombre": "Piernas y abs",
+   "orden": 2
+  },
+  "amarillo": {
+   "color": "amarillo",
+   "elong": "amarillo",
+   "modo": "orden",
+   "nombre": "Espalda",
+   "orden": 3
+  },
+  "verde": {
+   "color": "verde",
+   "elong": "verde",
+   "modo": "orden",
+   "nombre": "Pecho y hombros",
+   "orden": 1
+  }
+ },
+ "catalogo": {
+  "femoral-parado": {
+   "grupo": "Piernas",
+   "nombre": "Femoral parado",
+   "primario": [
+    "isquiotibiales"
+   ],
+   "secundario": [],
+   "tecnica": "Una pierna por vez, cadera quieta. Talón al glúteo.",
+   "tipo": "aislado"
+  },
+  "sillon-cuadriceps": {
+   "grupo": "Piernas",
+   "nombre": "Sillón de cuádriceps",
+   "primario": [
+    "cuádriceps"
+   ],
+   "secundario": [],
+   "tecnica": "Rodilla alineada con el eje de la máquina. Estirá del todo y pausa arriba, bajá controlado.",
+   "tipo": "aislado"
+  },
+  "prensa-horizontal": {
+   "grupo": "Piernas",
+   "nombre": "Prensa horizontal",
+   "primario": [
+    "cuádriceps",
+    "glúteo"
+   ],
+   "secundario": [
+    "isquiotibiales"
+   ],
+   "tecnica": "Igual que la de 45° pero sentado. Bajá hasta 90°, no bloquees arriba.",
+   "tipo": "compuesto"
+  },
+  "extensiones-mancuerna": {
+   "grupo": "Tríceps",
+   "nombre": "Extensiones con mancuerna",
+   "primario": [
+    "tríceps"
+   ],
+   "secundario": [],
+   "tecnica": "Mancuerna detrás de la cabeza con las dos manos, codos apuntando al techo. Subí sin abrir los codos.",
+   "tipo": "aislado"
+  },
+  "camilla-isquio": {
+   "grupo": "Piernas",
+   "nombre": "Camilla de isquios",
+   "primario": [
+    "isquiotibiales"
+   ],
+   "secundario": [
+    "gemelos"
+   ],
+   "tecnica": "Rodilla alineada con el eje. Llevá el talón al glúteo, bajá lento. Cadera pegada al banco.",
+   "tipo": "aislado"
+  },
+  "remo-apoyo": {
+   "grupo": "Espalda",
+   "nombre": "Remo con apoyo",
+   "primario": [
+    "dorsal",
+    "romboides"
+   ],
+   "secundario": [
+    "bíceps",
+    "deltoides posterior"
+   ],
+   "tecnica": "Pecho apoyado, tirá con los codos hacia atrás y juntá los omóplatos. Cuello neutro.",
+   "tipo": "compuesto"
+  },
+  "encogimientos": {
+   "grupo": "Trapecios",
+   "nombre": "Encogimientos con barra o mancuerna",
+   "primario": [
+    "trapecio"
+   ],
+   "secundario": [],
+   "tecnica": "Hombros derecho hacia las orejas, pausa arriba, bajá controlado. No rotes los hombros en círculo.",
+   "tipo": "aislado"
+  },
+  "curl-alternado": {
+   "grupo": "Bíceps",
+   "nombre": "Curl con mancuerna sentado alternado",
+   "primario": [
+    "bíceps"
+   ],
+   "secundario": [
+    "antebrazo"
+   ],
+   "tecnica": "Sentado con respaldo. Girá la palma hacia arriba mientras subís. Un brazo por vez, el otro espera abajo.",
+   "tipo": "aislado"
+  },
+  "press-inclinado": {
+   "grupo": "Pectorales",
+   "nombre": "Press inclinado",
+   "primario": [
+    "pectoral superior"
+   ],
+   "secundario": [
+    "tríceps",
+    "deltoides anterior"
+   ],
+   "tecnica": "Banco a 30°. Barra o mancuernas bajan a la parte alta del pecho. Omóplatos juntos y abajo.",
+   "tipo": "compuesto"
+  },
+  "hip-thrust": {
+   "grupo": "Piernas",
+   "nombre": "Hip thrust",
+   "primario": [
+    "glúteo"
+   ],
+   "secundario": [
+    "isquiotibiales"
+   ],
+   "tecnica": "Omóplatos apoyados en el banco, barra sobre la cadera. Subí hasta que el tronco quede horizontal, apretá el glúteo, mentón abajo.",
+   "tipo": "compuesto"
+  },
+  "vuelos-frontales": {
+   "grupo": "Hombros",
+   "nombre": "Vuelos frontales",
+   "primario": [
+    "deltoides anterior"
+   ],
+   "secundario": [
+    "pectoral superior"
+   ],
+   "tecnica": "Hasta la altura del hombro, alternado o junto. Si tenés que balancear el cuerpo, es mucho peso.",
+   "tipo": "aislado"
+  },
+  "fondos-asistida": {
+   "asistida": true,
+   "grupo": "Pectorales",
+   "nombre": "Fondos en paralela asistida",
+   "primario": [
+    "pectoral inferior",
+    "tríceps"
+   ],
+   "secundario": [
+    "deltoides anterior"
+   ],
+   "tecnica": "La plataforma te quita peso: menos kg de asistencia es más difícil. Inclinación leve adelante, bajá hasta 90° de codo.",
+   "tipo": "compuesto"
+  },
+  "hack": {
+   "grupo": "Piernas",
+   "nombre": "Hack",
+   "primario": [
+    "cuádriceps"
+   ],
+   "secundario": [
+    "glúteo"
+   ],
+   "tecnica": "Espalda apoyada, pies un poco adelante. Bajá a 90° o más si la cadera no se despega.",
+   "tipo": "compuesto"
+  },
+  "sentadilla": {
+   "grupo": "Piernas",
+   "nombre": "Sentadilla",
+   "primario": [
+    "cuádriceps",
+    "glúteo"
+   ],
+   "secundario": [
+    "isquiotibiales",
+    "lumbar"
+   ],
+   "tecnica": "Pies al ancho de los hombros, puntas un poco abiertas. Cadera atrás y abajo, rodillas siguen la línea de los pies, pecho arriba. Bajá hasta muslos paralelos o hasta donde la espalda se mantenga recta. Técnica antes que peso.",
+   "tipo": "compuesto"
+  },
+  "peck-deck": {
+   "grupo": "Pectorales",
+   "nombre": "Peck deck",
+   "primario": [
+    "pectoral"
+   ],
+   "secundario": [
+    "deltoides anterior"
+   ],
+   "tecnica": "Asiento a la altura que deje los codos al nivel de los hombros. Juntá apretando el pecho, volvé lento.",
+   "tipo": "aislado"
+  },
+  "tirones-agarre-cerrado": {
+   "grupo": "Espalda",
+   "nombre": "Tirones con agarre cerrado",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "bíceps"
+   ],
+   "tecnica": "Agarre en V, pecho arriba, tirá al pecho. Codos pegados al cuerpo.",
+   "tipo": "compuesto"
+  },
+  "vuelos-dorsales": {
+   "grupo": "Espalda",
+   "nombre": "Vuelos dorsales",
+   "primario": [
+    "deltoides posterior",
+    "romboides"
+   ],
+   "secundario": [
+    "trapecio"
+   ],
+   "tecnica": "Inclinado o en máquina, abrí hacia atrás con los codos apenas doblados. Peso liviano.",
+   "tipo": "aislado"
+  },
+  "patada-burro-triceps": {
+   "grupo": "Tríceps",
+   "nombre": "Patada de burro (tríceps)",
+   "primario": [
+    "tríceps"
+   ],
+   "secundario": [],
+   "tecnica": "Tronco paralelo al piso, codo alto y fijo. Estirá atrás y pausa. Liviano.",
+   "tipo": "aislado"
+  },
+  "giros-cintura": {
+   "grupo": "Abdominales",
+   "nombre": "Giros para cintura en máquina",
+   "primario": [
+    "oblicuos"
+   ],
+   "secundario": [],
+   "tecnica": "Girá controlado, sin impulso. Rango moderado.",
+   "tipo": "aislado"
+  },
+  "femoral-sentado": {
+   "grupo": "Piernas",
+   "nombre": "Femoral sentado",
+   "primario": [
+    "isquiotibiales"
+   ],
+   "secundario": [],
+   "tecnica": "Igual que la camilla pero sentado. Flexión completa, vuelta lenta.",
+   "tipo": "aislado"
+  },
+  "press-maquina-hombro": {
+   "grupo": "Hombros",
+   "nombre": "Press máquina (hombros)",
+   "primario": [
+    "deltoides"
+   ],
+   "secundario": [
+    "tríceps"
+   ],
+   "tecnica": "Ajustá el asiento para que las manijas arranquen a la altura de los hombros. Espalda apoyada.",
+   "tipo": "compuesto"
+  },
+  "curl-barra": {
+   "grupo": "Bíceps",
+   "nombre": "Curl parado con barra",
+   "primario": [
+    "bíceps"
+   ],
+   "secundario": [
+    "antebrazo"
+   ],
+   "tecnica": "Codos pegados al cuerpo y fijos. Si balanceás el tronco, bajá el peso. Bajá completo.",
+   "tipo": "aislado"
+  },
+  "dominadas": {
+   "corporal": true,
+   "grupo": "Espalda",
+   "nombre": "Dominadas",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "bíceps",
+    "romboides"
+   ],
+   "tecnica": "Agarre un poco más ancho que los hombros. Arrancá desde brazos estirados, pecho a la barra, omóplatos abajo. Sin balanceo.",
+   "tipo": "compuesto"
+  },
+  "patada-burro-gluteo": {
+   "grupo": "Piernas",
+   "nombre": "Patada de burro (glúteo)",
+   "primario": [
+    "glúteo"
+   ],
+   "secundario": [
+    "isquiotibiales"
+   ],
+   "tecnica": "En cuatro patas o máquina, empujá el pie hacia arriba y atrás apretando el glúteo.",
+   "tipo": "aislado"
+  },
+  "abductores": {
+   "grupo": "Piernas",
+   "nombre": "Abductores (máquina, multicadera o polea)",
+   "primario": [
+    "glúteo medio"
+   ],
+   "secundario": [],
+   "tecnica": "Abrí contra la resistencia, pausa afuera. Tronco quieto.",
+   "tipo": "aislado"
+  },
+  "curl-scott": {
+   "grupo": "Bíceps",
+   "nombre": "Curl banco Scott",
+   "primario": [
+    "bíceps"
+   ],
+   "secundario": [
+    "antebrazo"
+   ],
+   "tecnica": "Brazos apoyados en el banco. No estires del todo abajo con mucho peso: cuidá el codo.",
+   "tipo": "aislado"
+  },
+  "abs-maquina": {
+   "grupo": "Abdominales",
+   "nombre": "Abdominales en máquina",
+   "primario": [
+    "recto abdominal"
+   ],
+   "secundario": [],
+   "tecnica": "Enrollá el tronco hacia abajo contra la resistencia, pausa, volvé lento.",
+   "tipo": "aislado"
+  },
+  "elevar-piernas": {
+   "corporal": true,
+   "grupo": "Abdominales",
+   "nombre": "Elevar piernas (inferior)",
+   "primario": [
+    "recto abdominal (inferior)"
+   ],
+   "secundario": [
+    "flexores de cadera"
+   ],
+   "tecnica": "Lumbar pegada al piso o al banco. Si se despega, doblá más las rodillas.",
+   "tipo": "aislado"
+  },
+  "concentrado-mancuerna": {
+   "grupo": "Bíceps",
+   "nombre": "Concentrado con mancuerna",
+   "primario": [
+    "bíceps"
+   ],
+   "secundario": [],
+   "tecnica": "Sentado, codo apoyado en la cara interna del muslo. Subí sin mover el hombro.",
+   "tipo": "aislado"
+  },
+  "sentadilla-sissy": {
+   "corporal": true,
+   "grupo": "Piernas",
+   "nombre": "Sentadilla sissy",
+   "primario": [
+    "cuádriceps"
+   ],
+   "secundario": [],
+   "tecnica": "Talones altos, rodillas adelante, tronco en línea con los muslos. Agarrate de algo. Es solo cuádriceps.",
+   "tipo": "aislado"
+  },
+  "remo-menton": {
+   "grupo": "Trapecios",
+   "nombre": "Remo al mentón parado",
+   "primario": [
+    "trapecio",
+    "deltoides lateral"
+   ],
+   "secundario": [
+    "bíceps"
+   ],
+   "tecnica": "Agarre un poco más ancho que los hombros, codos guían el movimiento hacia arriba hasta el pecho. No subas más que eso: cuida el hombro.",
+   "tipo": "compuesto"
+  },
+  "dorsal-convergente": {
+   "grupo": "Espalda",
+   "nombre": "Dorsal convergente",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "bíceps",
+    "romboides"
+   ],
+   "tecnica": "Pecho apoyado en el almohadón, tirá los codos hacia abajo y atrás. Pausa abajo con los omóplatos juntos.",
+   "tipo": "compuesto"
+  },
+  "vuelos-laterales": {
+   "grupo": "Hombros",
+   "nombre": "Vuelos laterales",
+   "primario": [
+    "deltoides lateral"
+   ],
+   "secundario": [
+    "trapecio"
+   ],
+   "tecnica": "Codos apenas doblados, subí hasta la altura del hombro, nada más. Meñique un poco más alto que el pulgar. Sin impulso de tronco.",
+   "tipo": "aislado"
+  },
+  "remo-mancuerna": {
+   "grupo": "Espalda",
+   "nombre": "Remo con mancuerna",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "bíceps",
+    "romboides"
+   ],
+   "tecnica": "Rodilla y mano apoyadas en el banco, espalda plana. Tirá el codo hacia la cadera, no hacia afuera.",
+   "tipo": "compuesto"
+  },
+  "aductores": {
+   "grupo": "Piernas",
+   "nombre": "Aductores (máquina, multicadera o polea)",
+   "primario": [
+    "aductores"
+   ],
+   "secundario": [],
+   "tecnica": "Cerrá las piernas controlado, abrí lento. No rebotes abajo.",
+   "tipo": "aislado"
+  },
+  "fondos": {
+   "corporal": true,
+   "grupo": "Tríceps",
+   "nombre": "Fondos",
+   "primario": [
+    "tríceps",
+    "pectoral inferior"
+   ],
+   "secundario": [
+    "deltoides anterior"
+   ],
+   "tecnica": "En paralelas, tronco derecho para que trabaje tríceps. Bajá hasta 90° de codo.",
+   "tipo": "compuesto"
+  },
+  "vuelos-posteriores": {
+   "grupo": "Hombros",
+   "nombre": "Vuelos posteriores (máquina o mancuerna)",
+   "primario": [
+    "deltoides posterior"
+   ],
+   "secundario": [
+    "romboides",
+    "trapecio"
+   ],
+   "tecnica": "Tronco inclinado o en máquina. Abrí los brazos hacia atrás apretando los omóplatos. Peso liviano, mucho control.",
+   "tipo": "aislado"
+  },
+  "curl-maquina-scott": {
+   "grupo": "Bíceps",
+   "nombre": "Curl máquina Scott",
+   "primario": [
+    "bíceps"
+   ],
+   "secundario": [],
+   "tecnica": "Axilas apoyadas en el banco, codos alineados con el eje de la máquina.",
+   "tipo": "aislado"
+  },
+  "remo-polea-baja": {
+   "grupo": "Espalda",
+   "nombre": "Remo sentado en polea baja",
+   "primario": [
+    "dorsal",
+    "romboides"
+   ],
+   "secundario": [
+    "bíceps"
+   ],
+   "tecnica": "Espalda recta, rodillas apenas dobladas. Tirá al abdomen juntando los omóplatos; no te hamaques con la lumbar.",
+   "tipo": "compuesto"
+  },
+  "cruces-polea": {
+   "grupo": "Pectorales",
+   "nombre": "Cruces en polea",
+   "primario": [
+    "pectoral"
+   ],
+   "secundario": [
+    "deltoides anterior"
+   ],
+   "tecnica": "Poleas altas, paso adelante, pecho arriba. Juntá las manos abajo adelante, codos apenas doblados y fijos.",
+   "tipo": "aislado"
+  },
+  "press-cerrado": {
+   "barra": 20,
+   "grupo": "Tríceps",
+   "nombre": "Press cerrado",
+   "primario": [
+    "tríceps"
+   ],
+   "secundario": [
+    "pectoral",
+    "deltoides anterior"
+   ],
+   "tecnica": "Press banco con agarre al ancho de los hombros. Codos pegados. Barra 20 kg.",
+   "tipo": "compuesto"
+  },
+  "curl-inclinado": {
+   "grupo": "Bíceps",
+   "nombre": "Curl banco inclinado con mancuerna",
+   "primario": [
+    "bíceps (cabeza larga)"
+   ],
+   "secundario": [
+    "antebrazo"
+   ],
+   "tecnica": "Banco a 45°, brazos colgando hacia atrás. Estira más la cabeza larga. Peso liviano.",
+   "tipo": "aislado"
+  },
+  "aperturas": {
+   "grupo": "Pectorales",
+   "nombre": "Aperturas en banco plano",
+   "primario": [
+    "pectoral"
+   ],
+   "secundario": [
+    "deltoides anterior"
+   ],
+   "tecnica": "Codos apenas flexionados y fijos todo el recorrido. Bajá hasta sentir el pecho estirado, no más. El peso acá es chico.",
+   "tipo": "aislado"
+  },
+  "pullover": {
+   "grupo": "Espalda",
+   "nombre": "Pullover",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "pectoral",
+    "tríceps"
+   ],
+   "tecnica": "Igual que el de pecho pero pensando en bajar los codos con el dorsal. Brazos casi estirados.",
+   "tipo": "compuesto"
+  },
+  "triceps-concentrado-polea": {
+   "grupo": "Tríceps",
+   "nombre": "Concentrado con polea (tríceps)",
+   "primario": [
+    "tríceps"
+   ],
+   "secundario": [],
+   "tecnica": "Un brazo, codo fijo pegado al cuerpo, extensión completa.",
+   "tipo": "aislado"
+  },
+  "flexor-cadera": {
+   "grupo": "Piernas",
+   "nombre": "Flexor de cadera",
+   "primario": [
+    "flexores de cadera"
+   ],
+   "secundario": [
+    "cuádriceps"
+   ],
+   "tecnica": "Subí la rodilla contra la resistencia, tronco quieto.",
+   "tipo": "aislado"
+  },
+  "press-vertical": {
+   "grupo": "Pectorales",
+   "nombre": "Press vertical (máquina)",
+   "primario": [
+    "pectoral"
+   ],
+   "secundario": [
+    "tríceps",
+    "deltoides anterior"
+   ],
+   "tecnica": "Ajustá el asiento para que las manijas queden a la altura del pecho. Empujá sin despegar la espalda del respaldo.",
+   "tipo": "compuesto"
+  },
+  "tirones-dorsalera": {
+   "grupo": "Espalda",
+   "nombre": "Tirones en polea por delante (dorsalera)",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "bíceps"
+   ],
+   "tecnica": "Pecho arriba, tirá la barra al pecho alto, codos hacia abajo y atrás. No te eches hacia atrás para hacer palanca.",
+   "tipo": "compuesto"
+  },
+  "gluteos-patada-atras": {
+   "grupo": "Piernas",
+   "nombre": "Glúteos patada atrás",
+   "primario": [
+    "glúteo"
+   ],
+   "secundario": [
+    "isquiotibiales"
+   ],
+   "tecnica": "Patada hacia atrás con la pierna casi estirada, apretando el glúteo arriba. No arquees la lumbar.",
+   "tipo": "aislado"
+  },
+  "dominada-asistida": {
+   "asistida": true,
+   "grupo": "Espalda",
+   "nombre": "Dominada asistida",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "bíceps",
+    "romboides"
+   ],
+   "tecnica": "Rodillas en la plataforma. Menos kg de asistencia es más difícil. Subí hasta que el mentón pase la barra, bajá completo.",
+   "tipo": "compuesto"
+  },
+  "abs-colchoneta": {
+   "corporal": true,
+   "grupo": "Abdominales",
+   "nombre": "Concentrados en colchoneta",
+   "primario": [
+    "recto abdominal"
+   ],
+   "secundario": [],
+   "tecnica": "Manos en las sienes, no detrás de la nuca. Mirá un punto fijo del techo.",
+   "tipo": "aislado"
+  },
+  "press-hombro": {
+   "grupo": "Hombros",
+   "nombre": "Press con barra, mancuerna o Smith",
+   "primario": [
+    "deltoides"
+   ],
+   "secundario": [
+    "tríceps",
+    "trapecio"
+   ],
+   "tecnica": "Sentado con respaldo. Barra o mancuernas desde la altura de las orejas hasta arriba. No arquees la lumbar. Si no te da la movilidad, mancuernas.",
+   "tipo": "compuesto"
+  },
+  "concentrado-polea": {
+   "grupo": "Bíceps",
+   "nombre": "Concentrado con polea (bíceps)",
+   "primario": [
+    "bíceps"
+   ],
+   "secundario": [],
+   "tecnica": "Codo fijo, el único que se mueve es el antebrazo. Pausa arriba.",
+   "tipo": "aislado"
+  },
+  "fondos-paralela": {
+   "corporal": true,
+   "grupo": "Pectorales",
+   "nombre": "Fondos en paralela",
+   "primario": [
+    "pectoral inferior",
+    "tríceps"
+   ],
+   "secundario": [
+    "deltoides anterior"
+   ],
+   "tecnica": "Inclinación leve hacia adelante para que trabaje pecho. Bajá hasta que el hombro quede a la altura del codo, no más.",
+   "tipo": "compuesto"
+  },
+  "oblicuos": {
+   "corporal": true,
+   "grupo": "Abdominales",
+   "nombre": "Oblicuos",
+   "primario": [
+    "oblicuos"
+   ],
+   "secundario": [],
+   "tecnica": "Rotá el tronco llevando el hombro hacia la rodilla contraria. Sin tirar del cuello.",
+   "tipo": "aislado"
+  },
+  "peso-muerto": {
+   "barra": 20,
+   "grupo": "Piernas",
+   "nombre": "Peso muerto",
+   "primario": [
+    "isquiotibiales",
+    "glúteo",
+    "lumbar"
+   ],
+   "secundario": [
+    "dorsal",
+    "trapecio",
+    "antebrazo"
+   ],
+   "tecnica": "Barra pegada a las canillas, espalda recta todo el tiempo, cadera atrás. Empujá el piso con las piernas. Si la lumbar se redondea, es mucho peso. Barra 20 kg.",
+   "tipo": "compuesto"
+  },
+  "press-frances": {
+   "grupo": "Tríceps",
+   "nombre": "Press francés",
+   "primario": [
+    "tríceps"
+   ],
+   "secundario": [],
+   "tecnica": "Acostado, barra o mancuernas bajan hacia la frente con los codos apuntando al techo. Codos quietos.",
+   "tipo": "aislado"
+  },
+  "extensiones-polea": {
+   "grupo": "Tríceps",
+   "nombre": "Extensiones con polea",
+   "primario": [
+    "tríceps"
+   ],
+   "secundario": [],
+   "tecnica": "Codos pegados al cuerpo, bajá hasta estirar del todo. Si los codos se mueven, bajá el peso.",
+   "tipo": "aislado"
+  },
+  "hiperextensiones-banco": {
+   "corporal": true,
+   "grupo": "Espinales",
+   "nombre": "Hiperextensiones en banco",
+   "primario": [
+    "lumbar"
+   ],
+   "secundario": [
+    "glúteo",
+    "isquiotibiales"
+   ],
+   "tecnica": "Subí hasta la línea del cuerpo, no más arriba. Apretá el glúteo arriba. Lento.",
+   "tipo": "aislado"
+  },
+  "hiperextensiones": {
+   "grupo": "Espinales",
+   "nombre": "Hiperextensiones en máquina",
+   "primario": [
+    "lumbar"
+   ],
+   "secundario": [
+    "glúteo",
+    "isquiotibiales"
+   ],
+   "tecnica": "Cadera apoyada, subí hasta quedar en línea, sin hiperextender. Técnica antes que peso: esta es la que cuida la lumbar para el resto.",
+   "tipo": "aislado"
+  },
+  "abs-banco": {
+   "corporal": true,
+   "grupo": "Abdominales",
+   "nombre": "Abdominales en banco (superior)",
+   "primario": [
+    "recto abdominal"
+   ],
+   "secundario": [],
+   "tecnica": "Subí con el abdomen, no con el cuello ni con las manos. Exhalá al subir.",
+   "tipo": "aislado"
+  },
+  "vuelos-laterales-maquina": {
+   "grupo": "Hombros",
+   "nombre": "Vuelos laterales en máquina",
+   "primario": [
+    "deltoides lateral"
+   ],
+   "secundario": [
+    "trapecio"
+   ],
+   "tecnica": "Codos contra las almohadillas, subí hasta la horizontal. Pausa arriba.",
+   "tipo": "aislado"
+  },
+  "prensa-45": {
+   "grupo": "Piernas",
+   "nombre": "Prensa 45°",
+   "primario": [
+    "cuádriceps",
+    "glúteo"
+   ],
+   "secundario": [
+    "isquiotibiales"
+   ],
+   "tecnica": "Pies al ancho de la cadera a mitad de la plataforma. Bajá hasta 90° sin que la cola se despegue. No bloquees las rodillas arriba.",
+   "tipo": "compuesto"
+  },
+  "curl-maquina-sentado": {
+   "grupo": "Bíceps",
+   "nombre": "Curl máquina sentado",
+   "primario": [
+    "bíceps"
+   ],
+   "secundario": [],
+   "tecnica": "Codos alineados con el eje de la máquina. Recorrido completo.",
+   "tipo": "aislado"
+  },
+  "aperturas-inclinado": {
+   "grupo": "Pectorales",
+   "nombre": "Aperturas en banco inclinado",
+   "primario": [
+    "pectoral superior"
+   ],
+   "secundario": [
+    "deltoides anterior"
+   ],
+   "tecnica": "Igual que en plano, con banco a 30°. Codos fijos, recorrido controlado.",
+   "tipo": "aislado"
+  },
+  "press-inclinado-smith": {
+   "grupo": "Pectorales",
+   "nombre": "Press banco inclinado Smith",
+   "primario": [
+    "pectoral superior"
+   ],
+   "secundario": [
+    "tríceps",
+    "deltoides anterior"
+   ],
+   "tecnica": "Banco a 30°, no más. La barra baja a la parte alta del pecho. Omóplatos juntos.",
+   "tipo": "compuesto"
+  },
+  "fondos-maquina": {
+   "grupo": "Tríceps",
+   "nombre": "Fondos en máquina",
+   "primario": [
+    "tríceps"
+   ],
+   "secundario": [
+    "pectoral inferior"
+   ],
+   "tecnica": "Codos pegados al cuerpo, empujá hacia abajo hasta estirar. Pecho arriba, no te encorves.",
+   "tipo": "compuesto"
+  },
+  "contraccion-corta": {
+   "corporal": true,
+   "grupo": "Abdominales",
+   "nombre": "Contracción corta",
+   "primario": [
+    "recto abdominal"
+   ],
+   "secundario": [],
+   "tecnica": "Recorrido corto: despegá solo los omóplatos del piso. Lumbar siempre apoyada.",
+   "tipo": "aislado"
+  },
+  "depresiones-polea": {
+   "grupo": "Espalda",
+   "nombre": "Depresiones en polea",
+   "primario": [
+    "dorsal"
+   ],
+   "secundario": [
+    "tríceps (cabeza larga)"
+   ],
+   "tecnica": "Brazos estirados, bajá la barra hasta los muslos sin doblar los codos. Es para sentir el dorsal.",
+   "tipo": "aislado"
+  },
+  "gemelos": {
+   "grupo": "Piernas",
+   "nombre": "Gemelos sentado o parado",
+   "primario": [
+    "gemelos",
+    "sóleo"
+   ],
+   "secundario": [],
+   "tecnica": "Subí lo más alto posible, pausa arriba, bajá hasta sentir estirar. Lento; acá los rebotes no sirven.",
+   "tipo": "aislado"
+  },
+  "press-arnold": {
+   "grupo": "Hombros",
+   "nombre": "Press Arnold",
+   "primario": [
+    "deltoides"
+   ],
+   "secundario": [
+    "tríceps",
+    "trapecio"
+   ],
+   "tecnica": "Arrancás con las palmas hacia vos y rotás mientras subís. Lento, es más de control que de peso.",
+   "tipo": "compuesto"
+  },
+  "pullover-pecho": {
+   "grupo": "Pectorales",
+   "nombre": "Pullover (pecho)",
+   "primario": [
+    "pectoral",
+    "dorsal"
+   ],
+   "secundario": [
+    "tríceps"
+   ],
+   "tecnica": "Acostado cruzado en el banco, cadera baja. Brazos casi estirados, bajá la mancuerna detrás de la cabeza y volvé por el mismo arco.",
+   "tipo": "compuesto"
+  },
+  "press-banco": {
+   "barra": 20,
+   "grupo": "Pectorales",
+   "nombre": "Press banco plano con barra",
+   "primario": [
+    "pectoral"
+   ],
+   "secundario": [
+    "tríceps",
+    "deltoides anterior"
+   ],
+   "tecnica": "Omóplatos juntos y abajo, pies firmes. La barra baja a la altura de los pezones y sube sin rebotar. Codos a unos 45°, no abiertos a 90°.",
+   "tipo": "compuesto"
+  }
+ },
+ "ejercicios": {
+  "sillon-cuadriceps": {
+   "color": "naranja",
+   "nombre": "Sillón de cuádriceps",
+   "orden": 2,
+   "reps": 10,
+   "series": 4
+  },
+  "extensiones-mancuerna": {
+   "color": "azul",
+   "nombre": "Extensiones con mancuerna",
+   "orden": 7,
+   "reps": 12,
+   "series": 3
+  },
+  "camilla-isquio": {
+   "color": "naranja",
+   "nombre": "Camilla de isquios",
+   "orden": 3,
+   "reps": 10,
+   "series": 4
+  },
+  "encogimientos": {
+   "color": "amarillo",
+   "nombre": "Encogimientos con barra o mancuerna",
+   "orden": 6,
+   "reps": 12,
+   "series": 4
+  },
+  "curl-alternado": {
+   "color": "azul",
+   "nombre": "Curl con mancuerna sentado alternado",
+   "orden": 3,
+   "reps": 10,
+   "series": 4
+  },
+  "vuelos-frontales": {
+   "color": "verde",
+   "nombre": "Vuelos frontales",
+   "orden": 7,
+   "reps": 10,
+   "series": 3
+  },
+  "fondos-asistida": {
+   "asistida": true,
+   "color": "verde",
+   "nombre": "Fondos en paralela asistida",
+   "orden": 4,
+   "reps": 12,
+   "series": 3
+  },
+  "sentadilla": {
+   "color": "naranja",
+   "nombre": "Sentadilla",
+   "orden": 1,
+   "reps": 10,
+   "series": 3
+  },
+  "curl-barra": {
+   "color": "azul",
+   "nombre": "Curl parado con barra",
+   "orden": 1,
+   "reps": 10,
+   "series": 3
+  },
+  "abs-maquina": {
+   "color": "naranja",
+   "nombre": "Abdominales en máquina",
+   "orden": 7,
+   "reps": 12,
+   "series": 4
+  },
+  "dorsal-convergente": {
+   "color": "amarillo",
+   "nombre": "Dorsal convergente",
+   "orden": 4,
+   "reps": 10,
+   "series": 3
+  },
+  "vuelos-laterales": {
+   "color": "verde",
+   "nombre": "Vuelos laterales",
+   "orden": 6,
+   "reps": 10,
+   "series": 3
+  },
+  "remo-mancuerna": {
+   "color": "amarillo",
+   "nombre": "Remo con mancuerna",
+   "orden": 5,
+   "reps": 10,
+   "series": 3
+  },
+  "aductores": {
+   "color": "naranja",
+   "nombre": "Aductores",
+   "orden": 4,
+   "reps": 12,
+   "series": 3
+  },
+  "remo-polea-baja": {
+   "color": "amarillo",
+   "nombre": "Remo sentado en polea baja",
+   "orden": 2,
+   "reps": 10,
+   "series": 4
+  },
+  "aperturas": {
+   "color": "verde",
+   "nombre": "Aperturas en banco plano",
+   "orden": 5,
+   "reps": 10,
+   "series": 3
+  },
+  "press-vertical": {
+   "color": "verde",
+   "nombre": "Press vertical",
+   "orden": 3,
+   "reps": 12,
+   "series": 3
+  },
+  "tirones-dorsalera": {
+   "color": "amarillo",
+   "nombre": "Tirones en polea por delante (dorsalera)",
+   "orden": 3,
+   "reps": 10,
+   "series": 4
+  },
+  "dominada-asistida": {
+   "asistida": true,
+   "color": "amarillo",
+   "nombre": "Dominada asistida",
+   "orden": 1,
+   "reps": 10,
+   "series": 3
+  },
+  "press-hombro": {
+   "color": "verde",
+   "nombre": "Press con barra, mancuerna o Smith",
+   "orden": 2,
+   "reps": 10,
+   "series": 3
+  },
+  "concentrado-polea": {
+   "color": "azul",
+   "nombre": "Concentrado con polea",
+   "orden": 5,
+   "reps": 10,
+   "series": 4
+  },
+  "press-frances": {
+   "color": "azul",
+   "nombre": "Press francés",
+   "orden": 6,
+   "reps": 10,
+   "series": 3
+  },
+  "extensiones-polea": {
+   "color": "azul",
+   "nombre": "Extensiones con polea",
+   "orden": 4,
+   "reps": 10,
+   "series": 3
+  },
+  "hiperextensiones": {
+   "color": "amarillo",
+   "nombre": "Hiperextensiones en máquina",
+   "orden": 7,
+   "reps": 12,
+   "series": 3
+  },
+  "abs-banco": {
+   "color": "naranja",
+   "nombre": "Abdominales en banco (superior)",
+   "orden": 6,
+   "reps": 12,
+   "series": 4
+  },
+  "fondos-maquina": {
+   "color": "azul",
+   "nombre": "Fondos en máquina",
+   "orden": 2,
+   "reps": 10,
+   "series": 3
+  },
+  "gemelos": {
+   "color": "naranja",
+   "nombre": "Gemelos sentado o parado",
+   "orden": 5,
+   "reps": 12,
+   "series": 4
+  },
+  "press-banco": {
+   "barra": 20,
+   "color": "verde",
+   "nombre": "Press banco plano con barra",
+   "orden": 1,
+   "reps": 10,
+   "series": 3
+  }
+ },
+ "sesiones": {
+  "2026-10-27-azul": {
+   "color": "azul",
+   "fecha": "2026-10-27",
+   "items": {
+    "concentrado-polea": {
+     "carga": 20,
+     "nota": "",
+     "reps": "4x10"
+    },
+    "curl-alternado": {
+     "carga": 6,
+     "nota": "Creo que hoy hice poco porque también hice 20 de concentrado con polea",
+     "reps": "4x7"
+    },
+    "curl-barra": {
+     "carga": 15,
+     "nota": "",
+     "reps": "3x10"
+    },
+    "extensiones-mancuerna": {
+     "carga": 6,
+     "nota": "En realidad, hice 2 sets de 12 reps de 4kg, y uno de 10 de 6kg",
+     "reps": "3x8"
+    },
+    "extensiones-polea": {
+     "carga": 15,
+     "nota": "",
+     "reps": "3x12"
+    },
+    "fondos-maquina": {
+     "carga": 35,
+     "nota": "",
+     "reps": "3x12"
+    },
+    "press-frances": {
+     "carga": 4,
+     "nota": "",
+     "reps": "3x10"
+    }
+   }
+  },
+  "2026-10-15-naranja": {
+   "color": "naranja",
+   "fecha": "2026-10-15",
+   "items": {
+    "abs-maquina": {
+     "carga": 15,
+     "nota": "",
+     "reps": ""
+    },
+    "aductores": {
+     "carga": 25,
+     "nota": "",
+     "reps": ""
+    },
+    "camilla-isquio": {
+     "carga": 25,
+     "nota": "",
+     "reps": ""
+    },
+    "gemelos": {
+     "carga": 25,
+     "nota": "",
+     "reps": ""
+    },
+    "sentadilla": {
+     "carga": 14,
+     "nota": "",
+     "reps": ""
+    },
+    "sillon-cuadriceps": {
+     "carga": 20,
+     "nota": "",
+     "reps": ""
+    }
+   }
+  },
+  "2026-10-16-amarillo": {
+   "color": "amarillo",
+   "fecha": "2026-10-16",
+   "items": {
+    "dominada-asistida": {
+     "carga": 0,
+     "nota": "sin asistencia, a pedido del profe",
+     "reps": "4, 2, 3"
+    },
+    "dorsal-convergente": {
+     "carga": 45,
+     "nota": "",
+     "reps": ""
+    },
+    "encogimientos": {
+     "carga": 14,
+     "nota": "",
+     "reps": ""
+    },
+    "hiperextensiones": {
+     "carga": null,
+     "nota": "salteado (no estaba en la lista)",
+     "reps": ""
+    },
+    "remo-mancuerna": {
+     "carga": 10,
+     "nota": "",
+     "reps": ""
+    },
+    "remo-polea-baja": {
+     "carga": 25,
+     "nota": "",
+     "reps": ""
+    },
+    "tirones-dorsalera": {
+     "carga": 35,
+     "nota": "",
+     "reps": ""
+    }
+   }
+  },
+  "2026-10-21-verde": {
+   "color": "verde",
+   "fecha": "2026-10-21",
+   "items": {
+    "aperturas": {
+     "carga": 6,
+     "nota": "",
+     "reps": "3x12"
+    },
+    "fondos-asistida": {
+     "carga": 30,
+     "nota": "",
+     "reps": ""
+    },
+    "press-banco": {
+     "carga": 0,
+     "nota": "barra sola",
+     "reps": "3x12"
+    },
+    "press-hombro": {
+     "carga": 4,
+     "nota": "poca movilidad de hombro, pasó a mancuernas de 4 kg",
+     "reps": "12"
+    },
+    "press-vertical": {
+     "carga": 25,
+     "nota": "cortó por técnica",
+     "reps": "12 con 20, 12 con 25, 10 con 25"
+    },
+    "vuelos-frontales": {
+     "carga": 6,
+     "nota": "",
+     "reps": ""
+    },
+    "vuelos-laterales": {
+     "carga": 6,
+     "nota": "",
+     "reps": ""
+    }
+   }
+  },
+  "2026-10-14-azul": {
+   "color": "azul",
+   "fecha": "2026-10-14",
+   "items": {
+    "concentrado-polea": {
+     "carga": 10,
+     "nota": "",
+     "reps": ""
+    },
+    "curl-alternado": {
+     "carga": 8,
+     "nota": "",
+     "reps": ""
+    },
+    "curl-barra": {
+     "carga": 10,
+     "nota": "",
+     "reps": ""
+    },
+    "extensiones-mancuerna": {
+     "carga": 4,
+     "nota": "",
+     "reps": ""
+    },
+    "extensiones-polea": {
+     "carga": 10,
+     "nota": "",
+     "reps": ""
+    },
+    "fondos-maquina": {
+     "carga": 25,
+     "nota": "",
+     "reps": ""
+    },
+    "press-frances": {
+     "carga": 2,
+     "nota": "",
+     "reps": ""
+    }
+   }
+  },
+  "2026-10-28-verde": {
+   "color": "verde",
+   "fecha": "2026-10-28",
+   "items": {
+    "aperturas": {
+     "carga": 8,
+     "nota": "",
+     "reps": "3x10"
+    },
+    "fondos-asistida": {
+     "carga": 25,
+     "nota": "",
+     "reps": "3x12"
+    },
+    "press-banco": {
+     "carga": 5,
+     "nota": "",
+     "reps": "3x6"
+    },
+    "press-hombro": {
+     "carga": 6,
+     "nota": "",
+     "reps": "3x10"
+    },
+    "press-vertical": {
+     "carga": 30,
+     "nota": "",
+     "reps": "3x10"
+    },
+    "vuelos-frontales": {
+     "carga": 6,
+     "nota": "",
+     "reps": "3x12"
+    },
+    "vuelos-laterales": {
+     "carga": 6,
+     "nota": "",
+     "reps": "3x12"
+    }
+   }
+  },
+  "2026-10-25-amarillo": {
+   "color": "amarillo",
+   "fecha": "2026-10-25",
+   "items": {
+    "dominada-asistida": {
+     "carga": null,
+     "nota": "No hice, no me dió el tiempo.",
+     "reps": ""
+    },
+    "dorsal-convergente": {
+     "carga": 45,
+     "nota": "Consultar con profe cono es el ejercicio, si hay que apoyar el pecho sobre el almohadon.",
+     "reps": "3x10"
+    },
+    "encogimientos": {
+     "carga": 18,
+     "nota": "",
+     "reps": ""
+    },
+    "hiperextensiones": {
+     "carga": null,
+     "nota": "No hice, no me dió el tiempo.",
+     "reps": ""
+    },
+    "remo-mancuerna": {
+     "carga": 10,
+     "nota": "",
+     "reps": "3x12"
+    },
+    "remo-polea-baja": {
+     "carga": 25,
+     "nota": "",
+     "reps": "4x12"
+    },
+    "tirones-dorsalera": {
+     "carga": 35,
+     "nota": "Me costó.",
+     "reps": ""
+    }
+   }
+  },
+  "2026-10-13-verde": {
+   "color": "verde",
+   "fecha": "2026-10-13",
+   "items": {
+    "aperturas": {
+     "carga": 6,
+     "nota": "",
+     "reps": "3x10"
+    },
+    "fondos-asistida": {
+     "carga": 35,
+     "nota": "",
+     "reps": ""
+    },
+    "press-banco": {
+     "carga": 0,
+     "nota": "barra sola",
+     "reps": "3x10"
+    },
+    "press-hombro": {
+     "carga": 15,
+     "nota": "barra",
+     "reps": ""
+    },
+    "press-vertical": {
+     "carga": 20,
+     "nota": "",
+     "reps": ""
+    },
+    "vuelos-frontales": {
+     "carga": 6,
+     "nota": "",
+     "reps": ""
+    },
+    "vuelos-laterales": {
+     "carga": 6,
+     "nota": "",
+     "reps": ""
+    }
+   }
+  },
+  "2026-10-22-naranja": {
+   "color": "naranja",
+   "fecha": "2026-10-22",
+   "items": {
+    "abs-banco": {
+     "carga": null,
+     "nota": "Es con peso corporal.",
+     "reps": "12/12/12/12",
+     "sets": [
+      12,
+      12,
+      12,
+      12
+     ]
+    },
+    "abs-maquina": {
+     "carga": 25,
+     "nota": "",
+     "reps": ""
+    },
+    "aductores": {
+     "carga": 30,
+     "nota": "",
+     "reps": ""
+    },
+    "camilla-isquio": {
+     "carga": 30,
+     "nota": "La cuarta costó",
+     "reps": ""
+    },
+    "gemelos": {
+     "carga": 30,
+     "nota": "",
+     "reps": ""
+    },
+    "sentadilla": {
+     "carga": 18,
+     "nota": "Llego a hacer 3x12 de 18kg también",
+     "reps": "3x10"
+    },
+    "sillon-cuadriceps": {
+     "carga": 25,
+     "nota": "",
+     "reps": "4x10"
+    }
+   }
+  },
+  "2026-10-27-extra": {
+   "color": "extra",
+   "fecha": "2026-10-27",
+   "items": {
+    "hiperextensiones": {
+     "carga": 75,
+     "nota": "Hechas el día azul para recuperar. Próxima: 75 y foco en técnica",
+     "reps": "12 con 75, 1 serie con 85"
+    }
+   }
+  },
+  "2026-10-29-naranja": {
+   "cola": [
+    "aductores",
+    "gemelos",
+    "sillon-cuadriceps",
+    "abs-maquina"
+   ],
+   "color": "naranja",
+   "fecha": "2026-10-29",
+   "fin": 1793319407475,
+   "inicio": 1793314007475,
+   "items": {
+    "abs-banco": {
+     "carga": null,
+     "nota": "",
+     "reps": "14/14/14/14",
+     "sets": [
+      14,
+      14,
+      14,
+      14
+     ]
+    },
+    "abs-maquina": {
+     "carga": 25,
+     "nota": "",
+     "reps": "12/12/12/12",
+     "sets": [
+      12,
+      12,
+      12,
+      12
+     ]
+    },
+    "aductores": {
+     "carga": 30,
+     "nota": "Bastante facil, pero la primer serie siempre cuesta mas que las ultimas.",
+     "reps": "12/12/12",
+     "sets": [
+      12,
+      12,
+      12
+     ]
+    },
+    "camilla-isquio": {
+     "carga": 30,
+     "nota": "",
+     "reps": "12/10/12/10",
+     "sets": [
+      12,
+      10,
+      12,
+      10
+     ]
+    },
+    "gemelos": {
+     "carga": 30,
+     "nota": "",
+     "reps": "12/12/12/12",
+     "sets": [
+      12,
+      12,
+      12,
+      12
+     ]
+    },
+    "sentadilla": {
+     "carga": 24,
+     "nota": "",
+     "reps": "12/12/12",
+     "sets": [
+      12,
+      12,
+      12
+     ]
+    },
+    "sillon-cuadriceps": {
+     "carga": 30,
+     "nota": "",
+     "reps": "12/12/12/12",
+     "sets": [
+      12,
+      12,
+      12,
+      12
+     ]
+    }
+   }
+  }
+ },
+ "peso": {
+  "2026-10-17": {
+   "fecha": "2026-10-17",
+   "kg": 67.4,
+   "nota": "Antes de ir al baño"
+  },
+  "2026-10-15": {
+   "fecha": "2026-10-15",
+   "kg": 67,
+   "nota": "Punto de partida"
+  }
+ },
+ "fotos": {
+  "2026-10-17": {
+   "espalda": "",
+   "fecha": "2026-10-17",
+   "frente": "",
+   "img": {},
+   "kg": 67.4,
+   "nota": "Falta la espalda",
+   "perfil": ""
+  }
+ }
+}
