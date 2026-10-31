@@ -287,6 +287,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .body .m { fill: var(--line); stroke: var(--surface); stroke-width: 1; cursor: pointer; transition: fill .15s; }
 .body .m:hover { fill: var(--muted); }
 .body .ln { fill: none; stroke: var(--surface); stroke-width: 1; pointer-events: none; }
+.pendtag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--c); color: var(--c); font-family: var(--font-body); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; vertical-align: middle; }
 .body .m.p { fill: var(--day); }
 .body .m.s { fill: var(--day); fill-opacity: .4; }
 .body .m.sel { stroke: var(--ink); stroke-width: 2; }
@@ -953,9 +954,23 @@ function interleave(ejs) {
   while (left) groups.forEach(g => { if (byG[g].length) { out.push(byG[g].shift()); left--; } });
   return out;
 }
+/* pendientes: lo que quedó sin hacer (o salteado) en la sesión anterior, de otro día, aparece al final de la de hoy hasta que se haga */
+function itemDone(it) { return !!it && it.skip == null && (it.carga != null || (it.sets || []).some(v => v != null) || !!it.reps); }
+function pendingIds() {
+  const prev = S.ses.filter(s => s.fecha < S.fecha && s.items && Object.keys(s.items).length).sort((a, b) => a.fecha < b.fecha ? -1 : 1).pop();
+  if (!prev) return [];
+  const cand = new Set(S.ej.filter(e => e.color === prev.color).map(e => e.id).concat(prev.pend || []));
+  return [...cand].filter(id => {
+    const e = S.ej.find(x => x.id === id); if (!e || e.color === S.color) return false;
+    if (itemDone(prev.items[id])) return false;
+    return !S.ses.some(s => s.fecha > prev.fecha && s.fecha < S.fecha && itemDone((s.items || {})[id]));
+  });
+}
 function todayOrder() {
   let ejs = S.ej.filter(e => e.color === S.color).sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
   if (dia(S.color).modo === 'alternado') ejs = interleave(ejs);
+  const pend = pendingIds().map(id => S.ej.find(x => x.id === id)).filter(Boolean);
+  ejs = ejs.concat(pend);
   const cur = currentSession() || {}, items = cur.items || {}, cola = cur.cola || [];
   const rank = e => (items[e.id] && items[e.id].skip != null) ? 2 : cola.includes(e.id) ? 1 : 0;
   return ejs.map((e, i) => ({ e, i })).sort((a, b) => rank(a.e) - rank(b.e) || (rank(a.e) === 1 ? cola.indexOf(a.e.id) - cola.indexOf(b.e.id) : a.i - b.i)).map(x => x.e);
@@ -976,7 +991,7 @@ function exCardHtml(e, items, big) {
   const sug = suggestion(e);
   const pts = seriesFor(e.id, e);
   return `<article class="ex${skipped ? ' skipped' : ''}${big ? ' big' : ''}" data-ej="${esc(e.id)}">
-    <div class="ex-head">${big ? `<button class="minibody" type="button" data-body="${esc(c.id || '')}" aria-label="Ver en el cuerpo">${bodyMini(e)}</button>` : ''}<h3>${esc(e.nombre)}</h3><span class="target">${esc(e.series)} × ${esc(e.reps)}</span></div>
+    <div class="ex-head">${big ? `<button class="minibody" type="button" data-body="${esc(c.id || '')}" aria-label="Ver en el cuerpo">${bodyMini(e)}</button>` : ''}<h3>${esc(e.nombre)}${e.color !== S.color ? `<span class="pendtag" style="--c: var(--${esc(dia(e.color).color)})">pendiente · ${esc(dia(e.color).nombre)}</span>` : ''}</h3><span class="target">${esc(e.series)} × ${esc(e.reps)}</span></div>
     ${musclesLine(e)}
     ${c.tecnica ? `<div class="tec">${esc(c.tecnica)}</div>` : ''}
     ${e.asistida ? '<div class="assist">Carga = kg de asistencia. Menos es mejor.</div>' : isBody(e) ? '<div class="assist">Peso corporal: lo que progresa son las reps.</div>' : ''}
@@ -1056,6 +1071,7 @@ function fsClose() {
   flushSave(); stopTimer(); S.focus = false;
   $('fs').hidden = true; document.body.classList.remove('locked');
   $('focus-btn').setAttribute('aria-pressed', 'false');
+  saveResume();
   buildForm();
 }
 function fsCanNext() {
@@ -1072,6 +1088,19 @@ function fsUpdateNext() {
   const b = $('fs-next'); b.disabled = !ok; b.textContent = last ? 'Terminar ✓' : ok ? 'Siguiente →' : 'Completá kg y reps';
   $('fs-prev').disabled = S.focusIdx === 0;
 }
+function saveResume() { try { localStorage.setItem('seg-resume', JSON.stringify({ id: sessionId(), focus: !!S.focus, idx: S.focusIdx || 0 })); } catch (e) {} }
+function resumeRunning() {
+  const r = S.ses.find(s => s.inicio && !s.fin && Date.now() - s.inicio < 3 * 3600000);
+  if (!r) return false;
+  S.fecha = r.fecha; S.color = r.color; $('ses-fecha').value = r.fecha; applyDay(); renderColors();
+  let st = null; try { st = JSON.parse(localStorage.getItem('seg-resume') || 'null'); } catch (e) {}
+  if (S.tab !== 'entreno') showTab('entreno');
+  if (st && st.id === r.id && st.focus) { fsOpen(); S.focusIdx = st.idx || 0; fsRender(); }
+  else buildForm();
+  setStatus('ses-status', 'Retomando la sesión de ' + dia(r.color).nombre, 'ok');
+  return true;
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { flushSave(); saveResume(); } });
 function fsRender(dir) {
   const steps = fsSteps();
   if (!steps.length) return;
@@ -1095,6 +1124,7 @@ function fsRender(dir) {
   fsUpdateNext();
   if (dir) { card.classList.remove('in-l', 'in-r'); void card.offsetWidth; card.classList.add(dir > 0 ? 'in-l' : 'in-r'); }
   card.scrollTop = 0;
+  saveResume();
 }
 function fsGo(delta) {
   const steps = fsSteps();
@@ -1180,6 +1210,7 @@ function sessionBody(items) {
   const body = { fecha: S.fecha, color: S.color, items };
   if (cur && cur.inicio) { body.inicio = cur.inicio; body.fin = cur.fin ?? null; }
   if (cur && cur.cola && cur.cola.length) body.cola = cur.cola;
+  const pend = pendingIds(); if (pend.length) body.pend = pend;
   return body;
 }
 async function mutateSession(fn) {
@@ -2033,7 +2064,7 @@ showTab(startTab);
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
-    if (first && !colorPicked) { colorPicked = true; S.color = nextColor(); applyDay(); }
+    if (first && !colorPicked) { colorPicked = true; if (!resumeRunning()) { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso();
     if (!formBusy()) buildForm(); else renderClock();
   });
