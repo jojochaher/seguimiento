@@ -887,6 +887,19 @@ function suggestion(e) {
     if (e.asistida && it.carga <= 0) return { cls: 'ok', html: `Última (${dmy(l.fecha)}): ${did} ✓ Completaste todo sin asistencia. Hoy sumá reps o lastre.` };
     return { cls: 'ok', html: `Última (${dmy(l.fecha)}): ${did} ✓ Completaste todo. Hoy probá ${kgTxt(Math.max(0, nk) + b)}, ${esc(e.series)}×${esc(e.reps)}.` };
   }
+  /* muy lejos de la meta: ajustar la carga con Epley (promedio de las series) en vez de repetir */
+  const done = sets.filter(v => v != null), tr = Number(e.reps);
+  if (done.length && done.reduce((x, y) => x + y, 0) / done.length < tr * 0.7) {
+    const avg = done.reduce((x, y) => x + y, 0) / done.length, f = (1 + avg / 30) / (1 + tr / 30);
+    const step = Math.abs(increment(e));
+    if (e.asistida) {
+      const bw = (S.peso.slice().sort((x, y) => x.fecha < y.fecha ? -1 : 1).pop() || {}).kg || 70;
+      const need = bw - (bw - kg) * f, as = Math.max(kg + step, Math.ceil(need / step) * step);
+      return { cls: '', html: `Última (${dmy(l.fecha)}): ${did}. Muy lejos de ${esc(e.series)}×${esc(e.reps)}: repetir no alcanza. Hoy probá ${kgTxt(as)} y buscá las ${esc(e.reps)} reps; después la vas bajando de a ${step}.` };
+    }
+    const nk = Math.max(0, Math.floor((kg * f - b) / step) * step);
+    return { cls: '', html: `Última (${dmy(l.fecha)}): ${did}. Muy lejos de ${esc(e.series)}×${esc(e.reps)}: el peso quedó alto. Hoy bajá a ${kgTxt(nk + b)} y buscá las ${esc(e.reps)} reps.` };
+  }
   const missing = sets.length ? ` Te faltó llegar en ${Math.max(0, Number(e.series) - sets.filter(v => v != null && v >= Number(e.reps)).length)} serie(s).` : '';
   return { cls: '', html: `Última (${dmy(l.fecha)}): ${did}.${missing} Hoy repetí ${kgTxt(kg)} y buscá ${esc(e.series)}×${esc(e.reps)}.` };
 }
@@ -1148,8 +1161,9 @@ $('fs-rest-plus').addEventListener('click', () => { if (rest) { rest.end += 1500
 function collect() {
   const items = {};
   const cur = currentSession(); const prev = (cur && cur.items) || {};
-  $('ex-list').querySelectorAll('.ex').forEach(ex => {
-    const id = ex.dataset.ej;
+  const seen = new Set();
+  exCards().forEach(ex => {
+    const id = ex.dataset.ej; if (!id || seen.has(id)) return; seen.add(id);
     const skipIn = ex.querySelector('[data-f="skip"]');
     if (skipIn) { items[id] = Object.assign({}, prev[id] || {}, { skip: skipIn.value.trim() }); return; }
     const carga = num(ex.querySelector('[data-f="carga"]').value);
@@ -1158,7 +1172,7 @@ function collect() {
     const any = sets.some(v => v != null);
     if (carga != null || any || nota) items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota };
   });
-  Object.keys(prev).forEach(id => { if (!items[id] && !$('ex-list').querySelector(`.ex[data-ej="${CSS.escape(id)}"]`)) items[id] = prev[id]; });
+  Object.keys(prev).forEach(id => { if (!items[id] && !seen.has(id)) items[id] = prev[id]; });
   return items;
 }
 function sessionBody(items) {
@@ -1222,7 +1236,8 @@ function renderHist() {
   });
 }
 
-function formBusy() { const a = document.activeElement; return !!(a && $('ex-list').contains(a)) || !!saveTimer || saving; }
+function formBusy() { const a = document.activeElement; return !!(a && ($('ex-list').contains(a) || $('fs-card').contains(a))) || !!saveTimer || saving; }
+function exCards() { return [...$('ex-list').querySelectorAll('.ex'), ...(S.focus ? $('fs-card').querySelectorAll('.ex') : [])]; }
 
 /* ---------- rutina editable ---------- */
 function renderRtColors() {
