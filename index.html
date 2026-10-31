@@ -250,7 +250,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 /* rutina editable */
 .rt { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--day); border-radius: 12px; padding: 10px 12px; }
 .rt h3 { margin: 0; font-size: .98rem; line-height: 1.25; }
-.rt .fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+.rt .fields { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; }
 .rt .fields label { font-size: .7rem; }
 .rt .fields input { padding: 6px 8px; }
 .grip { align-self: center; width: 34px; height: 44px; display: grid; place-items: center; color: var(--muted); font-size: 1.4rem; border-radius: 8px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
@@ -372,7 +372,8 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--day); vertical-align: -2px; margin-right: 4px; }
 .legend i.s { opacity: .4; }
 @media (min-width: 640px) { .body-wrap[data-view="both"] svg { max-height: 60vh; } }
-@media (max-width: 380px) { .tiles { grid-template-columns: 1fr 1fr; } .rt .fields { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 380px) { .tiles { grid-template-columns: 1fr 1fr; } .rt .fields { grid-template-columns: 1fr 1fr 1fr; } }
+@media (max-width: 460px) { .rt .fields { grid-template-columns: repeat(3, 1fr); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -1624,6 +1625,7 @@ function renderRutina() {
           <label>Series<input type="number" min="1" max="10" inputmode="numeric" data-f="series" value="${esc(e.series ?? '')}"></label>
           <label>Reps<input type="number" min="1" max="50" inputmode="numeric" data-f="reps" value="${esc(e.reps ?? '')}"></label>
           <label>Barra kg<input type="text" inputmode="decimal" data-f="barra" value="${e.barra ?? ''}"></label>
+          <label>Salto kg<input type="text" inputmode="decimal" data-f="paso" value="${e.paso ?? ''}" placeholder="${fmt(Math.abs(increment(Object.assign({}, e, { paso: null }))))}"></label>
           <label>Descanso s<input type="number" step="5" inputmode="numeric" data-f="descanso" value="${e.descanso ?? ''}" placeholder="${restFor(Object.assign({}, e, { descanso: null }))}"></label>
         </div>
       </div>
@@ -1638,6 +1640,7 @@ function renderRutina() {
     else if (f === 'reps') body.reps = num(inp.value) ?? e.reps;
     else if (f === 'barra') { const b = num(inp.value); if (b) body.barra = b; else delete body.barra; }
     else if (f === 'descanso') { const b = num(inp.value); if (b) body.descanso = b; else delete body.descanso; }
+    else if (f === 'paso') { const b = num(inp.value); if (b) body.paso = Math.abs(b); else delete body.paso; }
     await writeEj(id, body);
   }));
   makeSortable(list, async ids => { for (let k = 0; k < ids.length; k++) { const e = S.ej.find(x => x.id === ids[k]); if (e && e.orden !== k + 1) await writeEj(e.id, Object.assign(clean(e), { orden: k + 1 })); } });
