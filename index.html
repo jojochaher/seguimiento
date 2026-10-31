@@ -288,6 +288,21 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .body .m:hover { fill: var(--muted); }
 .body .ln { fill: none; stroke: var(--surface); stroke-width: 1; pointer-events: none; }
 .vtoast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 10px); transform: translateX(-50%); z-index: 90; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 999px; font-size: .85rem; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+.prac { position: fixed; inset: 0; z-index: 72; background: var(--bg); display: grid; grid-template-rows: auto 1fr auto; padding: max(10px, env(safe-area-inset-top, 0px)) 0 max(10px, env(safe-area-inset-bottom, 0px)); }
+.prac-top { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 8px; }
+.prac-title { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.prac-body { overflow-y: auto; padding: 0 20px 16px; max-width: 600px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.prac-body .fig { display: block; width: 100%; max-width: 320px; height: auto; margin: 4px auto 8px; }
+.prac-body h2 { margin: 4px 0 2px; } .prac-body h3 { margin: 16px 0 4px; font-size: 1rem; }
+.prac-body ol, .prac-body ul { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+.prac-nav[hidden] { display: none !important; }
+.prac-nav { display: flex; gap: 10px; padding: 8px 16px 0; max-width: 600px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.prac-nav .btn:last-child { flex: 1; }
+.prac-mini { max-width: 240px; margin: 4px auto 8px; } .prac-mini svg, .prac-mini .body.mini { width: 100% !important; height: auto !important; max-width: none; display: block; }
+.prac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin-top: 8px; }
+.prac-item { display: grid; gap: 4px; justify-items: center; padding: 8px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: .8rem; line-height: 1.2; text-align: center; cursor: pointer; }
+.prac-item .fig { width: 100%; height: auto; max-width: 84px; }
+.linkbtn { border: none; background: none; padding: 0; color: var(--day, var(--accent)); text-decoration: underline; font: inherit; font-size: .9rem; cursor: pointer; }
 .pendtag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--c); color: var(--c); font-family: var(--font-body); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; vertical-align: middle; }
 .body .m.p { fill: var(--day); }
 .body .m.s { fill: var(--day); fill-opacity: .4; }
@@ -454,6 +469,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
       </div>
     </div>
     <div class="box mus-info" id="mus-info"><p class="hint">Tocá un músculo para ver qué es, con qué ejercicios del catálogo se trabaja y cómo se elonga.</p></div>
+    <div class="box" id="prac-home"></div>
   </section>
 
   <!-- FÍSICO: peso, medidas y fotos -->
@@ -549,6 +565,11 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
   <div class="cam-top"><button class="toggle" type="button" id="crop-back">Atrás</button><span class="cam-label" id="crop-label"></span><button class="btn small" type="button" id="crop-ok">Usar</button></div>
   <div class="crop-stage" id="crop-stage"><canvas id="crop-canvas"></canvas><div class="cam-guide crop-guide" id="crop-guide"></div></div>
   <div class="cam-bottom" style="justify-content:center;gap:10px"><button class="pm" type="button" id="crop-minus">−</button><span class="cam-label" style="font-size:.85rem">arrastrá para mover · pellizcá o ± para acercar</span><button class="pm" type="button" id="crop-plus">+</button></div>
+</div>
+<div class="prac" id="prac" hidden>
+  <div class="prac-top"><button class="toggle" type="button" id="prac-close">Cerrar</button><span class="prac-title">Práctica <span id="prac-pos"></span></span><span style="width:64px"></span></div>
+  <div class="prac-body" id="prac-body"></div>
+  <div class="prac-nav"><button class="btn ghost" type="button" id="prac-prev">←</button><button class="btn ghost" type="button" id="prac-next">Siguiente →</button></div>
 </div>
 <div class="lb" id="lb" hidden>
   <button class="toggle" type="button" id="lb-close">Cerrar</button>
@@ -815,12 +836,145 @@ const STRETCH = {
 Object.values(STRETCH).forEach(d => { const ids = d.despues.map(x => x.f); if (!ids.includes('pechoMarco')) d.despues.push(ST.pechoMarco); d.despues.push(ST.menton); });
 let activeTimer = null;
 function stopTimer() { if (activeTimer) { clearInterval(activeTimer.iv); activeTimer.btn.classList.remove('running'); activeTimer.btn.textContent = activeTimer.reset(); activeTimer = null; } }
+/* modo práctica: sin timer, para aprender cada elongación y movimiento en casa */
+const PRAC = {
+  circulos: { pasos: ['Parado, pies al ancho de la cadera, brazos estirados a los costados a la altura de los hombros.', 'Hacé círculos chiquitos con las manos, del tamaño de una moneda.', 'Agrandalos de a poco hasta que sean del tamaño de una pelota de fútbol.', 'Cambiá el sentido: primero hacia adelante, después hacia atrás.'], sentir: 'Calor en los hombros. No tiene que doler ni hacer ruido fuerte.', errores: ['Encoger los hombros hacia las orejas: mantenelos abajo.', 'Doblar los codos.', 'Ir rápido: lento y controlado.'] },
+  palo: { pasos: ['Agarrá un palo de escoba (o una toalla tensa) con las manos bien separadas, más anchas que los hombros.', 'Brazos estirados adelante, a la altura de la cadera.', 'Subilos por encima de la cabeza y seguí hacia atrás hasta la cola, sin doblar los codos.', 'Volvé por el mismo camino. Si no pasa, abrí más las manos.'], sentir: 'Estiramiento al frente del hombro y en el pecho cuando el palo pasa por atrás de la cabeza.', errores: ['Doblar los codos para que pase: mejor abrir más el agarre.', 'Arquear la espalda baja: apretá un poco la panza.', 'Forzar con tirones.'] },
+  sentadilla: { pasos: ['Pies un poco más anchos que la cadera, puntas levemente hacia afuera.', 'Llevá la cadera hacia atrás como para sentarte en una silla lejana.', 'Bajá con el pecho arriba y los talones apoyados, hasta donde llegues cómodo.', 'Subí empujando el piso con todo el pie.'], sentir: 'Trabajo en muslos y glúteos, y que la cadera y los tobillos se van soltando.', errores: ['Levantar los talones: bajá menos o poné un libro finito debajo.', 'Rodillas que se van hacia adentro: empujalas hacia afuera, en línea con los pies.', 'Doblar la espalda hacia adelante.'] },
+  balanceo: { pasos: ['Parado de costado a una pared, apoyá la mano para no perder el equilibrio.', 'La pierna de afuera se balancea adelante y atrás, como un péndulo, con la rodilla casi estirada.', 'Empezá con poca altura y dejá que crezca sola.', 'Cambiá de pierna.'], sentir: 'Que la cadera se suelta: atrás de la pierna al ir adelante y adelante de la cadera al ir atrás.', errores: ['Patear: es un péndulo, no una patada.', 'Mover el torso para ganar altura: el tronco queda quieto.'] },
+  gatoVaca: { pasos: ['En cuatro patas: manos debajo de los hombros, rodillas debajo de la cadera.', 'Gato: soltá el aire, redondeá la espalda hacia el techo y mirá al ombligo.', 'Vaca: tomá aire, hundí la espalda y mirá hacia adelante, sacando cola.', 'Pasá de una a otra lento, vértebra por vértebra.'], sentir: 'Que toda la columna se mueve, no solo la zona baja. Es más movilidad que estiramiento.', errores: ['Mover solo la cabeza o solo la cintura: buscá que se mueva también la parte de arriba de la espalda.', 'Ir rápido: acompañá la respiración.'] },
+  menton: { pasos: ['Parado con la espalda y la nuca contra una pared (o sentado contra el respaldo).', 'Sin bajar ni subir la mirada, llevá el mentón hacia atrás, como haciendo papada.', 'Sostené 3 segundos y soltá.', 'Cuando te salga bien contra la pared, practicalo sin apoyo, en cualquier lado.'], sentir: 'Estiramiento en la nuca, abajo del cráneo, y la cabeza más alineada arriba de los hombros.', errores: ['Bajar la mirada al piso: la cara mira al frente todo el tiempo.', 'Tirar la cabeza hacia atrás como mirando el techo.', 'Tensar los hombros.'] },
+  pechoMarco: { pasos: ['Parate en el marco de una puerta.', 'Apoyá el antebrazo en el marco con el codo a la altura del hombro (como haciendo una L).', 'Da un paso chico hacia adelante con la pierna del mismo lado y girá el cuerpo hacia el lado contrario.', 'Quedate quieto respirando. Cambiá de lado.'], sentir: 'Estiramiento en el pecho y al frente del hombro, del lado del brazo apoyado.', errores: ['Codo más alto que el hombro: puede molestar el hombro.', 'Sacar la cabeza adelante: mentón atrás.', 'Arquear la espalda baja para estirar más.'] },
+  hombroCruzado: { pasos: ['Llevá un brazo estirado cruzando el pecho, a la altura del hombro.', 'Con la otra mano apretalo hacia vos, a la altura del codo (no en la articulación).', 'Bajá el hombro que estirás, lejos de la oreja.', 'Cambiá de lado.'], sentir: 'Estiramiento atrás del hombro.', errores: ['Que el hombro suba hacia la oreja.', 'Girar el torso hacia el brazo: el pecho mira al frente.'] },
+  triceps: { pasos: ['Levantá un brazo y doblá el codo, con la mano bajando hacia la espalda, entre los omóplatos.', 'Con la otra mano agarrá el codo y empujalo suave hacia atrás y hacia la cabeza.', 'Mantené la cabeza derecha, sin agacharla.', 'Cambiá de lado.'], sentir: 'Estiramiento atrás del brazo y al costado del cuerpo.', errores: ['Agachar la cabeza para dejar pasar el brazo.', 'Arquear la espalda baja: apretá un poco la panza.'] },
+  ninio: { pasos: ['De rodillas, con las rodillas un poco separadas.', 'Sentate hacia atrás sobre los talones.', 'Estirá los brazos adelante, apoyados en el piso, y dejá caer el pecho entre las rodillas.', 'Respirá lento y en cada exhalación aflojá un poco más.'], sentir: 'Estiramiento a lo largo de la espalda, de los costados (dorsales) y la zona lumbar.', errores: ['Que la cola no llegue a los talones: no importa, quedate donde llegues.', 'Tensar hombros y cuello: dejalos caer.'] },
+  cuello: { pasos: ['Sentado o parado, espalda derecha.', 'Llevá la oreja hacia un hombro.', 'Apoyá la mano del mismo lado arriba de la cabeza, solo con el peso del brazo, sin tirar.', 'Bajá el otro hombro, como si llevaras una bolsa pesada. Cambiá de lado.'], sentir: 'Estiramiento al costado del cuello y arriba del hombro contrario.', errores: ['Tirar fuerte con la mano.', 'Subir el hombro del lado que estirás.', 'Girar la cara: mirá al frente.'] },
+  bicepsPared: { pasos: ['De costado a una pared, apoyá la palma en la pared, dedos hacia atrás.', 'El brazo queda estirado, a la altura del hombro.', 'Girá el cuerpo despacio hacia el lado contrario a la pared.', 'Cambiá de lado.'], sentir: 'Estiramiento en el bíceps y al frente del hombro y del pecho.', errores: ['Doblar el codo.', 'Girar de golpe: el hombro es delicado en esta posición.'] },
+  cuadriceps: { pasos: ['Parado, apoyate con una mano en la pared si hace falta.', 'Doblá una rodilla y agarrá el pie (o el tobillo) con la mano del mismo lado.', 'Llevá el talón hacia el glúteo, con las rodillas juntas.', 'Empujá la cadera un poquito hacia adelante. Cambiá de pierna.'], sentir: 'Estiramiento al frente del muslo, y con la cadera adelante también arriba, en la ingle.', errores: ['Rodilla que se va hacia adelante o hacia afuera.', 'Arquear la espalda: apretá un poco el glúteo.'] },
+  isquios: { pasos: ['Apoyá un talón en un banco o escalón bajo, con la pierna estirada.', 'La otra pierna, levemente flexionada.', 'Con la espalda derecha, inclinate desde la cadera, como haciendo una reverencia.', 'Bajá solo hasta sentir tensión atrás del muslo. Cambiá de pierna.'], sentir: 'Estiramiento atrás del muslo, no atrás de la rodilla ni en la espalda.', errores: ['Redondear la espalda para llegar más abajo: lo que importa es la cadera, no las manos.', 'Bloquear la rodilla a la fuerza.'] },
+  mariposa: { pasos: ['Sentado en el piso, juntá las plantas de los pies.', 'Agarrá los pies con las manos y acercalos al cuerpo hasta donde estés cómodo.', 'Espalda derecha, pecho arriba.', 'Dejá caer las rodillas hacia el piso. Si querés más, apoyá los codos encima de las piernas.'], sentir: 'Estiramiento en la cara interna de los muslos.', errores: ['Rebotar con las rodillas.', 'Encorvarse hacia adelante.'] },
+  gemelos: { pasos: ['Manos en la pared, a la altura del pecho.', 'Una pierna adelante flexionada y la otra atrás, estirada.', 'El talón de atrás bien apoyado y la punta del pie mirando a la pared.', 'Llevá la cadera hacia la pared. Cambiá de pierna.'], sentir: 'Estiramiento en la pantorrilla de la pierna de atrás.', errores: ['Levantar el talón de atrás.', 'Pie de atrás girado hacia afuera.'] },
+  cobra: { pasos: ['Boca abajo, manos apoyadas debajo de los hombros.', 'Empujá el piso y levantá el pecho, con la cadera apoyada.', 'Hombros abajo y atrás, lejos de las orejas.', 'Subí solo hasta donde la espalda baja esté cómoda.'], sentir: 'Estiramiento en el abdomen y al frente del cuerpo.', errores: ['Brazos totalmente estirados si molesta la espalda baja: apoyá los antebrazos.', 'Hombros encogidos.', 'Tirar la cabeza hacia atrás.'] },
+  antebrazo: { pasos: ['Brazo estirado adelante, palma hacia arriba.', 'Con la otra mano tirá suave de los dedos hacia abajo.', 'Después girá la palma hacia abajo y tirá de la mano hacia vos.', 'Cambiá de brazo.'], sentir: 'Estiramiento en la parte de abajo del antebrazo, y después en la de arriba.', errores: ['Doblar el codo.', 'Tirar fuerte de los dedos.'] },
+  gluteo: { pasos: ['Acostado boca arriba, rodillas dobladas.', 'Cruzá un tobillo sobre la rodilla contraria (forma de 4).', 'Agarrá la pierna de abajo por atrás del muslo y traela hacia el pecho.', 'Cabeza y hombros apoyados en el piso. Cambiá de lado.'], sentir: 'Estiramiento en el glúteo de la pierna cruzada.', errores: ['Levantar la cabeza: si no llegás, usá una toalla.', 'Que el tobillo se resbale: apoyalo bien, justo arriba de la rodilla.'] },
+  libre: { pasos: ['Poné música si querés. No hay forma correcta.', 'Estirá los brazos hacia arriba lo más lejos que puedas, como desperezándote. Después hacia cada costado y hacia atrás.', 'Hacé círculos con todo lo que se mueva: cuello lento, hombros, muñecas, cadera, rodillas, tobillos.', 'Buscá posiciones raras: agacharte en cuclillas, alcanzar el piso, girar el torso mirando para atrás.', 'Quedate más tiempo en lo que se sienta duro y movelo despacio.'], sentir: 'Curiosidad por dónde estás duro. Es explorar, no cumplir un ejercicio.', errores: ['Forzar donde duele: duro está bien, dolor no.', 'Hacerlo como trámite: lo que suma es moverte en direcciones que no usás nunca.'] }
+};
+/* práctica de ejercicios del gym: técnica + cómo ensayarlo (en casa si se puede; si es máquina, en el gym con poco peso) */
+const CASA = {
+  'sentadilla': 'En casa con un palo de escoba sobre la espalda alta, sin peso. Bajá lento en 3 s, mirá que los talones no se levanten y que las rodillas sigan la línea de los pies.',
+  'peso-muerto': 'En casa con un palo pegado a la espalda: tiene que tocar la cabeza, la espalda alta y la cola todo el tiempo. Llevá la cadera hacia atrás (bisagra) sin que el palo se despegue. Es la mejor forma de aprender a no redondear.',
+  'press-banco': 'En casa acostado en el piso con un palo: juntá los omóplatos, bajá el palo al medio del pecho hasta que los codos toquen el piso, a unos 45° del cuerpo, y subí.',
+  'press-inclinado': 'En casa acostado en el piso con un palo, igual que el press plano pero bajando más cerca de la clavícula.',
+  'press-cerrado': 'En casa acostado en el piso con un palo, manos al ancho de los hombros y codos pegados al cuerpo.',
+  'press-hombro': 'En casa parado con un palo o dos botellas: panza apretada, sin arquear la espalda, subí por encima de la cabeza y pasá la cabeza "por la ventana" al final.',
+  'press-arnold': 'En casa con dos botellas de agua: practicá el giro de las palmas lento, que es lo que lo diferencia.',
+  'remo-mancuerna': 'En casa con una mochila con libros o un bidón, apoyando mano y rodilla en una silla. Tirá con el codo hacia la cadera, no hacia arriba.',
+  'remo-menton': 'En casa con un palo, liviano: codos más altos que las manos y hasta la altura del pecho, no más.',
+  'encogimientos': 'En casa con una mochila cargada en cada mano o bidones: subí los hombros derecho hacia las orejas, sin girarlos.',
+  'curl-alternado': 'En casa con botellas de agua o una mochila: codo quieto pegado al cuerpo, subí girando la palma hacia arriba.',
+  'curl-barra': 'En casa con un palo o una mochila agarrada de las manijas: codos quietos, sin balancear el cuerpo.',
+  'curl-inclinado': 'En casa recostado en un sillón inclinado con botellas: brazos colgando atrás del cuerpo.',
+  'concentrado-mancuerna': 'En casa sentado con una botella, codo apoyado en la cara interna del muslo.',
+  'curl-scott': 'En casa con una botella y el brazo apoyado sobre el respaldo de una silla.',
+  'vuelos-laterales': 'En casa con dos botellas de 500 ml: codos apenas doblados, subí hasta la altura de los hombros llevando los codos, no las manos.',
+  'vuelos-frontales': 'En casa con botellas de 500 ml: subí adelante hasta la altura de los ojos, sin balancear.',
+  'vuelos-posteriores': 'En casa inclinado hacia adelante con botellas: abrí los brazos hacia los costados juntando los omóplatos.',
+  'vuelos-dorsales': 'En casa inclinado hacia adelante con botellas, igual que vuelos posteriores.',
+  'extensiones-mancuerna': 'En casa con una botella grande agarrada con las dos manos atrás de la cabeza: codos apuntando al techo, quietos.',
+  'press-frances': 'En casa acostado con un palo o botella: solo se mueve el antebrazo, los codos quedan apuntando al techo.',
+  'patada-burro-triceps': 'En casa con una botella, apoyado en una silla: codo pegado al cuerpo y quieto, estirá el brazo hacia atrás.',
+  'aperturas': 'En casa acostado en el piso con botellas: codos apenas doblados y fijos, abrí como abrazando un árbol.',
+  'aperturas-inclinado': 'En casa recostado en un sillón con botellas, igual que las aperturas planas.',
+  'pullover': 'En casa acostado con una botella agarrada con las dos manos: llevala hacia atrás de la cabeza con los brazos casi estirados.',
+  'pullover-pecho': 'En casa acostado con una botella, igual que el pullover.',
+  'hip-thrust': 'En casa como puente de glúteos en el piso, sin peso: apretá el glúteo arriba 2 s y no arquees la espalda.',
+  'hiperextensiones': 'En casa: parado, manos en la cadera, inclinate desde la cadera con la espalda derecha y volvé apretando glúteos (bisagra). O acostado boca abajo levantando pecho y piernas (superman).',
+  'hiperextensiones-banco': 'En casa acostado boca abajo: levantá el pecho unos centímetros, sin tirar la cabeza hacia atrás.',
+  'dominadas': 'En casa, si tenés dónde colgarte, colgate y practicá solo bajar los hombros (retracción escapular) sin doblar los brazos. Si no, acostado boca arriba deslizá los codos hacia las costillas apretando la espalda.',
+  'dominada-asistida': 'En casa, igual que las dominadas: aprendé a bajar los hombros antes de tirar con los brazos.',
+  'fondos': 'En casa entre dos sillas firmes con los pies apoyados en el piso para hacerlo más liviano.',
+  'fondos-paralela': 'En casa entre dos sillas firmes, pies apoyados para alivianar. Pecho apenas inclinado hacia adelante.',
+  'fondos-asistida': 'En casa entre dos sillas firmes, pies apoyados en el piso: es la versión "asistida" casera.',
+  'gemelos': 'En casa en el borde de un escalón: bajá el talón todo lo que puedas y subí en punta de pie, lento.',
+  'sentadilla-sissy': 'Se hace igual en casa, agarrado de un marco de puerta.',
+  'gluteos-patada-atras': 'En casa en cuatro patas, sin peso: patada hacia atrás y arriba sin arquear la espalda.',
+  'patada-burro-gluteo': 'En casa en cuatro patas, sin peso.',
+  'flexor-cadera': 'En casa parado o acostado, subiendo la rodilla al pecho lento.',
+  'abductores': 'En casa acostado de costado, levantando la pierna de arriba.',
+  'aductores': 'En casa acostado de costado, levantando la pierna de abajo.'
+};
+function pracEjHow(c) {
+  if (CASA[c.id]) return { donde: 'En casa', txt: CASA[c.id] };
+  if (c.corporal) return { donde: 'En casa', txt: 'Es con peso corporal: se practica igual en casa, en una colchoneta o en el piso.' };
+  return { donde: 'En el gym', txt: 'Es de máquina o polea, no se ensaya en casa. En el gym hacé una primera serie con muy poco peso, 10 reps lentas, prestando atención solo a la técnica de arriba.' };
+}
+function openPracticeEj(id) {
+  const c = S.cat.find(x => x.id === id); if (!c) return;
+  openPractice({ f: 'ej:' + c.id, cat: c, n: c.nombre }, [{ f: 'ej:' + c.id, cat: c, n: c.nombre }]);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-prac-ej]'); if (b) { e.preventDefault(); e.stopPropagation(); openPracticeEj(b.dataset.pracEj); } }, true);
+const LIBRE = { f: 'libre', n: 'Movilidad libre', d: 'Moverte jugando en todas las direcciones que puedas, sin ejercicio fijo. Para recuperar movimiento que no usás.', dose: 'el tiempo que quieras', t: 0 };
+function pracList() {
+  const seen = new Set(), out = [];
+  const add = it => { if (it && it.f && !seen.has(it.f) && PRAC[it.f]) { seen.add(it.f); out.push(it); } };
+  add(LIBRE); MOV_SUP.forEach(add);
+  Object.values(STRETCH).forEach(d => d.antes.forEach(add));
+  Object.values(ST).forEach(add);
+  return out;
+}
+const PR = { list: [], i: 0 };
+function openPractice(item, list) {
+  PR.list = list || pracList(); PR.i = Math.max(0, PR.list.findIndex(x => x.f === item.f));
+  $('prac').hidden = false; document.body.classList.add('locked'); pracRender();
+}
+function pracRender() {
+  const it = PR.list[PR.i];
+  document.querySelector('.prac-nav').hidden = PR.list.length < 2;
+  if (it.cat) {
+    const c = it.cat, how = pracEjHow(c), prim = muscleIds(c.primario).map(id => MUSCLES[id] ? MUSCLES[id].n : id), sec = muscleIds(c.secundario).map(id => MUSCLES[id] ? MUSCLES[id].n : id);
+    $('prac-pos').textContent = '';
+    $('prac-body').innerHTML = `<div class="prac-mini">${bodyMini({ id: c.id })}</div>
+      <h2>${esc(c.nombre)}</h2><p class="hint">${esc(c.grupo || '')}${c.tipo ? ' · ' + esc(c.tipo) : ''}</p>
+      <h3>Músculos</h3><p><b>${esc(prim.join(', '))}</b>${sec.length ? ' · también ' + esc(sec.join(', ')) : ''}</p>
+      ${c.tecnica ? `<h3>Técnica</h3><p>${esc(c.tecnica)}</p>` : ''}
+      <h3>Cómo practicarlo · ${how.donde}</h3><p>${esc(how.txt)}</p>
+      <h3>Un truco</h3><p>Grabate una serie de costado con el celu y mirala. Se ve en dos segundos lo que no se siente: espalda que se redondea, codos que se abren, rango cortado.</p>
+      <p class="hint">Lento y sin apuro. La técnica primero; el peso viene después.</p>`;
+    $('prac-prev').disabled = true; $('prac-next').disabled = true; $('prac-body').scrollTop = 0; return;
+  }
+  const p = PRAC[it.f] || { pasos: [], errores: [] };
+  const fig = FIG[it.f] || FIG.circulos;
+  const mus = (it.m || []).map(id => MUSCLES[id] ? MUSCLES[id].n : id).join(' · ');
+  $('prac-pos').textContent = PR.list.length > 1 ? `${PR.i + 1} / ${PR.list.length}` : '';
+  $('prac-body').innerHTML = `<svg class="fig" viewBox="0 0 120 100" role="img" aria-label="${esc(it.n)}">${fig}</svg>
+    <h2>${esc(it.n)}</h2>${mus ? `<p class="hint">${esc(mus)}</p>` : ''}
+    <p>${esc(it.d)}</p>
+    <h3>Paso a paso</h3><ol>${p.pasos.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+    ${p.sentir ? `<h3>Qué tenés que sentir</h3><p>${esc(p.sentir)}</p>` : ''}
+    ${p.errores.length ? `<h3>Errores típicos</h3><ul>${p.errores.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    <p class="hint">Sin apuro. Respirá lento. Duro está bien; dolor, no.</p>`;
+  $('prac-prev').disabled = PR.i === 0; $('prac-next').disabled = PR.i >= PR.list.length - 1;
+  $('prac-body').scrollTop = 0;
+}
+function pracClose() { $('prac').hidden = true; if ($('fs').hidden) document.body.classList.remove('locked'); }
+$('prac-close').addEventListener('click', pracClose);
+$('prac-prev').addEventListener('click', () => { if (PR.i > 0) { PR.i--; pracRender(); } });
+$('prac-next').addEventListener('click', () => { if (PR.i < PR.list.length - 1) { PR.i++; pracRender(); } });
+function renderPracHome() {
+  const box = $('prac-home'); if (!box) return;
+  const list = pracList();
+  box.innerHTML = `<h2>Practicar en casa</h2><p class="hint">Movilidad y elongación, sin timer, para aprender a hacerlas bien. Tocá una para verla paso a paso.</p>
+    <div class="prac-grid">${list.map(it => `<button type="button" class="prac-item" data-f="${esc(it.f)}"><svg class="fig" viewBox="0 0 120 100" aria-hidden="true">${FIG[it.f] || FIG.circulos}</svg><span>${esc(it.n)}</span></button>`).join('')}</div>`;
+  box.querySelectorAll('.prac-item').forEach(b => b.addEventListener('click', () => openPractice(list.find(x => x.f === b.dataset.f), list)));
+}
+renderPracHome();
 function stCard(item) {
   const el = document.createElement('div');
   el.className = 'st';
   el.innerHTML = `<svg class="fig" viewBox="0 0 120 100" role="img" aria-label="${esc(item.n)}">${FIG[item.f]}</svg>
     <div class="info"><h3>${esc(item.n)}</h3><p>${esc(item.d)}</p>
-    <div class="meta"><span class="dose">${esc(item.dose)}</span>${item.t ? '<button class="timer" type="button"></button>' : ''}</div></div>`;
+    <div class="meta"><span class="dose">${esc(item.dose)}</span>${item.t ? '<button class="timer" type="button"></button>' : ''}${PRAC[item.f] ? '<button class="linkbtn prac-open" type="button">Practicar</button>' : ''}</div></div>`;
+  const po = el.querySelector('.prac-open'); if (po) po.addEventListener('click', () => openPractice(item, [item]));
   const btn = el.querySelector('.timer');
   if (btn) {
     let side = 1; const sides = item.sides || 1;
@@ -1002,7 +1156,7 @@ function exCardHtml(e, items, big) {
   return `<article class="ex${skipped ? ' skipped' : ''}${big ? ' big' : ''}" data-ej="${esc(e.id)}">
     <div class="ex-head">${big ? `<button class="minibody" type="button" data-body="${esc(c.id || '')}" aria-label="Ver en el cuerpo">${bodyMini(e)}</button>` : ''}<h3>${esc(e.nombre)}${e.color !== S.color ? `<span class="pendtag" style="--c: var(--${esc(dia(e.color).color)})">pendiente · ${esc(dia(e.color).nombre)}</span>` : ''}</h3><span class="target">${esc(e.series)} × ${esc(e.reps)}</span></div>
     ${musclesLine(e)}
-    ${c.tecnica ? `<div class="tec">${esc(c.tecnica)}</div>` : ''}
+    ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
     ${e.asistida ? '<div class="assist">Carga = kg de asistencia. Menos es mejor.</div>' : isBody(e) ? '<div class="assist">Peso corporal: lo que progresa son las reps.</div>' : ''}
     ${skipped ? `<div class="ex-actions"><span class="skipnote"><span>Salteado hoy:</span><input type="text" data-f="skip" value="${esc(it.skip)}" placeholder="motivo"></span><button type="button" data-unskip="1">Deshacer</button></div>` : `
     <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, !!e.asistida)}</button></div>
@@ -1189,7 +1343,7 @@ function fsRestRender() {
     const carga = art ? num(art.querySelector('[data-f="carga"]').value) : null;
     const ids = muscleIds(c.primario); const m = ids.length ? MUSCLES[ids[Math.floor(Math.random() * ids.length)]] : null;
     $('fs-rest-info').innerHTML = `<div class="fs-next-set">${done >= total ? 'Series completas. Al terminar el descanso, Siguiente.' : `Próxima: serie ${done + 1} de ${total} · meta ${esc(e.reps)} reps${carga != null ? ' · ' + fmt(carga + (e.barra || 0)) + ' kg' : ''}`}</div>
-      ${c.tecnica ? `<div class="tec">${esc(c.tecnica)}</div>` : ''}
+      ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
       ${m ? `<div class="fs-fact"><b>${esc(m.n)}</b>: ${esc(m.por)}</div>` : ''}`;
   }
 }
@@ -1729,7 +1883,7 @@ function bodyShowExercise(catId) {
   const stretches = Object.values(ST).filter(s => s.m.some(m => prim.includes(m)));
   $('mus-info').innerHTML = `<h2>${esc(c.nombre)}</h2>
     <div class="muscles"><b>${esc((c.primario || []).join(', '))}</b>${(c.secundario || []).length ? ' · ' + esc(c.secundario.join(', ')) : ''}${c.tipo ? ' · ' + c.tipo : ''}</div>
-    ${c.tecnica ? `<div class="tec">${esc(c.tecnica)}</div>` : ''}
+    ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
     ${stretches.length ? `<h2 style="font-size:1rem">Elongación para después</h2><div class="mlist">${stretchRows(stretches)}</div>` : ''}`;
 }
 function bodySelect(id) {
@@ -1739,7 +1893,7 @@ function bodySelect(id) {
   bodyPaint([id], [], id);
   const stretches = Object.values(ST).filter(s => s.m.includes(id));
   const inRt = new Set(S.ej.map(e => e.cat || e.id));
-  const row = (c, tag) => `<div class="item"><span class="d">${inRt.has(c.id) ? '●' : ''}</span><span class="v"><b>${esc(c.nombre)}</b><small>${esc(c.grupo || '')}${c.tipo ? ' · ' + c.tipo : ''}${tag ? ' · ' + tag : ''}</small></span><button type="button" data-show="${esc(c.id)}">ver</button></div>`;
+  const row = (c, tag) => `<div class="item"><span class="d">${inRt.has(c.id) ? '●' : ''}</span><span class="v"><b>${esc(c.nombre)}</b><small>${esc(c.grupo || '')}${c.tipo ? ' · ' + c.tipo : ''}${tag ? ' · ' + tag : ''}</small></span><button type="button" data-prac-ej="${esc(c.id)}">practicar</button><button type="button" data-show="${esc(c.id)}">ver</button></div>`;
   $('mus-info').innerHTML = `<h2>${esc(m.n)}</h2><p class="por">${esc(m.por)}</p>
     <h2 style="font-size:1rem">Ejercicios del catálogo</h2>
     <p class="hint">● = está en tu rutina.</p>
@@ -2082,10 +2236,11 @@ showTab(startTab);
   snap('medidas', 'medidas', renderMedidas);
 })();
 
+
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.10.31-1646';
+const APP_VERSION = '2026.10.31-1711';
 let updateTo = null;
-function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden; }
+function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
   if (!updateTo) return;
   if (!safeToReload()) { setTimeout(tryReload, 3000); return; }
