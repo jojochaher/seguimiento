@@ -1051,7 +1051,7 @@ function setsDesc(it, n, e) {
 }
 function setsText(sets) { const a = (sets || []).filter(v => v != null); return a.length ? a.join('/') : ''; }
 function hitTarget(sets, e) { const a = (sets || []).filter(v => v != null); return a.length >= Number(e.series) && a.every(v => v >= Number(e.reps)); }
-function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Number(e.paso); if (e.asistida) return -5; if (e.barra) return 2.5; if (/barra/i.test(e.nombre)) return 5; if (/mancuerna|curl|vuelo|extensi|franc|apertura/i.test(e.nombre)) return 2; return 5; }
+function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Number(e.paso); if (e.asistida) return -5; if (e.barra) return 2.5; if (/barra|polea|máquina|maquina/i.test(e.nombre)) return 5; if (/mancuerna|curl|vuelo|extensi|franc|apertura/i.test(e.nombre)) return 2; return 5; }
 function lastDone(ejId) {
   return S.ses.filter(s => s.fecha < S.fecha && s.items && s.items[ejId] && s.items[ejId].skip == null && (s.items[ejId].carga != null || s.items[ejId].reps || (s.items[ejId].sets || []).some(v => v != null))).sort((a, b) => a.fecha < b.fecha ? -1 : 1).pop();
 }
