@@ -144,6 +144,10 @@ label { min-width: 0; }
 .serie-grid input { padding: 9px 4px; text-align: center; min-width: 0; }
 .serie-grid .sg-l { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .serie-grid .sg-n { text-align: center; font-size: .7rem; color: var(--muted); }
+.esf { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.esf .sg-l { width: 100%; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.esf button { flex: 1; white-space: nowrap; padding: 7px 6px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
+.esf button[aria-pressed="true"] { border-color: var(--day); background: var(--day); color: #fff; font-weight: 700; }
 .sg-hint { margin: -2px 0 0; font-size: .72rem; }
 .fs-card .ex.big .serie-grid input { padding: 12px 4px; font-size: 18px; }
 .sets input { padding: 9px 4px; text-align: center; }
@@ -1051,45 +1055,50 @@ function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Numb
 function lastDone(ejId) {
   return S.ses.filter(s => s.fecha < S.fecha && s.items && s.items[ejId] && s.items[ejId].skip == null && (s.items[ejId].carga != null || s.items[ejId].reps || (s.items[ejId].sets || []).some(v => v != null))).sort((a, b) => a.fecha < b.fecha ? -1 : 1).pop();
 }
+/* progresión por esfuerzo: la meta sale de la fuerza estimada (Epley) de la última sesión,
+   ajustada por cuánto costó (fácil +5 %, justo +2,5 %, al límite = igualar). El mínimo es igualar. */
+const ESF = { facil: { n: 'Fácil', f: 1.05 }, justo: { n: 'Justo', f: 1.025 }, limite: { n: 'Al límite', f: 1.0 } };
+function bodyKg() { return (S.peso.slice().sort((x, y) => x.fecha < y.fecha ? -1 : 1).pop() || {}).kg || 70; }
+function repsFor(T, load) { return 30 * (T / load - 1); }
+function plan(e) {
+  const l = lastDone(e.id); if (!l) return null;
+  const it = l.items[e.id], n = Number(e.series) || 3, f = (ESF[it.esf] || ESF.justo).f;
+  const sets = parseSets(it, n), done = sets.map((r, k) => ({ r, k })).filter(x => x.r != null);
+  if (!done.length) return null;
+  if (isBody(e) && !(it.carga > 0)) {
+    const tot = done.reduce((a, x) => a + x.r, 0), avg = tot / done.length;
+    const rmin = Math.round(avg), r = Math.max(rmin + (f > 1 ? 1 : 0), Math.round(avg * (f > 1 ? 1 + (f - 1) * 2 : 1)));
+    return { body: true, r, rmin, it, l };
+  }
+  if (it.carga == null) return null;
+  const kgs = setKgs(it, sets.length), b = e.barra || 0, bw = bodyKg();
+  const load = v => e.asistida ? Math.max(1, bw - v) : isBody(e) ? bw + v : v + b;
+  const work = done.filter(x => (kgs[x.k] ?? it.carga) === it.carga);
+  const use = work.length ? work : done;
+  const L = use.reduce((a, x) => a + load(kgs[x.k] ?? it.carga) * (1 + x.r / 30), 0) / use.length;
+  const T = L * f, step = Math.abs(increment(e)) || 5;
+  const lo = 6, hi = Math.max(12, Number(e.reps) + 2);
+  const heavier = v => e.asistida ? Math.max(0, v - step) : v + step, lighter = v => e.asistida ? v + step : Math.max(0, v - step);
+  let W = it.carga, guard = 0;
+  while (Math.round(repsFor(T, load(W))) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W) break; W = nw; }
+  while (Math.round(repsFor(T, load(W))) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
+  const rmin = Math.max(1, Math.round(repsFor(L, load(W))));
+  let r = Math.max(1, Math.round(repsFor(T, load(W)))); if (f > 1 && r <= rmin) r = rmin + 1;
+  return { W, r, rmin, it, l, b };
+}
 function suggestion(e) {
-  const l = lastDone(e.id);
-  if (isBody(e)) {
-    if (!l) return { cls: 'first', html: `Peso corporal: anotá las reps de cada serie. Meta ${esc(e.series)}×${esc(e.reps)}.` };
-    const it = l.items[e.id], sets = parseSets(it, Number(e.series)), st = setsText(sets);
-    const extra = it.carga ? ` con ${fmt(it.carga)} kg extra` : '';
-    if (sets.length && hitTarget(sets, e)) {
-      const tgt = Math.max(Number(e.reps), Math.min(...sets.filter(v => v != null))) + 2;
-      return { cls: 'ok', html: `Última (${dmy(l.fecha)}): <b>${esc(st)}</b>${extra} ✓ Completaste todo. Hoy buscá <b>${esc(e.series)}×${tgt}</b>${it.carga ? '' : ', o sumá 2,5 kg de lastre'}.` };
-    }
-    return { cls: '', html: `Última (${dmy(l.fecha)}): <b>${esc(st || it.reps || 'sin reps')}</b>${extra}. Hoy buscá ${esc(e.series)}×${esc(e.reps)}.` };
-  }
-  if (!l) return { cls: 'first', html: `Primera vez: elegí un peso con el que la última serie te cueste llegar a ${esc(e.reps)}.` };
-  const it = l.items[e.id], sets = workSets(it, Number(e.series));
-  const b = e.barra || 0, kg = it.carga != null ? it.carga + b : null;
-  const st = setsText(sets), mixed = setsDesc(it, Number(e.series), e);
-  const kgTxt = v => e.asistida ? (v ? `<b>${fmt(v)} kg</b> de asistencia` : '<b>sin asistencia</b>') : `<b>${fmt(v)} kg</b>`;
-  const did = mixed ? `<b>${esc(mixed)}</b>` : (kg != null ? kgTxt(kg) : 'sin carga') + (st ? ` · ${esc(st)}` : it.reps ? ` · ${esc(it.reps)}` : '');
-  if (it.carga == null) return { cls: '', html: `Última (${dmy(l.fecha)}): ${did}. Hoy anotá la carga para poder sugerirte.` };
-  if (sets.length && hitTarget(sets, e)) {
-    const nk = it.carga + increment(e);
-    if (e.asistida && it.carga <= 0) return { cls: 'ok', html: `Última (${dmy(l.fecha)}): ${did} ✓ Completaste todo sin asistencia. Hoy sumá reps o lastre.` };
-    return { cls: 'ok', html: `Última (${dmy(l.fecha)}): ${did} ✓ Completaste todo. Hoy probá ${kgTxt(Math.max(0, nk) + b)}, ${esc(e.series)}×${esc(e.reps)}.` };
-  }
-  /* muy lejos de la meta: ajustar la carga con Epley (promedio de las series) en vez de repetir */
-  const done = sets.filter(v => v != null), tr = Number(e.reps);
-  if (done.length && done.reduce((x, y) => x + y, 0) / done.length < tr * 0.7) {
-    const avg = done.reduce((x, y) => x + y, 0) / done.length, f = (1 + avg / 30) / (1 + tr / 30);
-    const step = Math.abs(increment(e));
-    if (e.asistida) {
-      const bw = (S.peso.slice().sort((x, y) => x.fecha < y.fecha ? -1 : 1).pop() || {}).kg || 70;
-      const need = bw - (bw - kg) * f, as = Math.max(kg + step, Math.ceil(need / step) * step);
-      return { cls: '', html: `Última (${dmy(l.fecha)}): ${did}. Muy lejos de ${esc(e.series)}×${esc(e.reps)}: repetir no alcanza. Hoy probá ${kgTxt(as)} y buscá las ${esc(e.reps)} reps; después la vas bajando de a ${step}.` };
-    }
-    const nk = Math.max(0, Math.floor((kg * f - b) / step) * step);
-    return { cls: '', html: `Última (${dmy(l.fecha)}): ${did}. Muy lejos de ${esc(e.series)}×${esc(e.reps)}: el peso quedó alto. Hoy bajá a ${kgTxt(nk + b)} y buscá las ${esc(e.reps)} reps.` };
-  }
-  const missing = sets.length ? ` Te faltó llegar en ${Math.max(0, Number(e.series) - sets.filter(v => v != null && v >= Number(e.reps)).length)} serie(s).` : '';
-  return { cls: '', html: `Última (${dmy(l.fecha)}): ${did}.${missing} Hoy repetí ${kgTxt(kg)} y buscá ${esc(e.series)}×${esc(e.reps)}.` };
+  const l = lastDone(e.id), n = Number(e.series) || 3;
+  if (!l) return { cls: 'first', html: isBody(e) ? `Peso corporal: anotá las reps de cada serie. Meta ${esc(e.series)}×${esc(e.reps)}.` : `Primera vez: elegí un peso con el que la última serie te cueste llegar a ${esc(e.reps)}.` };
+  const it = l.items[e.id], p = plan(e);
+  const kgTxt = v => e.asistida ? (v ? `${fmt(v)} kg de asistencia` : 'sin asistencia') : `${fmt(v)} kg`;
+  const sets = parseSets(it, n), st = setsText(sets), mixed = setsDesc(it, n, e);
+  const esf = it.esf && ESF[it.esf] ? ` · ${ESF[it.esf].n.toLowerCase()}` : '';
+  const did = mixed ? esc(mixed) : isBody(e) && !(it.carga > 0) ? esc(st || it.reps || 'sin reps') : (it.carga != null ? kgTxt(it.carga + (e.barra || 0)) : 'sin carga') + (st ? ` × ${esc(st)}` : '');
+  const head = `Última (${dmy(l.fecha)}): ${did}${esf}.`;
+  if (!p) return { cls: '', html: `${head} Hoy anotá kg y reps para poder sugerirte.` };
+  if (p.body) return { cls: '', html: `${head}<br>Meta hoy: <b>${p.r} reps por serie</b> · mínimo ${p.rmin}.` };
+  const w = kgTxt(p.W + (e.barra || 0)), changed = p.W !== it.carga;
+  return { cls: changed ? 'ok' : '', html: `${head}<br>Meta hoy: <b>${w} × ${p.r}</b> por serie · mínimo ${p.rmin}.${changed ? (e.asistida ? ' Cambia la asistencia.' : p.W > it.carga ? ' Subís de peso.' : ' Bajás un poco el peso.') : ''}` };
 }
 /* métrica de progreso: 'e1rm' (Epley con la mejor serie), 'carga' o 'volumen' */
 let PG_METRIC = 'e1rm';
@@ -1177,7 +1186,7 @@ function exCardHtml(e, items, big) {
   const sets = parseSets(it, Number(e.series));
   const n = Math.max(1, Number(e.series) || 3);
   const skipped = it.skip != null;
-  const sug = suggestion(e);
+  const sug = suggestion(e), pl = skipped ? null : plan(e);
   const pts = seriesFor(e.id, e);
   return `<article class="ex${skipped ? ' skipped' : ''}${big ? ' big' : ''}" data-ej="${esc(e.id)}">
     <div class="ex-head">${big ? `<button class="minibody" type="button" data-body="${esc(c.id || '')}" aria-label="Ver en el cuerpo">${bodyMini(e)}</button>` : ''}<h3>${esc(e.nombre)}${e.color !== S.color ? `<span class="pendtag" style="--c: var(--${esc(dia(e.color).color)})">pendiente · ${esc(dia(e.color).nombre)}</span>` : ''}</h3><span class="target">${esc(e.series)} × ${esc(e.reps)}</span></div>
@@ -1187,10 +1196,11 @@ function exCardHtml(e, items, big) {
     ${skipped ? `<div class="ex-actions"><span class="skipnote"><span>Salteado hoy:</span><input type="text" data-f="skip" value="${esc(it.skip)}" placeholder="motivo"></span><button type="button" data-unskip="1">Deshacer</button></div>` : `
     <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, !!e.asistida)}</button></div>
     <div class="ex-inputs">
-      <div class="full serie-grid" style="--n:${n}"><span class="sg-l">${e.barra ? 'Kg discos' : isBody(e) ? 'Kg extra' : 'Kg'}</span>${(() => { const kg = setKgs(it, n); let prev = null; return Array.from({ length: n }, (_, k) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (isBody(e) ? '0' : ''); if (v != null) prev = v; return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; }).join(''); })()}
-        <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(e.reps)}" value="${sets[k] ?? ''}">`).join('')}
+      <div class="full serie-grid" style="--n:${n}"><span class="sg-l">${e.barra ? 'Kg discos' : isBody(e) ? 'Kg extra' : 'Kg'}</span>${(() => { const kg = setKgs(it, n); let prev = null; return Array.from({ length: n }, (_, k) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (pl && pl.W != null ? fmt(pl.W) : isBody(e) ? '0' : ''); if (v != null) prev = v; return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; }).join(''); })()}
+        <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : e.reps)}" value="${sets[k] ?? ''}">`).join('')}
         <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>
       <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior.</p>
+      <div class="full esf"><span class="sg-l">¿Cómo te costó?</span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
       <label class="full">Nota<input type="text" data-f="nota" placeholder="Opcional" value="${esc(it.nota ?? '')}"></label>
     </div>
     ${totalLine(e, it.carga ?? null)}
@@ -1212,6 +1222,7 @@ function wireCards(root, ejs) {
     }
     if (S.focus) fsUpdateNext();
   }));
+  root.querySelectorAll('button[data-esf]').forEach(b => b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') === 'true'; b.closest('.esf').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false')); if (!on) b.setAttribute('aria-pressed', 'true'); scheduleSave(); }));
   root.querySelectorAll('button[data-rest]').forEach(b => b.addEventListener('click', () => { if (rest && rest.ej === b.dataset.ej) restStop(); else restStart(Number(b.dataset.rest), b.dataset.ej); }));
   root.querySelectorAll('button[data-pg]').forEach(b => b.addEventListener('click', () => { if (S.focus) fsClose(); openProgreso(b.dataset.pg); }));
   root.querySelectorAll('button[data-body]').forEach(b => b.addEventListener('click', () => { if (!b.dataset.body) return; if (S.focus) fsClose(); showTab('cuerpo'); $('body-pick').value = b.dataset.body; bodyShowExercise(b.dataset.body); window.scrollTo({ top: 0 }); }));
@@ -1393,7 +1404,8 @@ function collect() {
     const sets = [...ex.querySelectorAll('[data-f="set"]')].map(i => num(i.value));
     const nota = ex.querySelector('[data-f="nota"]').value.trim();
     const any = sets.some(v => v != null);
-    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; }
+    const esfB = ex.querySelector('button[data-esf][aria-pressed="true"]');
+    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; if (esfB) items[id].esf = esfB.dataset.esf; }
   });
   Object.keys(prev).forEach(id => { if (!items[id] && !seen.has(id)) items[id] = prev[id]; });
   return items;
@@ -2268,7 +2280,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.10.31-1922';
+const APP_VERSION = '2026.10.31-1939';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
