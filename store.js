@@ -45,8 +45,8 @@
       return {
         doc(id) {
           return {
-            set: async (data) => { await tx('docs', 'readwrite', s => s.put({ key: col + '/' + id, col, id, data: JSON.parse(JSON.stringify(data)) })); emit(col); },
-            delete: async () => { await tx('docs', 'readwrite', s => s.delete(col + '/' + id)); emit(col); }
+            set: async (data) => { await tx('docs', 'readwrite', s => s.put({ key: col + '/' + id, col, id, data: JSON.parse(JSON.stringify(data)) })); emit(col); markDirty(); },
+            delete: async () => { await tx('docs', 'readwrite', s => s.delete(col + '/' + id)); emit(col); markDirty(); }
           };
         },
         onSnapshot(cb) { (listeners[col] = listeners[col] || []).push(cb); emit(col); return () => { listeners[col] = listeners[col].filter(f => f !== cb); }; }
@@ -94,6 +94,40 @@
     for (const col of new Set(obj.docs.map(r => r.col))) emit(col);
   }
 
+  /* sync: copia de los datos (sin fotos) a un repo privado de GitHub, para que Claude pueda leerla */
+  const SK = 'seg-sync';
+  const syncCfg = () => { try { return JSON.parse(localStorage.getItem(SK) || 'null'); } catch (e) { return null; } };
+  const syncSave = c => { try { localStorage.setItem(SK, JSON.stringify(c)); } catch (e) {} };
+  function markDirty() { const c = syncCfg(); if (c && c.token) { c.dirty = true; syncSave(c); } }
+  const b64utf8 = str => { const bytes = new TextEncoder().encode(str); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); };
+  let pushing = null;
+  async function syncPush(force) {
+    const c = syncCfg(); if (!c || !c.token || !c.repo) return { ok: false, msg: 'Sin configurar' };
+    if (!force && !c.dirty) return { ok: true, msg: 'Sin cambios' };
+    if (pushing) return pushing;
+    pushing = (async () => {
+      try {
+        const d = await open();
+        const docs = await new Promise(res => { const r = d.transaction('docs').objectStore('docs').getAll(); r.onsuccess = () => res(r.result); });
+        const out = { v: 1, exportado: new Date().toISOString(), datos: {} };
+        for (const r of docs) { (out.datos[r.col] = out.datos[r.col] || {})[r.id] = r.data; }
+        const url = `https://api.github.com/repos/${c.repo}/contents/datos.json`;
+        const H = { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github+json' };
+        let sha;
+        const g = await fetch(url + '?ref=main', { headers: H, cache: 'no-store' });
+        if (g.ok) sha = (await g.json()).sha; else if (g.status !== 404) throw new Error('GitHub ' + g.status);
+        const p = await fetch(url, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, H), body: JSON.stringify({ message: 'datos ' + out.exportado.slice(0, 16), content: b64utf8(JSON.stringify(out, null, 1)), sha, branch: 'main' }) });
+        if (!p.ok) throw new Error('GitHub ' + p.status);
+        const n = syncCfg() || c; n.dirty = false; n.last = Date.now(); n.err = ''; syncSave(n);
+        return { ok: true, msg: 'Sincronizado' };
+      } catch (e) { const n = syncCfg() || c; n.err = String(e.message || e); syncSave(n); return { ok: false, msg: n.err }; }
+      finally { pushing = null; }
+    })();
+    return pushing;
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') setTimeout(() => syncPush(), 1500); });
+  setInterval(() => syncPush(), 5 * 60000);
+
   const ready = (async () => { await seedIfEmpty(); await loadAssets(); })();
-  window.claude = { use: async (name) => { await ready; return name === 'db' ? db : name === 'assets' ? assets : null; }, local: true, exportAll, importAll };
+  window.claude = { use: async (name) => { await ready; return name === 'db' ? db : name === 'assets' ? assets : null; }, local: true, exportAll, importAll, syncCfg, syncSave, syncPush };
 })();

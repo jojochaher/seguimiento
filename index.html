@@ -495,6 +495,10 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
       <summary>Respaldo de tus datos</summary>
       <p class="hint">Los datos viven en este teléfono. Exportá un respaldo cada tanto (se guarda como archivo) y podés importarlo en otro dispositivo.</p>
       <div class="row"><button class="btn ghost small" type="button" id="bk-export">Exportar respaldo</button><label class="btn ghost small">Importar respaldo<input type="file" accept="application/json,.json" id="bk-import" hidden></label><span class="status" id="bk-status"></span></div>
+      <h3 style="margin-top:14px">Compartir con Claude</h3>
+      <p class="hint">Sube una copia de tus datos (sin fotos) a tu repo privado <b>jojochaher/seguimiento-datos</b> cada vez que salís de la app. Claude la lee desde ahí. Pegá el token de GitHub una sola vez.</p>
+      <label>Token de GitHub<input type="password" id="sync-token" autocomplete="off" placeholder="github_pat_…"></label>
+      <div class="row"><button class="btn ghost small" type="button" id="sync-save">Guardar y sincronizar</button><button class="btn ghost small" type="button" id="sync-off">Desconectar</button><span class="status" id="sync-status"></span></div>
     </details>
   </section>
 </div>
@@ -2085,6 +2089,16 @@ if (window.claude && window.claude.local) {
     try { setStatus('bk-status', 'Importando…'); await window.claude.importAll(JSON.parse(await f.text())); setStatus('bk-status', 'Importado ✓', 'ok'); }
     catch (e) { setStatus('bk-status', 'Archivo inválido', 'err'); }
   });
+  const syncShow = () => { const c = window.claude.syncCfg(); $('sync-token').value = ''; $('sync-token').placeholder = c && c.token ? 'Token guardado ✓' : 'github_pat_…';
+    setStatus('sync-status', !c || !c.token ? 'Sin conectar' : c.err ? 'Error: ' + c.err : c.last ? 'Última: ' + new Date(c.last).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Conectado', c && c.err ? 'err' : 'ok'); };
+  syncShow();
+  $('sync-save').addEventListener('click', async () => {
+    const t = $('sync-token').value.trim(), c = window.claude.syncCfg() || {};
+    if (t) c.token = t; if (!c.token) { setStatus('sync-status', 'Pegá el token', 'err'); return; }
+    c.repo = 'jojochaher/seguimiento-datos'; window.claude.syncSave(c);
+    setStatus('sync-status', 'Sincronizando…'); await window.claude.syncPush(true); syncShow();
+  });
+  $('sync-off').addEventListener('click', () => { try { localStorage.removeItem('seg-sync'); } catch (e) {} syncShow(); });
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 } else { const r = $('respaldo'); if (r) r.hidden = true; }
 </script>
