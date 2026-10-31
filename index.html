@@ -763,6 +763,7 @@ $('rest-plus').addEventListener('click', () => { if (rest) { rest.end += 15000; 
 /* ---------- movilidad y elongación ---------- */
 const G = '<line class="g" x1="4" y1="92" x2="116" y2="92"/>';
 const FIG = {
+  menton: `${G}<line class="p" x1="40" y1="4" x2="40" y2="92"/><circle class="h" cx="54" cy="18" r="7"/><path class="b" d="M50 26V60M50 60L44 90M50 60L56 90M50 34L60 52M50 34L42 52"/><path class="a" d="M76 18H64M68 13L63 18L68 23"/>`,
   circulos: `${G}<circle class="h" cx="60" cy="16" r="7"/><path class="b" d="M60 24V58M60 58L52 90M60 58L68 90M60 32H24M60 32H96"/><circle class="a" cx="20" cy="32" r="9"/><circle class="a" cx="100" cy="32" r="9"/>`,
   palo: `${G}<line class="p" x1="12" y1="8" x2="108" y2="8"/><circle class="h" cx="60" cy="20" r="7"/><path class="b" d="M60 28V60M60 60L52 90M60 60L68 90M56 32L24 8M64 32L96 8"/><path class="a" d="M14 22 Q60 54 106 22"/>`,
   sentadilla: `${G}<circle class="h" cx="64" cy="30" r="7"/><path class="b" d="M46 64L60 38M46 64L70 68L62 90M48 66L72 72L68 90M58 44H88"/>`,
@@ -787,6 +788,7 @@ const MOV_SUP = [
   { f: 'palo', n: 'Pasadas con palo', d: 'Agarrá un palo de escoba bien ancho y pasalo de adelante hacia atrás por encima de la cabeza, con los brazos estirados. Si no pasa, abrí más las manos.', dose: '10 lentas', t: 0 }
 ];
 const ST = {
+  menton: { f: 'menton', n: 'Retracción de mentón (postura)', d: 'Espalda y cabeza contra la pared. Llevá el mentón hacia atrás, como haciendo papada, sin bajar la mirada. Sentís estirar la nuca. Sostené 3 s y soltá.', dose: '10 veces, 3 s cada una', t: 0, m: ['cuello', 'trapecio'] },
   pechoMarco: { f: 'pechoMarco', n: 'Pecho en el marco de la puerta', d: 'Antebrazo apoyado en el marco, codo a la altura del hombro. Girá el cuerpo hacia el otro lado hasta sentir el pecho.', dose: '30 s por lado', t: 30, sides: 2, m: ['pectoral', 'deltoides'] },
   hombroCruzado: { f: 'hombroCruzado', n: 'Hombro cruzado', d: 'Llevá un brazo estirado cruzando el pecho y apretalo con el otro a la altura del codo.', dose: '30 s por lado', t: 30, sides: 2, m: ['deltoides', 'deltoides-post'] },
   triceps: { f: 'triceps', n: 'Tríceps detrás de la cabeza', d: 'Codo para arriba, mano hacia la espalda. Con la otra mano empujá el codo suave hacia atrás.', dose: '30 s por lado', t: 30, sides: 2, m: ['triceps', 'dorsal'] },
@@ -809,6 +811,8 @@ const STRETCH = {
     { f: 'balanceo', n: 'Balanceo de piernas', d: 'Apoyado en una pared, balanceá una pierna adelante y atrás, sin forzar la altura.', dose: '10 por pierna', t: 0 } ], despues: [ST.cuadriceps, ST.isquios, ST.mariposa, ST.gemelos, ST.cobra] },
   azul: { label: 'bíceps, tríceps y antebrazos', antes: MOV_SUP, despues: [ST.bicepsPared, ST.triceps, ST.antebrazo] }
 };
+/* postura: retracción de mentón y pecho en el marco al final de todos los días */
+Object.values(STRETCH).forEach(d => { const ids = d.despues.map(x => x.f); if (!ids.includes('pechoMarco')) d.despues.push(ST.pechoMarco); d.despues.push(ST.menton); });
 let activeTimer = null;
 function stopTimer() { if (activeTimer) { clearInterval(activeTimer.iv); activeTimer.btn.classList.remove('running'); activeTimer.btn.textContent = activeTimer.reset(); activeTimer = null; } }
 function stCard(item) {
@@ -2079,7 +2083,7 @@ showTab(startTab);
 })();
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.10.31-0431';
+const APP_VERSION = '2026.10.31-1646';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden; }
 function tryReload() {
