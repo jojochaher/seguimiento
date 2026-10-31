@@ -761,7 +761,7 @@ $('clock-btn').addEventListener('click', async () => {
   }
   if (!(cur && cur.inicio && !cur.fin)) { const r = runningSession(); if (r) { gotoSession(r); return; } }
   const body = sessionBody(cur ? (cur.items || {}) : collect());
-  if (cur && cur.inicio && !cur.fin) { body.inicio = cur.inicio; body.fin = Date.now() - cur.inicio > 3 * 3600000 ? cur.inicio : Date.now(); }
+  if (cur && cur.inicio && !cur.fin) { body.inicio = cur.inicio; body.fin = Date.now() - cur.inicio > 3 * 3600000 ? (cur.ult && cur.ult > cur.inicio ? cur.ult : cur.inicio) : Date.now(); }
   else { body.inicio = Date.now(); body.fin = null; }
   try { await S.db.collection('sesiones').doc(sessionId()).set(body); } catch (e) { err(e, 'ses-status'); }
 });
@@ -1294,6 +1294,15 @@ function fsUpdateNext() {
   $('fs-prev').disabled = S.focusIdx === 0;
 }
 function saveResume() { try { localStorage.setItem('seg-resume', JSON.stringify({ id: sessionId(), focus: !!S.focus, idx: S.focusIdx || 0 })); } catch (e) {} }
+function autoClose() {
+  if (!S.db) return;
+  S.ses.forEach(s => {
+    if (s.inicio && !s.fin && s.ult && Date.now() - s.ult > 60 * 60000) { const b = Object.assign({}, s); delete b.id; b.fin = s.ult; S.db.collection('sesiones').doc(s.id).set(b).catch(() => {}); }
+    /* arreglo puntual: el 31/10 quedó con duración 0 (se cerró a las 3 h); José dijo que duró ~1 h 30 */
+    if (s.id === '2026-10-31-azul' && s.inicio && s.fin === s.inicio) { const b = Object.assign({}, s); delete b.id; b.fin = s.inicio + 90 * 60000; S.db.collection('sesiones').doc(s.id).set(b).catch(() => {}); }
+  });
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') autoClose(); });
 function resumeRunning() {
   const r = S.ses.find(s => s.inicio && !s.fin && Date.now() - s.inicio < 3 * 3600000);
   if (!r) return false;
@@ -1341,8 +1350,9 @@ function fsGo(delta) {
   S.focusIdx = j; fsRender(delta);
 }
 async function fsFinish() {
+  flushSave();
   const cur = currentSession();
-  if (cur && cur.inicio && !cur.fin) await $('clock-btn').click();
+  if (cur && cur.inicio && !cur.fin) { const body = sessionBody(collect()); body.inicio = cur.inicio; body.fin = Date.now(); delete body.ult; try { await S.db.collection('sesiones').doc(sessionId()).set(body); } catch (e) { err(e, 'ses-status'); } }
   fsClose();
   showTab('progreso'); $('ses-hist-box').open = true;
 }
@@ -1414,7 +1424,7 @@ function collect() {
 function sessionBody(items) {
   const cur = currentSession();
   const body = { fecha: S.fecha, color: S.color, items };
-  if (cur && cur.inicio) { body.inicio = cur.inicio; body.fin = cur.fin ?? null; }
+  if (cur && cur.inicio) { body.inicio = cur.inicio; body.fin = cur.fin ?? null; if (!body.fin) body.ult = Date.now(); else if (cur.ult) body.ult = cur.ult; }
   if (cur && cur.cola && cur.cola.length) body.cola = cur.cola;
   const pend = pendingIds(); if (pend.length) body.pend = pend;
   return body;
@@ -1454,18 +1464,20 @@ function renderHist() {
   $('ses-hist').querySelectorAll('.swipe').forEach(wrap => {
     const item = wrap.querySelector('.item');
     const open = () => { const s = S.ses.find(x => x.id === wrap.dataset.id); if (!s) return; flushSave(); S.fecha = s.fecha; S.color = s.color; S.focusIdx = 0; $('ses-fecha').value = s.fecha; applyDay(); renderColors(); buildForm(); showTab('entreno'); };
-    let x0 = null, y0 = null, dx = 0, drag = false, wasOpen = false;
-    item.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; drag = false; wasOpen = wrap.classList.contains('open'); item.style.transition = 'none'; }, { passive: true });
+    let x0 = null, y0 = null, dx = 0, drag = false, wasOpen = false, moved = false;
+    item.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; drag = false; moved = false; wasOpen = wrap.classList.contains('open'); item.style.transition = 'none'; }, { passive: true });
     item.addEventListener('touchmove', e => {
       if (x0 == null) return;
       dx = e.touches[0].clientX - x0; const dy = e.touches[0].clientY - y0;
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) moved = true;
       if (!drag && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) drag = true;
       if (drag) { const base = wasOpen ? -88 : 0; item.style.transform = `translateX(${Math.max(-88, Math.min(0, base + dx))}px)`; }
     }, { passive: true });
+    item.addEventListener('touchcancel', () => { x0 = null; drag = false; item.style.transition = ''; item.style.transform = ''; });
     item.addEventListener('touchend', () => {
       item.style.transition = '';
       if (drag) { const openIt = wasOpen ? dx < 40 : dx < -40; wrap.classList.toggle('open', openIt); item.style.transform = ''; }
-      else if (x0 != null) { if (wrap.classList.contains('open')) wrap.classList.remove('open'); else open(); }
+      else if (x0 != null && !moved) { if (wrap.classList.contains('open')) wrap.classList.remove('open'); else open(); }
       x0 = null; drag = false;
     });
     item.addEventListener('click', e => { if (!('ontouchstart' in window)) open(); });
@@ -2272,6 +2284,7 @@ showTab(startTab);
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
+    if (first) autoClose();
     if (first && !colorPicked) { colorPicked = true; if (!resumeRunning()) { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso();
     if (!formBusy()) buildForm(); else renderClock();
@@ -2283,7 +2296,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.10.31-2111';
+const APP_VERSION = '2026.10.31-2323';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
