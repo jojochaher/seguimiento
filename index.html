@@ -784,6 +784,7 @@ $('rest-plus').addEventListener('click', () => { if (rest) { rest.end += 15000; 
 /* ---------- movilidad y elongación ---------- */
 const G = '<line class="g" x1="4" y1="92" x2="116" y2="92"/>';
 const FIG = {
+  abrazos: `${G}<circle class="h" cx="60" cy="16" r="7"/><path class="b" d="M60 24V58M60 58L52 90M60 58L68 90M60 32L28 30M60 32L92 30"/><path class="a" d="M24 40 Q40 56 56 44M96 40 Q80 56 64 44"/>`,
   menton: `${G}<line class="p" x1="40" y1="4" x2="40" y2="92"/><circle class="h" cx="54" cy="18" r="7"/><path class="b" d="M50 26V60M50 60L44 90M50 60L56 90M50 34L60 52M50 34L42 52"/><path class="a" d="M76 18H64M68 13L63 18L68 23"/>`,
   circulos: `${G}<circle class="h" cx="60" cy="16" r="7"/><path class="b" d="M60 24V58M60 58L52 90M60 58L68 90M60 32H24M60 32H96"/><circle class="a" cx="20" cy="32" r="9"/><circle class="a" cx="100" cy="32" r="9"/>`,
   palo: `${G}<line class="p" x1="12" y1="8" x2="108" y2="8"/><circle class="h" cx="60" cy="20" r="7"/><path class="b" d="M60 28V60M60 60L52 90M60 60L68 90M56 32L24 8M64 32L96 8"/><path class="a" d="M14 22 Q60 54 106 22"/>`,
@@ -806,7 +807,7 @@ const FIG = {
 };
 const MOV_SUP = [
   { f: 'circulos', n: 'Círculos de brazos', d: 'Brazos estirados a los costados. Círculos chicos que se van agrandando, para adelante y para atrás.', dose: '10 + 10', t: 0 },
-  { f: 'palo', n: 'Pasadas con palo', d: 'Agarrá un palo de escoba bien ancho y pasalo de adelante hacia atrás por encima de la cabeza, con los brazos estirados. Si no pasa, abrí más las manos.', dose: '10 lentas', t: 0 }
+  { f: 'abrazos', n: 'Abrazos y aperturas', d: 'Parado, brazos estirados a los costados a la altura de los hombros. Cruzalos adelante como dándote un abrazo y después abrilos bien atrás, sacando pecho. Suelto, como un balanceo.', dose: '15 balanceos', t: 0 }
 ];
 const ST = {
   menton: { f: 'menton', n: 'Retracción de mentón (postura)', d: 'Espalda y cabeza contra la pared. Llevá el mentón hacia atrás, como haciendo papada, sin bajar la mirada. Sentís estirar la nuca. Sostené 3 s y soltá.', dose: '10 veces, 3 s cada una', t: 0, m: ['cuello', 'trapecio'] },
@@ -839,6 +840,7 @@ function stopTimer() { if (activeTimer) { clearInterval(activeTimer.iv); activeT
 /* modo práctica: sin timer, para aprender cada elongación y movimiento en casa */
 const PRAC = {
   circulos: { pasos: ['Parado, pies al ancho de la cadera, brazos estirados a los costados a la altura de los hombros.', 'Hacé círculos chiquitos con las manos, del tamaño de una moneda.', 'Agrandalos de a poco hasta que sean del tamaño de una pelota de fútbol.', 'Cambiá el sentido: primero hacia adelante, después hacia atrás.'], sentir: 'Calor en los hombros. No tiene que doler ni hacer ruido fuerte.', errores: ['Encoger los hombros hacia las orejas: mantenelos abajo.', 'Doblar los codos.', 'Ir rápido: lento y controlado.'] },
+  abrazos: { pasos: ['Parado, pies al ancho de la cadera, brazos estirados a los costados a la altura de los hombros.', 'Cruzá los brazos adelante del pecho, como abrazándote, sin frenar de golpe.', 'Abrilos bien hacia atrás, juntando los omóplatos y sacando pecho.', 'Seguí balanceando suelto. Alterná qué brazo queda arriba al cruzar.'], sentir: 'Que se suelta el pecho al abrir y la espalda alta al cerrar. Es entrada en calor, no tiene que tirar fuerte.', errores: ['Encoger los hombros: mantenelos abajo.', 'Mover el tronco: solo se mueven los brazos.', 'Tirar fuerte hacia atrás: es un balanceo, no un estiramiento forzado.'] },
   palo: { pasos: ['Agarrá un palo de escoba (o una toalla tensa) con las manos bien separadas, más anchas que los hombros.', 'Brazos estirados adelante, a la altura de la cadera.', 'Subilos por encima de la cabeza y seguí hacia atrás hasta la cola, sin doblar los codos.', 'Volvé por el mismo camino. Si no pasa, abrí más las manos.'], sentir: 'Estiramiento al frente del hombro y en el pecho cuando el palo pasa por atrás de la cabeza.', errores: ['Doblar los codos para que pase: mejor abrir más el agarre.', 'Arquear la espalda baja: apretá un poco la panza.', 'Forzar con tirones.'] },
   sentadilla: { pasos: ['Pies un poco más anchos que la cadera, puntas levemente hacia afuera.', 'Llevá la cadera hacia atrás como para sentarte en una silla lejana.', 'Bajá con el pecho arriba y los talones apoyados, hasta donde llegues cómodo.', 'Subí empujando el piso con todo el pie.'], sentir: 'Trabajo en muslos y glúteos, y que la cadera y los tobillos se van soltando.', errores: ['Levantar los talones: bajá menos o poné un libro finito debajo.', 'Rodillas que se van hacia adentro: empujalas hacia afuera, en línea con los pies.', 'Doblar la espalda hacia adelante.'] },
   balanceo: { pasos: ['Parado de costado a una pared, apoyá la mano para no perder el equilibrio.', 'La pierna de afuera se balancea adelante y atrás, como un péndulo, con la rodilla casi estirada.', 'Empezá con poca altura y dejá que crezca sola.', 'Cambiá de pierna.'], sentir: 'Que la cadera se suelta: atrás de la pierna al ir adelante y adelante de la cadera al ir atrás.', errores: ['Patear: es un péndulo, no una patada.', 'Mover el torso para ganar altura: el tronco queda quieto.'] },
@@ -2238,7 +2240,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.10.31-1711';
+const APP_VERSION = '2026.10.31-1911';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {

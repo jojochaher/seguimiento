@@ -1,5 +1,5 @@
 /* Cache del cascarón de la app para que abra sin conexión. La versión cambia en cada deploy. */
-const V = 'seg-2026.10.31-1711';
+const V = 'seg-2026.10.31-1911';
 const SHELL = ['./', './index.html', './store.js', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
