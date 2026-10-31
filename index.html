@@ -287,6 +287,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .body .m { fill: var(--line); stroke: var(--surface); stroke-width: 1; cursor: pointer; transition: fill .15s; }
 .body .m:hover { fill: var(--muted); }
 .body .ln { fill: none; stroke: var(--surface); stroke-width: 1; pointer-events: none; }
+.vtoast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 10px); transform: translateX(-50%); z-index: 90; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 999px; font-size: .85rem; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
 .pendtag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--c); color: var(--c); font-family: var(--font-body); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; vertical-align: middle; }
 .body .m.p { fill: var(--day); }
 .body .m.s { fill: var(--day); fill-opacity: .4; }
@@ -2076,6 +2077,32 @@ showTab(startTab);
   snap('fotos', 'fotos', renderFotos);
   snap('medidas', 'medidas', renderMedidas);
 })();
+
+/* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
+const APP_VERSION = '2026.10.31-0431';
+let updateTo = null;
+function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden; }
+function tryReload() {
+  if (!updateTo) return;
+  if (!safeToReload()) { setTimeout(tryReload, 3000); return; }
+  flushSave(); saveResume();
+  try { sessionStorage.setItem('seg-updated', updateTo); } catch (e) {}
+  setTimeout(() => location.reload(), 300);
+}
+async function checkUpdate() {
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
+  try {
+    const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return;
+    const v = (await r.json()).v;
+    let tried = null; try { tried = sessionStorage.getItem('seg-tried'); } catch (e) {}
+    if (v && v !== APP_VERSION && !updateTo && tried !== v) { updateTo = v; try { sessionStorage.setItem('seg-tried', v); } catch (e) {} if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) { const reg = await navigator.serviceWorker.getRegistration(); if (reg) reg.update().catch(() => {}); } tryReload(); }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
+setInterval(checkUpdate, 60000); setTimeout(checkUpdate, 3000);
+(() => { let u = null; try { u = sessionStorage.getItem('seg-updated'); sessionStorage.removeItem('seg-updated'); } catch (e) {}
+  const t = document.createElement('div'); t.className = 'vtoast'; t.textContent = u ? 'Actualizado ✓ versión ' + APP_VERSION : ''; if (u) { document.body.appendChild(t); setTimeout(() => t.remove(), 3500); }
+  const vf = document.createElement('p'); vf.className = 'hint'; vf.style.textAlign = 'center'; vf.textContent = 'Versión ' + APP_VERSION; const f = $('respaldo'); if (f) f.after(vf); })();
 
 /* respaldo + service worker (solo fuera de Claude) */
 if (window.claude && window.claude.local) {
