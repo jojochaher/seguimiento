@@ -1207,7 +1207,7 @@ function exCardHtml(e, items, big) {
     ${totalLine(e, it.carga ?? null)}
     <div class="ex-actions">
       <button type="button" class="rest${rest && rest.ej === e.id ? ' on' : ''}" data-rest="${restFor(e)}" data-ej="${esc(e.id)}">Descanso ${restFor(e)} s</button>
-      <button type="button" data-cola="1">Dejar para el final</button>
+      <button type="button" data-cola="1">Saltear por ahora</button>
       <button type="button" data-skip="1">Saltear hoy</button>
     </div>`}
   </article>`;
