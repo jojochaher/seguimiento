@@ -145,6 +145,7 @@ label { min-width: 0; }
 .serie-grid .sg-l { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .serie-grid .sg-n { text-align: center; font-size: .7rem; color: var(--muted); }
 .esf { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.esf .esf-g { display: block; text-transform: none; letter-spacing: 0; font-size: .72rem; margin-top: 2px; }
 .esf .sg-l { width: 100%; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .esf button { flex: 1; white-space: nowrap; padding: 7px 6px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
 .esf button[aria-pressed="true"] { border-color: var(--day); background: var(--day); color: #fff; font-weight: 700; }
@@ -1190,7 +1191,7 @@ function exCardHtml(e, items, big) {
   const sug = suggestion(e), pl = skipped ? null : plan(e);
   const pts = seriesFor(e.id, e);
   return `<article class="ex${skipped ? ' skipped' : ''}${big ? ' big' : ''}" data-ej="${esc(e.id)}">
-    <div class="ex-head">${big ? `<button class="minibody" type="button" data-body="${esc(c.id || '')}" aria-label="Ver en el cuerpo">${bodyMini(e)}</button>` : ''}<h3>${esc(e.nombre)}${e.color !== S.color ? `<span class="pendtag" style="--c: var(--${esc(dia(e.color).color)})">pendiente · ${esc(dia(e.color).nombre)}</span>` : ''}</h3><span class="target">${esc(e.series)} × ${esc(e.reps)}</span></div>
+    <div class="ex-head">${big ? `<button class="minibody" type="button" data-body="${esc(c.id || '')}" aria-label="Ver en el cuerpo">${bodyMini(e)}</button>` : ''}<h3>${esc(e.nombre)}${e.color !== S.color ? `<span class="pendtag" style="--c: var(--${esc(dia(e.color).color)})">pendiente · ${esc(dia(e.color).nombre)}</span>` : ''}</h3><span class="target">${esc(e.series)} series</span></div>
     ${musclesLine(e)}
     ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
     ${e.asistida ? '<div class="assist">Carga = kg de asistencia. Menos es mejor.</div>' : isBody(e) ? '<div class="assist">Peso corporal: lo que progresa son las reps.</div>' : ''}
@@ -1201,7 +1202,7 @@ function exCardHtml(e, items, big) {
         <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : e.reps)}" value="${sets[k] ?? ''}">`).join('')}
         <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>
       <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior.</p>
-      <div class="full esf"><span class="sg-l">¿Cómo te costó?</span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
+      <div class="full esf"><span class="sg-l">¿Cómo te costó? <small class="esf-g">en la última serie, ¿cuántas reps más podías hacer bien? Fácil 3+ · Justo 1 o 2 · Al límite 0</small></span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
       <label class="full">Nota<input type="text" data-f="nota" placeholder="Opcional" value="${esc(it.nota ?? '')}"></label>
     </div>
     ${totalLine(e, it.carga ?? null)}
