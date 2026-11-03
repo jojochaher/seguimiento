@@ -413,7 +413,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
     </details>
     <div class="box">
       <h2>Ejercicios por día</h2>
-      <p class="hint">Lo que cambies acá aparece en Entreno. Mantené ≡ y arrastrá para ordenar; deslizá a la izquierda para quitar. Barra: kg de la barra sola. Descanso: segundos entre series (vacío = default).</p>
+      <p class="hint">Lo que cambies acá aparece en Entreno. Mantené ≡ y arrastrá para ordenar; deslizá a la izquierda para quitar. Barra: kg de la barra sola (la carga se anota en total; la app te dice cuánto va por lado). Descanso: segundos entre series (vacío = default).</p>
       <div class="colors" id="rt-colors"></div>
       <div class="status" id="rt-status"></div>
     </div>
@@ -1046,7 +1046,7 @@ function cardCarga(art) { const a = cardKgs(art).filter(v => v != null); return 
 function workSets(it, n) { const sets = parseSets(it, n), kgs = setKgs(it, sets.length || n); if (!Array.isArray(it.cargas) || it.carga == null) return sets; return sets.filter((v, k) => kgs[k] === it.carga); }
 function setsDesc(it, n, e) {
   const sets = parseSets(it, n); if (!Array.isArray(it.cargas) || !sets.length) return null;
-  const kgs = setKgs(it, sets.length), b = (e && e.barra) || 0;
+  const kgs = setKgs(it, sets.length), b = 0;
   if (new Set(kgs.filter(v => v != null)).size < 2) return null;
   return sets.map((r, k) => r == null ? null : `${kgs[k] != null ? fmt(kgs[k] + b) : '?'}×${r}`).filter(Boolean).join(' · ');
 }
@@ -1072,14 +1072,14 @@ function plan(e) {
     return { body: true, r, rmin, it, l };
   }
   if (it.carga == null) return null;
-  const kgs = setKgs(it, sets.length), b = e.barra || 0, bw = bodyKg();
+  const kgs = setKgs(it, sets.length), b = 0, bw = bodyKg();
   const load = v => e.asistida ? Math.max(1, bw - v) : isBody(e) ? bw + v : v + b;
   const work = done.filter(x => (kgs[x.k] ?? it.carga) === it.carga);
   const use = work.length ? work : done;
   const L = use.reduce((a, x) => a + load(kgs[x.k] ?? it.carga) * (1 + x.r / 30), 0) / use.length;
   const T = L * f, step = Math.abs(increment(e)) || 5;
   const lo = 6, hi = Math.max(12, Number(e.reps) + 2);
-  const heavier = v => e.asistida ? Math.max(0, v - step) : v + step, lighter = v => e.asistida ? v + step : Math.max(0, v - step);
+  const heavier = v => e.asistida ? Math.max(0, v - step) : v + step, lighter = v => e.asistida ? v + step : Math.max(e.barra || 0, v - step);
   let W = it.carga, guard = 0;
   while (Math.round(repsFor(T, load(W))) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W) break; W = nw; }
   while (Math.round(repsFor(T, load(W))) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
@@ -1094,11 +1094,11 @@ function suggestion(e) {
   const kgTxt = v => e.asistida ? (v ? `${fmt(v)} kg de asistencia` : 'sin asistencia') : `${fmt(v)} kg`;
   const sets = parseSets(it, n), st = setsText(sets), mixed = setsDesc(it, n, e);
   const esf = it.esf && ESF[it.esf] ? ` · ${ESF[it.esf].n.toLowerCase()}` : '';
-  const did = mixed ? esc(mixed) : isBody(e) && !(it.carga > 0) ? esc(st || it.reps || 'sin reps') : (it.carga != null ? kgTxt(it.carga + (e.barra || 0)) : 'sin carga') + (st ? ` × ${esc(st)}` : '');
+  const did = mixed ? esc(mixed) : isBody(e) && !(it.carga > 0) ? esc(st || it.reps || 'sin reps') : (it.carga != null ? kgTxt(it.carga) : 'sin carga') + (st ? ` × ${esc(st)}` : '');
   const head = `Última (${dmy(l.fecha)}): ${did}${esf}.`;
   if (!p) return { cls: '', html: `${head} Hoy anotá kg y reps para poder sugerirte.` };
   if (p.body) return { cls: '', html: `${head}<br>Meta hoy: <b>${p.r} reps por serie</b> · mínimo ${p.rmin}.` };
-  const w = kgTxt(p.W + (e.barra || 0)), changed = p.W !== it.carga;
+  const w = kgTxt(p.W), changed = p.W !== it.carga;
   return { cls: changed ? 'ok' : '', html: `${head}<br>Meta hoy: <b>${w} × ${p.r}</b> por serie · mínimo ${p.rmin}.${changed ? (e.asistida ? ' Cambia la asistencia.' : p.W > it.carga ? ' Subís de peso.' : ' Bajás un poco el peso.') : ''}` };
 }
 /* métrica de progreso: 'e1rm' (Epley con la mejor serie), 'carga' o 'volumen' */
@@ -1114,11 +1114,11 @@ function seriesFor(ejId, e) {
     const it = s.items[ejId], sets = parseSets(it, Number((e && e.series) || 3)).filter(v => v != null);
     if (m === 'reps') { if (sets.length) out.push({ fecha: s.fecha, kg: sets.reduce((x, y) => x + y, 0) }); return; }
     if (it.carga == null) return;
-    const total = it.carga + ((e && e.barra) || 0);
+    const total = it.carga;
     if (m === 'carga') { out.push({ fecha: s.fecha, kg: it.carga }); return; }
     const raw = parseSets(it, Number((e && e.series) || 3));
     const reps = raw.length ? raw : Array.from({ length: Number((e && e.series) || 3) }, () => Number((e && e.reps) || 10));
-    const kgs = setKgs(it, reps.length).map(v => (v != null ? v : it.carga) + ((e && e.barra) || 0));
+    const kgs = setKgs(it, reps.length).map(v => (v != null ? v : it.carga));
     if (m === 'volumen') { out.push({ fecha: s.fecha, kg: Math.round(reps.reduce((acc, r, k) => acc + (r || 0) * kgs[k], 0)) }); return; }
     const best = Math.max(...reps.map((r, k) => r == null ? 0 : kgs[k] * (1 + r / 30)));
     out.push({ fecha: s.fecha, kg: Math.round(best * 10) / 10 });
@@ -1140,8 +1140,8 @@ function musclesLine(e) {
 }
 function totalLine(e, carga) {
   if (!e.barra) return '';
-  const t = carga != null ? carga + e.barra : e.barra;
-  return `<div class="total" data-total="${esc(e.id)}">Barra ${fmt(e.barra)} kg${carga != null ? ' + discos ' + fmt(carga) : ''} = <b>${fmt(t)} kg</b> en total</div>`;
+  const lado = carga != null ? (carga - e.barra) / 2 : null;
+  return `<div class="total" data-total="${esc(e.id)}">Total con la barra de ${fmt(e.barra)} kg${lado != null ? (lado >= 0 ? ` = <b>${fmt(lado)} kg por lado</b>` : ' · menos que la barra sola') : ''}</div>`;
 }
 
 /* ---------- orden del día ---------- */
@@ -1197,7 +1197,7 @@ function exCardHtml(e, items, big) {
     ${skipped ? `<div class="ex-actions"><span class="skipnote"><span>Salteado hoy:</span><input type="text" data-f="skip" value="${esc(it.skip)}" placeholder="motivo"></span><button type="button" data-unskip="1">Deshacer</button></div>` : `
     <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, !!e.asistida)}</button></div>
     <div class="ex-inputs">
-      <div class="full serie-grid" style="--n:${n}"><span class="sg-l">${e.barra ? 'Kg discos' : isBody(e) ? 'Kg extra' : 'Kg'}</span>${(() => { const kg = setKgs(it, n); let prev = null; return Array.from({ length: n }, (_, k) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (pl && pl.W != null ? fmt(pl.W) : isBody(e) ? '0' : ''); if (v != null) prev = v; return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; }).join(''); })()}
+      <div class="full serie-grid" style="--n:${n}"><span class="sg-l">${e.barra ? 'Kg total' : isBody(e) ? 'Kg extra' : 'Kg'}</span>${(() => { const kg = setKgs(it, n); let prev = null; return Array.from({ length: n }, (_, k) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (pl && pl.W != null ? fmt(pl.W) : isBody(e) ? '0' : ''); if (v != null) prev = v; return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; }).join(''); })()}
         <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : e.reps)}" value="${sets[k] ?? ''}">`).join('')}
         <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>
       <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior.</p>
@@ -1294,6 +1294,22 @@ function fsUpdateNext() {
   $('fs-prev').disabled = S.focusIdx === 0;
 }
 function saveResume() { try { localStorage.setItem('seg-resume', JSON.stringify({ id: sessionId(), focus: !!S.focus, idx: S.focusIdx || 0 })); } catch (e) {} }
+/* migración única (2/11): en ejercicios con barra la carga pasa a ser el total con la barra.
+   Antes del 2/11 se anotaban solo los discos: se les suma la barra. Se marca cada item con tot: 1 para no repetir. */
+function migrateBarra() {
+  if (!S.db || !S.loaded.ej) return;
+  S.ses.forEach(s => {
+    let changed = false; const items = Object.assign({}, s.items || {});
+    Object.keys(items).forEach(id => {
+      const e = S.ej.find(x => x.id === id), it = items[id];
+      if (!e || !e.barra || !it || it.tot) return;
+      const n = Object.assign({}, it, { tot: 1 });
+      if (s.fecha < '2026-11-02') { if (n.carga != null) n.carga = n.carga + e.barra; if (Array.isArray(n.cargas)) n.cargas = n.cargas.map(v => v == null ? v : v + e.barra); }
+      items[id] = n; changed = true;
+    });
+    if (changed) { const b = Object.assign({}, s, { items }); delete b.id; S.db.collection('sesiones').doc(s.id).set(b).catch(() => {}); }
+  });
+}
 function autoClose() {
   if (!S.db) return;
   S.ses.forEach(s => {
@@ -1394,7 +1410,7 @@ function fsRestRender() {
     const done = sets.filter(v => v != null).length, total = Number(e.series) || 3;
     const kgsNow = art ? cardKgs(art) : []; const carga = kgsNow.length ? (kgsNow[Math.min(done, kgsNow.length - 1)] ?? kgsNow.filter(v => v != null).pop() ?? null) : null;
     const ids = muscleIds(c.primario); const m = ids.length ? MUSCLES[ids[Math.floor(Math.random() * ids.length)]] : null;
-    $('fs-rest-info').innerHTML = `<div class="fs-next-set">${done >= total ? 'Series completas. Al terminar el descanso, Siguiente.' : `Próxima: serie ${done + 1} de ${total} · meta ${esc(e.reps)} reps${carga != null ? ' · ' + fmt(carga + (e.barra || 0)) + ' kg' : ''}`}</div>
+    $('fs-rest-info').innerHTML = `<div class="fs-next-set">${done >= total ? 'Series completas. Al terminar el descanso, Siguiente.' : `Próxima: serie ${done + 1} de ${total} · meta ${esc(e.reps)} reps${carga != null ? ' · ' + fmt(carga) + ' kg' : ''}`}</div>
       ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
       ${m ? `<div class="fs-fact"><b>${esc(m.n)}</b>: ${esc(m.por)}</div>` : ''}`;
   }
@@ -1416,7 +1432,7 @@ function collect() {
     const nota = ex.querySelector('[data-f="nota"]').value.trim();
     const any = sets.some(v => v != null);
     const esfB = ex.querySelector('button[data-esf][aria-pressed="true"]');
-    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; if (esfB) items[id].esf = esfB.dataset.esf; }
+    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; if (esfB) items[id].esf = esfB.dataset.esf; const ee = S.ej.find(x => x.id === id); if (ee && ee.barra) items[id].tot = 1; }
   });
   Object.keys(prev).forEach(id => { if (!items[id] && !seen.has(id)) items[id] = prev[id]; });
   return items;
@@ -1796,7 +1812,7 @@ function renderProgreso() {
         const good = e.asistida ? df < 0 : df > 0;
         cls = df === 0 ? 'same' : good ? 'good' : 'bad';
         if (pts.length > 1) { if (df === 0) same++; else if (good) up++; else down++; }
-        const b = e.barra || 0;
+        const b = 0;
         const m = metricOf(e);
         const fv = m === 'carga' && !e.asistida ? f + b : f, lv = m === 'carga' && !e.asistida ? l + b : l;
         delta = `${fmt(fv)} → ${fmt(lv)} ${metricLabel(e)}` + (df ? ` (${df > 0 ? '+' : ''}${fmt(df)})` : '');
@@ -2284,7 +2300,7 @@ showTab(startTab);
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
-    if (first) autoClose();
+    if (first) { autoClose(); migrateBarra(); }
     if (first && !colorPicked) { colorPicked = true; if (!resumeRunning()) { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso();
     if (!formBusy()) buildForm(); else renderClock();
