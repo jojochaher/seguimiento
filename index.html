@@ -1708,7 +1708,8 @@ function plantilla6() {
     seen[catId] = (seen[catId] || 0) + 1;
     const id = seen[catId] === 1 ? catId : catId + '-' + color;
     const prev = S.ej.find(x => x.id === catId || x.cat === catId) || {};
-    const body = { id, nombre: c.nombre, color, series: seriesDe(catId, 3), reps: prev.reps || 10, orden: k + 1, cat: catId };
+    const SER = { sentadilla: 4, abductores: 4 };
+    const body = { id, nombre: c.nombre, color, series: SER[catId] || seriesDe(catId, 3), reps: prev.reps || 10, orden: k + 1, cat: catId };
     if (c.barra || prev.barra) body.barra = prev.barra || c.barra;
     if (c.asistida || prev.asistida) body.asistida = true;
     if (prev.paso) body.paso = prev.paso; if (prev.descanso) body.descanso = prev.descanso;
@@ -2468,7 +2469,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0243';
+const APP_VERSION = '2026.11.03-0245';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
