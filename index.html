@@ -1056,7 +1056,7 @@ function setsDesc(it, n, e) {
 }
 function setsText(sets) { const a = (sets || []).filter(v => v != null); return a.length ? a.join('/') : ''; }
 function hitTarget(sets, e) { const a = (sets || []).filter(v => v != null); return a.length >= Number(e.series) && a.every(v => v >= Number(e.reps)); }
-function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Number(e.paso); if (e.asistida) return -5; if (e.barra) return 2.5; if (/barra|polea|máquina|maquina/i.test(e.nombre)) return 5; if (/mancuerna|curl|vuelo|extensi|franc|apertura/i.test(e.nombre)) return 2; return 5; }
+function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Number(e.paso); if (e.asistida) return -5; if (e.barra) return 2.5; if (/mancuerna/i.test(e.nombre)) return 2; if (/barra|polea|máquina|maquina/i.test(e.nombre)) return 5; if (/curl|vuelo|extensi|franc|apertura/i.test(e.nombre)) return 2; return 5; }
 function lastDone(ejId) {
   return S.ses.filter(s => s.fecha < S.fecha && s.items && s.items[ejId] && s.items[ejId].skip == null && (s.items[ejId].carga != null || s.items[ejId].reps || (s.items[ejId].sets || []).some(v => v != null))).sort((a, b) => a.fecha < b.fecha ? -1 : 1).pop();
 }
@@ -1065,6 +1065,10 @@ function lastDone(ejId) {
 const ESF = { facil: { n: 'Fácil', f: 1.05 }, justo: { n: 'Justo', f: 1.025 }, limite: { n: 'Al límite', f: 1.0 } };
 function bodyKg() { return (S.peso.slice().sort((x, y) => x.fecha < y.fecha ? -1 : 1).pop() || {}).kg || 70; }
 function repsFor(T, load) { return 30 * (T / load - 1); }
+/* rango de reps: 6 a 12 para todo (José, 2/11). Para músculo da parecido en un rango amplio cerca del fallo
+   (Schoenfeld 2017, 2021) y no hay una recomendación distinta por músculo. Si el peso siguiente deja menos de 6,
+   se queda en el actual aunque pase de 12 (pasa en mancuernas chicas). */
+function repRange(e) { return [6, 12]; }
 function plan(e) {
   const l = lastDone(e.id); if (!l) return null;
   const it = l.items[e.id], n = Number(e.series) || 3, f = (ESF[it.esf] || ESF.justo).f;
@@ -1082,18 +1086,20 @@ function plan(e) {
   const use = work.length ? work : done;
   const L = use.reduce((a, x) => a + load(kgs[x.k] ?? it.carga) * (1 + x.r / 30), 0) / use.length;
   const T = L * f, step = Math.abs(increment(e)) || 5;
-  const lo = 6, hi = Math.max(12, Number(e.reps) + 2);
-  const heavier = v => e.asistida ? Math.max(0, v - step) : v + step, lighter = v => e.asistida ? v + step : Math.max(e.barra || 0, v - step);
+  const [lo, hi] = repRange(e);
+  const up = v => Math.round((Math.floor(v / step + 1e-9) + 1) * step * 100) / 100, down = v => Math.round((Math.ceil(v / step - 1e-9) - 1) * step * 100) / 100;
+  const heavier = v => e.asistida ? Math.max(0, down(v)) : up(v), lighter = v => e.asistida ? up(v) : Math.max(e.barra || 0, down(v));
   let W = it.carga, guard = 0;
-  while (Math.round(repsFor(T, load(W))) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W) break; W = nw; }
-  while (Math.round(repsFor(T, load(W))) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
+  const rr = v => Math.round(repsFor(T, load(v)));
+  while (rr(W) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W || rr(nw) < lo) break; W = nw; }
+  while (rr(W) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
   const rmin = Math.max(1, Math.round(repsFor(L, load(W))));
   let r = Math.max(1, Math.round(repsFor(T, load(W)))); if (f > 1 && r <= rmin) r = rmin + 1;
   return { W, r, rmin, it, l, b };
 }
 function suggestion(e) {
   const l = lastDone(e.id), n = Number(e.series) || 3;
-  if (!l) return { cls: 'first', html: isBody(e) ? `Peso corporal: anotá las reps de cada serie. Meta ${esc(e.series)}×${esc(e.reps)}.` : `Primera vez: elegí un peso con el que la última serie te cueste llegar a ${esc(e.reps)}.` };
+  if (!l) return { cls: 'first', html: isBody(e) ? `Peso corporal: anotá las reps de cada serie. Meta ${esc(e.series)}×${esc(e.reps)}.` : `Primera vez: elegí un peso con el que hagas entre ${repRange(e)[0]} y ${repRange(e)[1]} reps y te cueste llegar.` };
   const it = l.items[e.id], p = plan(e);
   const kgTxt = v => e.asistida ? (v ? `${fmt(v)} kg de asistencia` : 'sin asistencia') : `${fmt(v)} kg`;
   const sets = parseSets(it, n), st = setsText(sets), mixed = setsDesc(it, n, e);
@@ -1202,7 +1208,7 @@ function exCardHtml(e, items, big) {
     <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, !!e.asistida)}</button></div>
     <div class="ex-inputs">
       <div class="full serie-grid" style="--n:${n}"><span class="sg-l">${e.barra ? 'Kg total' : isBody(e) ? 'Kg extra' : 'Kg'}</span>${(() => { const kg = setKgs(it, n); let prev = null; return Array.from({ length: n }, (_, k) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (pl && pl.W != null ? fmt(pl.W) : isBody(e) ? '0' : ''); if (v != null) prev = v; return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; }).join(''); })()}
-        <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : e.reps)}" value="${sets[k] ?? ''}">`).join('')}
+        <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : isBody(e) ? e.reps : repRange(e)[0])}" value="${sets[k] ?? ''}">`).join('')}
         <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>
       <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior.</p>
       <div class="full esf"><span class="sg-l">¿Cómo te costó? <button type="button" class="esf-q" aria-label="Ayuda">?</button><small class="esf-g" hidden>En la última serie, ¿cuántas reps más podías hacer bien? Fácil 3+ · Justo 1 o 2 · Al límite 0</small></span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
@@ -1414,7 +1420,7 @@ function fsRestRender() {
     const done = sets.filter(v => v != null).length, total = Number(e.series) || 3;
     const kgsNow = art ? cardKgs(art) : []; const carga = kgsNow.length ? (kgsNow[Math.min(done, kgsNow.length - 1)] ?? kgsNow.filter(v => v != null).pop() ?? null) : null;
     const ids = muscleIds(c.primario); const m = ids.length ? MUSCLES[ids[Math.floor(Math.random() * ids.length)]] : null;
-    $('fs-rest-info').innerHTML = `<div class="fs-next-set">${done >= total ? 'Series completas. Al terminar el descanso, Siguiente.' : `Próxima: serie ${done + 1} de ${total} · meta ${esc(e.reps)} reps${carga != null ? ' · ' + fmt(carga) + ' kg' : ''}`}</div>
+    $('fs-rest-info').innerHTML = `<div class="fs-next-set">${done >= total ? 'Series completas. Al terminar el descanso, Siguiente.' : `Próxima: serie ${done + 1} de ${total} · meta ${esc((plan(e) || {}).r || repRange(e)[0])} reps${carga != null ? ' · ' + fmt(carga) + ' kg' : ''}`}</div>
       ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
       ${m ? `<div class="fs-fact"><b>${esc(m.n)}</b>: ${esc(m.por)}</div>` : ''}`;
   }
@@ -1655,7 +1661,7 @@ function renderRutina() {
         ${c ? `<div class="muscles"><b>${esc((c.primario || []).join(', '))}</b>${(c.secundario || []).length ? ' · ' + esc(c.secundario.join(', ')) : ''}${c.tipo ? ' · ' + c.tipo : ''}${c.corporal ? ' · peso corporal' : ''}</div>` : ''}
         <div class="fields">
           <label>Series<input type="number" min="1" max="10" inputmode="numeric" data-f="series" value="${esc(e.series ?? '')}"></label>
-          <label>Reps<input type="number" min="1" max="50" inputmode="numeric" data-f="reps" value="${esc(e.reps ?? '')}"></label>
+          <label>Reps<input type="text" value="${isBody(e) ? esc(e.reps ?? '') : repRange(e).join('–')}" disabled title="Rango según el tipo de ejercicio"></label>
           <label>Barra kg<input type="text" inputmode="decimal" data-f="barra" value="${e.barra ?? ''}"></label>
           <label>Salto kg<input type="text" inputmode="decimal" data-f="paso" value="${e.paso ?? ''}" placeholder="${fmt(Math.abs(increment(Object.assign({}, e, { paso: null }))))}"></label>
           <label>Descanso s<input type="number" step="5" inputmode="numeric" data-f="descanso" value="${e.descanso ?? ''}" placeholder="${restFor(Object.assign({}, e, { descanso: null }))}"></label>
@@ -2316,7 +2322,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0100';
+const APP_VERSION = '2026.11.03-0105';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
