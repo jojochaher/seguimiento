@@ -1317,6 +1317,12 @@ function fsUpdateNext() {
   $('fs-prev').disabled = S.focusIdx === 0;
 }
 function saveResume() { try { localStorage.setItem('seg-resume', JSON.stringify({ id: sessionId(), focus: !!S.focus, idx: S.focusIdx || 0 })); } catch (e) {} }
+/* revisión del catálogo (2/11): músculos secundarios más realistas (deltoides posterior en remos, aductores en sentadilla y prensa en vez de isquios, oblicuos en abdominales, etc.) */
+const CAT_FIX = {"remo-polea-baja": {"primario": ["dorsal", "romboides"], "secundario": ["bíceps", "deltoides posterior", "trapecio"]}, "remo-mancuerna": {"primario": ["dorsal"], "secundario": ["bíceps", "romboides", "deltoides posterior", "trapecio"]}, "remo-apoyo": {"primario": ["dorsal", "romboides"], "secundario": ["bíceps", "deltoides posterior", "trapecio"]}, "dominadas": {"primario": ["dorsal"], "secundario": ["bíceps", "romboides", "antebrazo"]}, "dominada-asistida": {"primario": ["dorsal"], "secundario": ["bíceps", "romboides", "antebrazo"]}, "tirones-dorsalera": {"primario": ["dorsal"], "secundario": ["bíceps", "romboides"]}, "tirones-agarre-cerrado": {"primario": ["dorsal"], "secundario": ["bíceps", "romboides"]}, "dorsal-convergente": {"primario": ["dorsal"], "secundario": ["bíceps", "romboides", "deltoides posterior"]}, "sentadilla": {"primario": ["cuádriceps", "glúteo"], "secundario": ["aductores", "lumbar"]}, "prensa-45": {"primario": ["cuádriceps", "glúteo"], "secundario": ["aductores"]}, "prensa-horizontal": {"primario": ["cuádriceps", "glúteo"], "secundario": ["aductores"]}, "hack": {"primario": ["cuádriceps"], "secundario": ["glúteo", "aductores"]}, "peso-muerto": {"primario": ["isquiotibiales", "glúteo"], "secundario": ["lumbar", "aductores", "trapecio", "antebrazo"]}, "hip-thrust": {"primario": ["glúteo"], "secundario": ["isquiotibiales", "aductores"]}, "encogimientos": {"primario": ["trapecio"], "secundario": ["antebrazo"]}, "abs-banco": {"primario": ["recto abdominal"], "secundario": ["oblicuos"]}, "abs-maquina": {"primario": ["recto abdominal"], "secundario": ["oblicuos"]}, "abs-colchoneta": {"primario": ["recto abdominal"], "secundario": ["oblicuos"]}, "elevar-piernas": {"primario": ["recto abdominal (inferior)"], "secundario": ["flexores de cadera", "oblicuos"]}, "press-hombro": {"primario": ["deltoides anterior"], "secundario": ["tríceps", "deltoides lateral", "trapecio"]}, "press-arnold": {"primario": ["deltoides anterior"], "secundario": ["tríceps", "deltoides lateral", "trapecio"]}, "press-maquina-hombro": {"primario": ["deltoides anterior"], "secundario": ["tríceps", "deltoides lateral"]}};
+function migrateCatalogo() {
+  if (!S.db) return;
+  S.cat.forEach(c => { const f = CAT_FIX[c.id]; if (!f || (c.rev || 1) >= 2) return; const b = Object.assign({}, c, f, { rev: 2 }); delete b.id; S.db.collection('catalogo').doc(c.id).set(b).catch(() => {}); });
+}
 /* migración única (2/11): en ejercicios con barra la carga pasa a ser el total con la barra.
    Antes del 2/11 se anotaban solo los discos: se les suma la barra. Se marca cada item con tot: 1 para no repetir. */
 function migrateBarra() {
@@ -1973,8 +1979,9 @@ function cargaMuscular() {
   Object.keys(MUSCLES).forEach(k => tot[k] = { p: 0, s: 0 });
   S.ej.filter(e => dias.some(d => d.id === e.color)).forEach(e => {
     const c = catOf(e); if (!c) return; const n = Number(e.series) || 3;
-    muscleIds(c.primario).forEach(id => { if (tot[id]) tot[id].p += n; });
-    muscleIds(c.secundario).forEach(id => { if (tot[id]) tot[id].s += n; });
+    const pp = muscleIds(c.primario);
+    pp.forEach(id => { if (tot[id]) tot[id].p += n; });
+    muscleIds(c.secundario).filter(id => !pp.includes(id)).forEach(id => { if (tot[id]) tot[id].s += n; });
   });
   const out = Object.keys(tot).filter(id => id !== 'cuello' && id !== 'flexores').map(id => { const ciclo = tot[id].p + tot[id].s * 0.5; return { id, n: MUSCLES[id].n, ciclo, sem: Math.round(ciclo * vueltas * 10) / 10, p: tot[id].p, s: tot[id].s }; });
   return { out, porSemana: Math.round(porSemana * 10) / 10, nd };
@@ -2351,7 +2358,8 @@ showTab(startTab);
   }, e => console.warn(col, e));
   let colorPicked = false;
   snap('dias', 'dias', () => { S.loaded.dias = true; renderDias(); renderCarga(); renderColors(); renderRtColors(); if (S.tab === 'rutina') renderRutina(); else applyDay(); if (!formBusy()) buildForm(); renderHist(); renderProgreso(); });
-  snap('catalogo', 'cat', () => { S.loaded.cat = true; renderCarga(); renderPick(); if (S.tab === 'rutina') renderRutina(); if (!formBusy()) buildForm(); if (bodySel) bodySelect(bodySel); });
+  let catFixed = false;
+  snap('catalogo', 'cat', () => { S.loaded.cat = true; if (!catFixed) { catFixed = true; migrateCatalogo(); } renderCarga(); renderPick(); if (S.tab === 'rutina') renderRutina(); if (!formBusy()) buildForm(); if (bodySel) bodySelect(bodySel); });
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
@@ -2367,7 +2375,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0216';
+const APP_VERSION = '2026.11.03-0223';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
