@@ -1741,7 +1741,7 @@ function renderRutinas() {
   box.innerHTML = `<h2>Rutinas</h2>
     <p class="hint">Guardá la rutina de hoy con un nombre para poder volver a ella, y cargá otra cuando quieras. Las sesiones y el progreso quedan siempre guardados.</p>
     <div class="row"><input type="text" id="rut-nombre" placeholder="Nombre para la rutina actual" style="flex:1 1 160px"><button class="btn ghost small" type="button" id="rut-save">Guardar actual</button></div>
-    <div class="list" style="margin-top:8px">${list.map(r => row(r, r.id)).join('')}${S.cat.length ? row(plantilla6(), '', 'plantilla') : ''}</div>
+    <div class="list" style="margin-top:8px">${list.map(r => row(r, r.id)).join('')}${S.cat.length && !list.some(r => r.nombre === plantilla6().nombre) ? row(plantilla6(), '', 'plantilla') : ''}</div>
     <div class="status" id="rut-status"></div>`;
   $('rut-save').addEventListener('click', async () => { const n = $('rut-nombre').value.trim(); if (!n) { setStatus('rut-status', 'Poné un nombre', 'err'); return; } await guardarRutina(n); setStatus('rut-status', 'Guardada ✓', 'ok'); });
   box.querySelectorAll('button[data-load]').forEach(b => b.addEventListener('click', async () => {
@@ -2468,7 +2468,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0232';
+const APP_VERSION = '2026.11.03-0243';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
