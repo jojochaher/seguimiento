@@ -316,6 +316,18 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .prac-item { display: grid; gap: 4px; justify-items: center; padding: 8px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: .8rem; line-height: 1.2; text-align: center; cursor: pointer; }
 .prac-item .fig { width: 100%; height: auto; max-width: 84px; }
 .linkbtn { border: none; background: none; padding: 0; color: var(--day, var(--accent)); text-decoration: underline; font: inherit; font-size: .9rem; cursor: pointer; }
+.cg-body { width: 100%; max-width: 360px; display: block; margin: 6px auto; }
+.cg-body path { stroke: var(--surface); stroke-width: 1; }
+.cg-leg { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center; font-size: .75rem; color: var(--muted); margin-bottom: 8px; }
+.cg-leg span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--c); margin-right: 4px; vertical-align: -1px; }
+.cg-list { display: grid; gap: 6px; }
+.cg-row { display: grid; grid-template-columns: 112px 1fr 34px 62px; gap: 8px; align-items: center; font-size: .85rem; }
+.cg-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cg-bar { position: relative; height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.cg-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; z-index: 1; }
+.cg-bar .cg-ok { position: absolute; top: 0; bottom: 0; background: rgba(127,127,127,.25); }
+.cg-v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.cg-z { font-size: .72rem; font-weight: 700; }
 .pendtag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--c); color: var(--c); font-family: var(--font-body); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; vertical-align: middle; }
 .body .m.p { fill: var(--day); }
 .body .m.s { fill: var(--day); fill-opacity: .4; }
@@ -483,6 +495,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
       </div>
     </div>
     <div class="box mus-info" id="mus-info"><p class="hint">Tocá un músculo para ver qué es, con qué ejercicios del catálogo se trabaja y cómo se elonga.</p></div>
+    <div class="box" id="carga"></div>
     <div class="box" id="prac-home"></div>
   </section>
 
@@ -1948,6 +1961,38 @@ function bodyHtmlLabels(labF, labB) {
   const fmtL = labs => labs.length ? labs.map(l => l.prim ? `<b>${esc(l.name)}</b>` : `<span>${esc(l.name)}</span>`).join(' <i>·</i> ') : '<span>—</span>';
   $('names-front').innerHTML = fmtL(labF); $('names-back').innerHTML = fmtL(labB);
 }
+/* carga por músculo según la rutina: series por semana (principal = 1, secundario = 0,5).
+   Referencia: ~10 a 20 series por semana por músculo es lo que mejor funciona para crecer (Schoenfeld 2017). */
+function cargaMuscular() {
+  const dias = DIAS().filter(d => d.activo !== false), nd = Math.max(1, dias.length);
+  const desde = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
+  const recientes = S.ses.filter(s => s.fecha >= desde && s.items && Object.keys(s.items).length).length;
+  const porSemana = recientes ? Math.min(7, recientes / 2) : 5;
+  const vueltas = porSemana / nd;
+  const tot = {};
+  Object.keys(MUSCLES).forEach(k => tot[k] = { p: 0, s: 0 });
+  S.ej.filter(e => dias.some(d => d.id === e.color)).forEach(e => {
+    const c = catOf(e); if (!c) return; const n = Number(e.series) || 3;
+    muscleIds(c.primario).forEach(id => { if (tot[id]) tot[id].p += n; });
+    muscleIds(c.secundario).forEach(id => { if (tot[id]) tot[id].s += n; });
+  });
+  const out = Object.keys(tot).filter(id => id !== 'cuello' && id !== 'flexores').map(id => { const ciclo = tot[id].p + tot[id].s * 0.5; return { id, n: MUSCLES[id].n, ciclo, sem: Math.round(ciclo * vueltas * 10) / 10, p: tot[id].p, s: tot[id].s }; });
+  return { out, porSemana: Math.round(porSemana * 10) / 10, nd };
+}
+function zonaCarga(v) { return v < 1 ? ['nada', 'var(--muted)', 'Nada'] : v < 6 ? ['bajo', 'var(--rojo)', 'Bajo'] : v < 10 ? ['justo', 'var(--amarillo)', 'Justo'] : v <= 20 ? ['bien', 'var(--verde)', 'Bien'] : ['alto', 'var(--violeta)', 'Alto']; }
+function renderCarga() {
+  const box = $('carga'); if (!box || !S.loaded.ej || !S.loaded.cat) return;
+  const { out, porSemana, nd } = cargaMuscular();
+  const by = Object.fromEntries(out.map(m => [m.id, m]));
+  const view = parts => `<g class="sil">${SIL}</g>${parts.map(([id, d]) => `<path d="${d}" style="fill:${zonaCarga((by[id] || {}).sem || 0)[1]}"><title>${esc(MUSCLES[id].n)}: ${fmt((by[id] || {}).sem || 0)} series por semana</title></path>`).join('')}`;
+  const max = Math.max(20, ...out.map(m => m.sem));
+  const rows = out.slice().sort((a, b) => a.sem - b.sem).map(m => { const z = zonaCarga(m.sem); return `<div class="cg-row"><span class="cg-n">${esc(m.n)}</span><span class="cg-bar"><i style="width:${Math.max(2, m.sem / max * 100)}%;background:${z[1]}"></i><b class="cg-ok" style="left:${10 / max * 100}%;width:${10 / max * 100}%"></b></span><span class="cg-v">${fmt(m.sem)}</span><small class="cg-z" style="color:${z[1]}">${z[2]}</small></div>`; }).join('');
+  box.innerHTML = `<h2>Carga por músculo</h2>
+    <p class="hint">Series por semana según tu rutina (las de músculo principal cuentan 1 y las de secundario 0,5), con ${nd} días y unas ${fmt(porSemana)} sesiones por semana. Lo que mejor funciona para crecer: entre 10 y 20 (la franja clara en cada barra).</p>
+    <svg class="body cg-body" viewBox="0 0 400 420" aria-hidden="true"><g>${view(FRONT)}</g><g transform="translate(200 0)">${view(BACK)}</g></svg>
+    <div class="cg-leg"><span style="--c:var(--rojo)">menos de 6</span><span style="--c:var(--amarillo)">6 a 10</span><span style="--c:var(--verde)">10 a 20</span><span style="--c:var(--violeta)">más de 20</span></div>
+    <div class="cg-list">${rows}</div>`;
+}
 function bodyPaint(prim, sec, sel) {
   document.querySelectorAll('.body:not(.mini) .m').forEach(p => { p.classList.toggle('p', prim.includes(p.dataset.m)); p.classList.toggle('s', !prim.includes(p.dataset.m) && sec.includes(p.dataset.m)); p.classList.toggle('sel', p.dataset.m === sel); });
   const lf = bodyLabels($('body-front'), 'l'), lb = bodyLabels($('body-back'), 'r');
@@ -2305,14 +2350,14 @@ showTab(startTab);
     after();
   }, e => console.warn(col, e));
   let colorPicked = false;
-  snap('dias', 'dias', () => { S.loaded.dias = true; renderDias(); renderColors(); renderRtColors(); if (S.tab === 'rutina') renderRutina(); else applyDay(); if (!formBusy()) buildForm(); renderHist(); renderProgreso(); });
-  snap('catalogo', 'cat', () => { S.loaded.cat = true; renderPick(); if (S.tab === 'rutina') renderRutina(); if (!formBusy()) buildForm(); if (bodySel) bodySelect(bodySel); });
-  snap('ejercicios', 'ej', () => { S.loaded.ej = true; if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
+  snap('dias', 'dias', () => { S.loaded.dias = true; renderDias(); renderCarga(); renderColors(); renderRtColors(); if (S.tab === 'rutina') renderRutina(); else applyDay(); if (!formBusy()) buildForm(); renderHist(); renderProgreso(); });
+  snap('catalogo', 'cat', () => { S.loaded.cat = true; renderCarga(); renderPick(); if (S.tab === 'rutina') renderRutina(); if (!formBusy()) buildForm(); if (bodySel) bodySelect(bodySel); });
+  snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
     if (first) { autoClose(); migrateBarra(); }
     if (first && !colorPicked) { colorPicked = true; if (!resumeRunning()) { S.color = nextColor(); applyDay(); } }
-    renderColors(); renderHist(); renderProgreso();
+    renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
   });
   snap('peso', 'peso', renderPeso);
@@ -2322,7 +2367,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0105';
+const APP_VERSION = '2026.11.03-0216';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
