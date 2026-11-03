@@ -145,6 +145,8 @@ label { min-width: 0; }
 .serie-grid .sg-l { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .serie-grid .sg-n { text-align: center; font-size: .7rem; color: var(--muted); }
 .esf { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.esf .esf-q { flex: none; width: 20px; height: 20px; padding: 0; margin-left: 4px; border-radius: 50%; font-size: .72rem; line-height: 1; vertical-align: middle; }
+.esf .esf-g[hidden] { display: none; }
 .esf .esf-g { display: block; text-transform: none; letter-spacing: 0; font-size: .72rem; margin-top: 2px; }
 .esf .sg-l { width: 100%; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .esf button { flex: 1; white-space: nowrap; padding: 7px 6px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
@@ -926,6 +928,7 @@ function openPracticeEj(id) {
   const c = S.cat.find(x => x.id === id); if (!c) return;
   openPractice({ f: 'ej:' + c.id, cat: c, n: c.nombre }, [{ f: 'ej:' + c.id, cat: c, n: c.nombre }]);
 }
+document.addEventListener('click', e => { const q = e.target.closest('.esf-q'); if (q) { const g = q.parentElement.querySelector('.esf-g'); if (g) g.hidden = !g.hidden; } });
 document.addEventListener('click', e => { const b = e.target.closest('[data-prac-ej]'); if (b) { e.preventDefault(); e.stopPropagation(); openPracticeEj(b.dataset.pracEj); } }, true);
 const LIBRE = { f: 'libre', n: 'Movilidad libre', d: 'Moverte jugando en todas las direcciones que puedas, sin ejercicio fijo. Para recuperar movimiento que no usás.', dose: 'el tiempo que quieras', t: 0 };
 function pracList() {
@@ -1202,7 +1205,7 @@ function exCardHtml(e, items, big) {
         <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : e.reps)}" value="${sets[k] ?? ''}">`).join('')}
         <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>
       <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior.</p>
-      <div class="full esf"><span class="sg-l">¿Cómo te costó? <small class="esf-g">en la última serie, ¿cuántas reps más podías hacer bien? Fácil 3+ · Justo 1 o 2 · Al límite 0</small></span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
+      <div class="full esf"><span class="sg-l">¿Cómo te costó? <button type="button" class="esf-q" aria-label="Ayuda">?</button><small class="esf-g" hidden>En la última serie, ¿cuántas reps más podías hacer bien? Fácil 3+ · Justo 1 o 2 · Al límite 0</small></span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
       <label class="full">Nota<input type="text" data-f="nota" placeholder="Opcional" value="${esc(it.nota ?? '')}"></label>
     </div>
     ${totalLine(e, it.carga ?? null)}
@@ -2313,7 +2316,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0057';
+const APP_VERSION = '2026.11.03-0100';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
