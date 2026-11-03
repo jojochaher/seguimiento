@@ -107,6 +107,8 @@ label { min-width: 0; }
 .btn.small { font-size: .9rem; padding: 6px 10px; }
 .btn:disabled { opacity: .5; cursor: default; }
 .colors { display: flex; flex-wrap: nowrap; gap: 6px; }
+.colors.many { flex-wrap: wrap; } .colors.many button { flex: 1 1 calc(33.333% - 6px); }
+.colors button { overflow-wrap: anywhere; }
 .colors button { flex: 1 1 0; min-width: 0; font-family: var(--font-display); font-weight: 700; font-size: .85rem; line-height: 1.1; letter-spacing: .03em; text-transform: uppercase; border: 2px solid var(--c); color: var(--c); background: transparent; border-radius: 10px; padding: 7px 4px; cursor: pointer; position: relative; }
 .colors button[aria-pressed="true"] { background: var(--c); color: var(--on-day); }
 .colors button.off { opacity: .55; border-style: dashed; }
@@ -738,7 +740,8 @@ function currentSession() { return S.ses.find(s => s.id === sessionId()); }
 function renderColors() {
   const nx = nextColor();
   const act = DIAS().filter(d => d.activo !== false), extra = DIAS().filter(d => d.activo === false);
-  const btn = d => `<button type="button" data-c="${esc(d.id)}" aria-pressed="${d.id === S.color}" class="${d.activo === false ? 'off' : ''}" style="--c: var(--${esc(d.color)})">${esc(d.nombre)}${d.id === nx ? '<span class="next">toca hoy</span>' : ''}</button>`;
+  const btn = d => `<button type="button" data-c="${esc(d.id)}" aria-pressed="${d.id === S.color}" class="${d.activo === false ? 'off' : ''}" style="--c: var(--${esc(d.color)})">${diaLabel(d.nombre)}${d.id === nx ? '<span class="next">toca hoy</span>' : ''}</button>`;
+  $('colors').classList.toggle('many', act.length > 4);
   $('colors').innerHTML = act.map(btn).join('') + (extra.length ? `<div class="colors-extra">${extra.map(btn).join('')}</div>` : '');
   $('colors').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { flushSave(); S.color = b.dataset.c; S.focusIdx = 0; applyDay(); buildForm(); renderColors(); }));
 }
@@ -1548,9 +1551,11 @@ function formBusy() { const a = document.activeElement; return !!(a && ($('ex-li
 function exCards() { return [...$('ex-list').querySelectorAll('.ex'), ...(S.focus ? $('fs-card').querySelectorAll('.ex') : [])]; }
 
 /* ---------- rutina editable ---------- */
+function diaLabel(n) { const [a, ...r] = String(n).split('·'); return esc(a.trim()) + (r.length ? `<span class="next">${esc(r.join('·').trim())}</span>` : ''); }
 function renderRtColors() {
   if (!DIAS().some(d => d.id === S.rtColor)) S.rtColor = (DIAS()[0] || {}).id || 'verde';
-  $('rt-colors').innerHTML = DIAS().map(d => `<button type="button" data-c="${esc(d.id)}" aria-pressed="${d.id === S.rtColor}" style="--c: var(--${esc(d.color)})">${esc(d.nombre)}</button>`).join('');
+  $('rt-colors').classList.toggle('many', DIAS().length > 4);
+  $('rt-colors').innerHTML = DIAS().map(d => `<button type="button" data-c="${esc(d.id)}" aria-pressed="${d.id === S.rtColor}" style="--c: var(--${esc(d.color)})">${diaLabel(d.nombre)}</button>`).join('');
   $('rt-colors').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { S.rtColor = b.dataset.c; renderRtColors(); renderRutina(); }));
 }
 /* ---------- listas editables: deslizar para borrar, mantener y arrastrar para ordenar ---------- */
@@ -2475,7 +2480,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0255';
+const APP_VERSION = '2026.11.03-0258';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
