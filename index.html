@@ -420,6 +420,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 
   <!-- RUTINA -->
   <section class="panel" id="p-rutina" hidden>
+    <div class="box" id="rutinas"></div>
     <details class="box" id="dias-box">
       <summary>Días de la rutina</summary>
       <p class="hint">Cada día tiene nombre, color, elongación y orden de ejercicios ("alternando grupos" intercala músculos distintos). El orden de los días es el de rotación. Un día fuera de rotación (por ejemplo "Full body corto" para cuando no podés hacer el normal) queda disponible en Entreno pero no cuenta para "toca hoy".</p>
@@ -645,7 +646,7 @@ function ORDER_IDS() { return DIAS().filter(d => d.activo !== false).map(d => d.
 const TABS = ['entreno', 'rutina', 'progreso', 'cuerpo', 'fisico'];
 const GRUPOS = ['Pectorales', 'Hombros', 'Trapecios', 'Bíceps', 'Espalda', 'Tríceps', 'Piernas', 'Abdominales', 'Espinales', 'Otros'];
 const REST_DEFAULT = { compuesto: 120, aislado: 75 };
-const S = { db: null, ej: [], cat: [], dias: [], ses: [], peso: [], fotos: [], medidas: [], tab: 'entreno', color: null, rtColor: 'verde', fecha: today(), focus: false, focusIdx: 0, loaded: { ej: false, ses: false, cat: false, dias: false } };
+const S = { db: null, ej: [], cat: [], dias: [], ses: [], peso: [], fotos: [], medidas: [], rutinas: [], tab: 'entreno', color: null, rtColor: 'verde', fecha: today(), focus: false, focusIdx: 0, loaded: { ej: false, ses: false, cat: false, dias: false } };
 const $ = id => document.getElementById(id);
 
 function today() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -720,6 +721,8 @@ document.addEventListener('visibilitychange', wakeSync);
 /* ---------- entreno ---------- */
 function nextColor() {
   const ids = ORDER_IDS(); if (!ids.length) return 'extra';
+  const fijos = DIAS().filter(d => d.activo !== false && d.dow);
+  if (fijos.length) { const dow = new Date(S.fecha + 'T12:00:00').getDay() || 7; const d = fijos.find(x => Number(x.dow) === dow); if (d) return d.id; }
   const sorted = S.ses.filter(s => ids.includes(s.color)).sort((a, b) => a.fecha < b.fecha ? 1 : -1);
   if (!sorted.length) return ids[0];
   const i = ids.indexOf(sorted[0].color);
@@ -1070,8 +1073,17 @@ function setsDesc(it, n, e) {
 function setsText(sets) { const a = (sets || []).filter(v => v != null); return a.length ? a.join('/') : ''; }
 function hitTarget(sets, e) { const a = (sets || []).filter(v => v != null); return a.length >= Number(e.series) && a.every(v => v >= Number(e.reps)); }
 function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Number(e.paso); if (e.asistida) return -5; if (e.barra) return 2.5; if (/mancuerna/i.test(e.nombre)) return 2; if (/barra|polea|máquina|maquina/i.test(e.nombre)) return 5; if (/curl|vuelo|extensi|franc|apertura/i.test(e.nombre)) return 2; return 5; }
-function lastDone(ejId) {
-  return S.ses.filter(s => s.fecha < S.fecha && s.items && s.items[ejId] && s.items[ejId].skip == null && (s.items[ejId].carga != null || s.items[ejId].reps || (s.items[ejId].sets || []).some(v => v != null))).sort((a, b) => a.fecha < b.fecha ? -1 : 1).pop();
+/* historial compartido entre instancias del mismo ejercicio del catálogo (p. ej. gemelos en dos días) */
+function catKey(id) { const e = S.ej.find(x => x.id === id); return (e && e.cat) || id; }
+function itemOf(s, e) {
+  if (!s.items) return null;
+  if (s.items[e.id]) return s.items[e.id];
+  const k = (e.cat || e.id); if (s.items[k]) return s.items[k];
+  const key = Object.keys(s.items).find(id => catKey(id) === k); return key ? s.items[key] : null;
+}
+function lastDone(ejOrId) {
+  const e = typeof ejOrId === 'string' ? (S.ej.find(x => x.id === ejOrId) || { id: ejOrId }) : ejOrId;
+  return S.ses.filter(s => s.fecha < S.fecha).map(s => ({ s, it: itemOf(s, e) })).filter(x => x.it && x.it.skip == null && (x.it.carga != null || x.it.reps || (x.it.sets || []).some(v => v != null))).sort((a, b) => a.s.fecha < b.s.fecha ? -1 : 1).map(x => Object.assign({}, x.s, { items: Object.assign({}, x.s.items, { [e.id]: x.it }) })).pop();
 }
 /* progresión por esfuerzo: la meta sale de la fuerza estimada (Epley) de la última sesión,
    ajustada por cuánto costó (fácil +5 %, justo +2,5 %, al límite = igualar). El mínimo es igualar. */
@@ -1131,10 +1143,10 @@ function metricOf(e) { if (!e) return 'carga'; if (isBody(e)) return 'reps'; if 
 function metricLabel(e) { const m = metricOf(e); return m === 'reps' ? 'reps' : m === 'e1rm' ? 'kg (1RM est.)' : m === 'volumen' ? 'kg × reps' : e && e.asistida ? 'kg de asistencia' : 'kg'; }
 function seriesFor(ejId, e) {
   const m = metricOf(e);
-  const rows = S.ses.filter(s => s.items && s.items[ejId] && s.items[ejId].skip == null).sort((a, b) => a.fecha < b.fecha ? -1 : 1);
+  const ee = e || S.ej.find(x => x.id === ejId) || { id: ejId };
+  const rows = S.ses.map(s => ({ s, it: itemOf(s, ee) })).filter(x => x.it && x.it.skip == null).sort((a, b) => a.s.fecha < b.s.fecha ? -1 : 1);
   const out = [];
-  rows.forEach(s => {
-    const it = s.items[ejId], sets = parseSets(it, Number((e && e.series) || 3)).filter(v => v != null);
+  rows.forEach(({ s, it }) => { sets = parseSets(it, Number((e && e.series) || 3)).filter(v => v != null);
     if (m === 'reps') { if (sets.length) out.push({ fecha: s.fecha, kg: sets.reduce((x, y) => x + y, 0) }); return; }
     if (it.carga == null) return;
     const total = it.carga;
@@ -1625,6 +1637,7 @@ function renderDias() {
       </div>
       <div class="two">
         <label>Elongación<select data-f="elong">${['verde', 'naranja', 'amarillo', 'azul', ''].map(k => `<option value="${k}"${k === (d.elong || '') ? ' selected' : ''}>${ELONG_NAMES[k]}</option>`).join('')}</select></label>
+        <label>Día fijo<select data-f="dow"><option value="">Por turno</option>${[1,2,3,4,5,6,7].map(n => `<option value="${n}"${Number(d.dow) === n ? ' selected' : ''}>${DOW_NAMES[n]}</option>`).join('')}</select></label>
         <label>En rotación<select data-f="activo"><option value="1"${d.activo !== false ? ' selected' : ''}>Sí, es parte del ciclo</option><option value="0"${d.activo === false ? ' selected' : ''}>No, solo a demanda</option></select></label>
       </div>
     </div>
@@ -1634,6 +1647,7 @@ function renderDias() {
     const id = inp.closest('.swipe').dataset.id, d = dia(id);
     const body = cleanDia(d);
     if (inp.dataset.f === 'activo') body.activo = inp.value === '1';
+    else if (inp.dataset.f === 'dow') { if (inp.value) body.dow = Number(inp.value); else delete body.dow; }
     else body[inp.dataset.f] = inp.dataset.f === 'nombre' ? (inp.value.trim() || d.nombre) : inp.value;
     await writeDia(id, body);
   }));
@@ -1643,7 +1657,7 @@ function renderDias() {
     try { await S.db.collection('dias').doc(id).delete(); setStatus('dias-status', 'Día quitado. Sus ejercicios y sesiones quedan guardados.', 'ok'); } catch (e) { err(e, 'dias-status'); }
   });
 }
-function cleanDia(d) { return { nombre: d.nombre, color: d.color, elong: d.elong || '', orden: d.orden ?? 0, modo: d.modo || 'orden', activo: d.activo !== false }; }
+function cleanDia(d) { const b = { nombre: d.nombre, color: d.color, elong: d.elong || '', orden: d.orden ?? 0, modo: d.modo || 'orden', activo: d.activo !== false }; if (d.dow) b.dow = Number(d.dow); return b; }
 async function writeDia(id, body) {
   if (!S.db) return;
   try {
@@ -1666,6 +1680,84 @@ $('dia-add').addEventListener('click', async () => {
   else await writeDia(id, body);
   S.rtColor = id;
 });
+/* ---------- rutinas guardadas: la actual se puede guardar con nombre y cargar otra (las sesiones no se tocan) ---------- */
+const DOW_NAMES = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+function cloneEj(e) { const b = Object.assign({}, e); return b; }
+function rutinaActual() { return { dias: DIAS().map(d => Object.assign({ id: d.id }, cleanDia(d))), ejercicios: S.ej.map(cloneEj) }; }
+const seriesDe = (id, def) => { const e = S.ej.find(x => x.id === id || x.cat === id); return e ? Number(e.series) || def : def; };
+function plantilla6() {
+  const dias = [
+    { id: 'lun', nombre: 'Empuje A', color: 'verde', elong: 'verde', orden: 1, modo: 'orden', activo: true, dow: 1 },
+    { id: 'mar', nombre: 'Tirón A', color: 'amarillo', elong: 'amarillo', orden: 2, modo: 'orden', activo: true, dow: 2 },
+    { id: 'mie', nombre: 'Piernas A · cuádriceps', color: 'naranja', elong: 'naranja', orden: 3, modo: 'orden', activo: true, dow: 3 },
+    { id: 'jue', nombre: 'Empuje B', color: 'celeste', elong: 'verde', orden: 4, modo: 'orden', activo: true, dow: 4 },
+    { id: 'vie', nombre: 'Tirón B', color: 'azul', elong: 'azul', orden: 5, modo: 'orden', activo: true, dow: 5 },
+    { id: 'sab', nombre: 'Piernas B · glúteos e isquios', color: 'violeta', elong: 'naranja', orden: 6, modo: 'orden', activo: true, dow: 6 }
+  ];
+  const plan = {
+    lun: ['press-banco', 'press-hombro', 'fondos-asistida', 'vuelos-laterales', 'extensiones-polea', 'abs-maquina'],
+    mar: ['dominada-asistida', 'remo-polea-baja', 'vuelos-posteriores', 'curl-barra', 'encogimientos', 'oblicuos'],
+    mie: ['sentadilla', 'sillon-cuadriceps', 'aductores', 'abductores', 'gemelos', 'abs-banco'],
+    jue: ['press-vertical', 'aperturas', 'vuelos-frontales', 'press-frances', 'extensiones-mancuerna', 'fondos-maquina', 'elevar-piernas'],
+    vie: ['tirones-dorsalera', 'dorsal-convergente', 'remo-mancuerna', 'vuelos-posteriores', 'curl-alternado', 'concentrado-polea', 'oblicuos'],
+    sab: ['peso-muerto', 'hip-thrust', 'prensa-45', 'femoral-sentado', 'camilla-isquio', 'gemelos', 'hiperextensiones', 'abs-maquina']
+  };
+  const seen = {}; const ejercicios = [];
+  Object.keys(plan).forEach(color => plan[color].forEach((catId, k) => {
+    const c = S.cat.find(x => x.id === catId); if (!c) return;
+    seen[catId] = (seen[catId] || 0) + 1;
+    const id = seen[catId] === 1 ? catId : catId + '-' + color;
+    const prev = S.ej.find(x => x.id === catId || x.cat === catId) || {};
+    const body = { id, nombre: c.nombre, color, series: seriesDe(catId, 3), reps: prev.reps || 10, orden: k + 1, cat: catId };
+    if (c.barra || prev.barra) body.barra = prev.barra || c.barra;
+    if (c.asistida || prev.asistida) body.asistida = true;
+    if (prev.paso) body.paso = prev.paso; if (prev.descanso) body.descanso = prev.descanso;
+    ejercicios.push(body);
+  }));
+  return { nombre: '6 días · lunes a sábado', plantilla: true, dias, ejercicios };
+}
+async function guardarRutina(nombre) {
+  if (!S.db || !nombre) return;
+  const r = rutinaActual(); const id = slug(nombre) + '-' + Date.now().toString(36);
+  await S.db.collection('rutinas').doc(id).set({ nombre, creada: today(), dias: r.dias, ejercicios: r.ejercicios });
+  try { localStorage.setItem('seg-rutina', id); } catch (e) {}
+  return id;
+}
+async function cargarRutina(r, id) {
+  if (!S.db) return;
+  flushSave();
+  for (const d of S.dias) await S.db.collection('dias').doc(d.id).delete();
+  for (const e of S.ej) await S.db.collection('ejercicios').doc(e.id).delete();
+  for (const d of r.dias) { const b = Object.assign({}, d); delete b.id; await S.db.collection('dias').doc(d.id).set(b); }
+  for (const e of r.ejercicios) { const b = Object.assign({}, e); delete b.id; await S.db.collection('ejercicios').doc(e.id).set(b); }
+  try { localStorage.setItem('seg-rutina', id || ''); } catch (e) {}
+  S.rtColor = (r.dias[0] || {}).id || 'verde';
+}
+function renderRutinas() {
+  const box = $('rutinas'); if (!box || !S.loaded.ej) return;
+  let activa = ''; try { activa = localStorage.getItem('seg-rutina') || ''; } catch (e) {}
+  const list = (S.rutinas || []).slice().sort((a, b) => (a.creada || '') < (b.creada || '') ? 1 : -1);
+  const row = (r, id, tag) => `<div class="item"><span class="v"><b>${esc(r.nombre)}</b><small>${r.dias.length} días · ${r.ejercicios.length} ejercicios${tag ? ' · ' + tag : ''}${id && id === activa ? ' · <b>en uso</b>' : ''}</small></span>${id && id === activa ? '' : `<button type="button" data-load="${esc(id || 'plantilla6')}">Cargar</button>`}${id ? `<button type="button" data-del-rut="${esc(id)}">Borrar</button>` : ''}</div>`;
+  box.innerHTML = `<h2>Rutinas</h2>
+    <p class="hint">Guardá la rutina de hoy con un nombre para poder volver a ella, y cargá otra cuando quieras. Las sesiones y el progreso quedan siempre guardados.</p>
+    <div class="row"><input type="text" id="rut-nombre" placeholder="Nombre para la rutina actual" style="flex:1 1 160px"><button class="btn ghost small" type="button" id="rut-save">Guardar actual</button></div>
+    <div class="list" style="margin-top:8px">${list.map(r => row(r, r.id)).join('')}${S.cat.length ? row(plantilla6(), '', 'plantilla') : ''}</div>
+    <div class="status" id="rut-status"></div>`;
+  $('rut-save').addEventListener('click', async () => { const n = $('rut-nombre').value.trim(); if (!n) { setStatus('rut-status', 'Poné un nombre', 'err'); return; } await guardarRutina(n); setStatus('rut-status', 'Guardada ✓', 'ok'); });
+  box.querySelectorAll('button[data-load]').forEach(b => b.addEventListener('click', async () => {
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '¿Reemplazar la actual?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Cargar'; } }, 4000); return; }
+    const id = b.dataset.load;
+    let r = id === 'plantilla6' ? plantilla6() : S.rutinas.find(x => x.id === id); if (!r) return;
+    let rid = id;
+    if (!activa && !S.rutinas.some(x => x.nombre === 'Rutina anterior (4 días)')) await guardarRutina('Rutina anterior (4 días)');
+    if (id === 'plantilla6') { rid = slug(r.nombre) + '-' + Date.now().toString(36); await S.db.collection('rutinas').doc(rid).set({ nombre: r.nombre, creada: today(), dias: r.dias, ejercicios: r.ejercicios }); }
+    setStatus('rut-status', 'Cargando…'); await cargarRutina(r, rid); setStatus('rut-status', 'Rutina cargada ✓', 'ok'); renderRtColors(); renderRutina();
+  }));
+  box.querySelectorAll('button[data-del-rut]').forEach(b => b.addEventListener('click', async () => {
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '¿Seguro?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Borrar'; } }, 4000); return; }
+    await S.db.collection('rutinas').doc(b.dataset.delRut).delete();
+  }));
+}
 function rtItems() { return S.ej.filter(e => e.color === S.rtColor).sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)); }
 function renderRutina() {
   document.documentElement.style.setProperty('--day', `var(--${dia(S.tab === 'rutina' ? S.rtColor : (S.color || 'verde')).color || 'gris'})`);
@@ -2360,7 +2452,7 @@ showTab(startTab);
   snap('dias', 'dias', () => { S.loaded.dias = true; renderDias(); renderCarga(); renderColors(); renderRtColors(); if (S.tab === 'rutina') renderRutina(); else applyDay(); if (!formBusy()) buildForm(); renderHist(); renderProgreso(); });
   let catFixed = false;
   snap('catalogo', 'cat', () => { S.loaded.cat = true; if (!catFixed) { catFixed = true; migrateCatalogo(); } renderCarga(); renderPick(); if (S.tab === 'rutina') renderRutina(); if (!formBusy()) buildForm(); if (bodySel) bodySelect(bodySel); });
-  snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
+  snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); renderRutinas(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
     if (first) { autoClose(); migrateBarra(); }
@@ -2368,6 +2460,7 @@ showTab(startTab);
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
   });
+  snap('rutinas', 'rutinas', () => { S.loaded.rutinas = true; renderRutinas(); });
   snap('peso', 'peso', renderPeso);
   snap('fotos', 'fotos', renderFotos);
   snap('medidas', 'medidas', renderMedidas);
@@ -2375,7 +2468,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0223';
+const APP_VERSION = '2026.11.03-0232';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
