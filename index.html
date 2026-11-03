@@ -323,9 +323,10 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .cg-list { display: grid; gap: 6px; }
 .cg-row { display: grid; grid-template-columns: 104px 1fr 48px 56px; gap: 8px; align-items: center; font-size: .85rem; }
 .cg-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cg-bar { position: relative; height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.cg-bar { position: relative; height: 10px; border-radius: 5px; background: var(--line); }
 .cg-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; z-index: 1; }
-.cg-bar .cg-ok { position: absolute; top: 0; bottom: 0; background: rgba(127,127,127,.25); }
+.cg-bar .cg-ok { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--ink); z-index: 2; opacity: .9; }
+.cg-bar .cg-ok.hi { opacity: .35; }
 .cg-v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
 .cg-v small { font-weight: 400; color: var(--muted); font-size: .72rem; }
 .cg-z { font-size: .72rem; font-weight: 700; }
@@ -2091,9 +2092,9 @@ function renderCarga() {
   const by = Object.fromEntries(out.map(m => [m.id, m]));
   const view = parts => `<g class="sil">${SIL}</g>${parts.map(([id, d]) => `<path d="${d}" style="fill:${zonaCarga((by[id] || {}).sem || 0, id)[1]}"><title>${esc(MUSCLES[id].n)}: ${fmt((by[id] || {}).sem || 0)} series por semana</title></path>`).join('')}`;
   const max = Math.max(20, ...out.map(m => m.sem));
-  const rows = out.slice().sort((a, b) => (a.sem / metaCarga(a.id)[0]) - (b.sem / metaCarga(b.id)[0])).map(m => { const z = zonaCarga(m.sem, m.id), [lo, hi] = metaCarga(m.id); return `<div class="cg-row"><span class="cg-n">${esc(m.n)}</span><span class="cg-bar"><i style="width:${Math.max(2, m.sem / max * 100)}%;background:${z[1]}"></i><b class="cg-ok" style="left:${lo / max * 100}%;width:${(hi - lo) / max * 100}%"></b></span><span class="cg-v">${fmt(m.sem)}<small>/${lo}</small></span><small class="cg-z" style="color:${z[1]}">${z[2]}</small></div>`; }).join('');
+  const rows = out.slice().sort((a, b) => (a.sem / metaCarga(a.id)[0]) - (b.sem / metaCarga(b.id)[0])).map(m => { const z = zonaCarga(m.sem, m.id), [lo, hi] = metaCarga(m.id); return `<div class="cg-row"><span class="cg-n">${esc(m.n)}</span><span class="cg-bar"><i style="width:${Math.max(2, m.sem / max * 100)}%;background:${z[1]}"></i><b class="cg-ok" style="left:${lo / max * 100}%"></b><b class="cg-ok hi" style="left:${hi / max * 100}%"></b></span><span class="cg-v">${fmt(m.sem)}<small>/${lo}</small></span><small class="cg-z" style="color:${z[1]}">${z[2]}</small></div>`; }).join('');
   box.innerHTML = `<h2>Carga por músculo</h2>
-    <p class="hint">Series por semana según tu rutina (las de músculo principal cuentan 1 y las de secundario 0,5), con ${nd} días y unas ${fmt(porSemana)} sesiones por semana. Cada músculo tiene su meta (el número chico después de la barra, y la franja clara): 10 a 20 para los grandes y los que importan para la postura; menos para los chicos que ya trabajan de rebote en todo.</p>
+    <p class="hint">Series por semana según tu rutina (las de músculo principal cuentan 1 y las de secundario 0,5), con ${nd} días y unas ${fmt(porSemana)} sesiones por semana. Cada músculo tiene su meta (el número chico después de la barra; la rayita marca dónde empieza, y la más tenue dónde ya es de más): 10 a 20 para los grandes y los que importan para la postura; menos para los chicos que ya trabajan de rebote en todo.</p>
     <svg class="body cg-body" viewBox="0 0 400 420" aria-hidden="true"><g>${view(FRONT)}</g><g transform="translate(200 0)">${view(BACK)}</g></svg>
     <div class="cg-leg"><span style="--c:var(--rojo)">bajo</span><span style="--c:var(--amarillo)">casi</span><span style="--c:var(--verde)">en la meta</span><span style="--c:var(--violeta)">de más</span></div>
     <div class="cg-list">${rows}</div>`;
@@ -2474,7 +2475,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0252';
+const APP_VERSION = '2026.11.03-0255';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
