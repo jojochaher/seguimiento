@@ -323,8 +323,8 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 .cg-leg { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center; font-size: .75rem; color: var(--muted); margin-bottom: 8px; }
 .cg-leg span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--c); margin-right: 4px; vertical-align: -1px; }
 .cg-list { display: grid; gap: 6px; }
-.cg-row { display: grid; grid-template-columns: 104px 1fr 48px 56px; gap: 8px; align-items: center; font-size: .85rem; }
-.cg-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cg-row { display: grid; grid-template-columns: 96px 1fr 50px 52px; gap: 8px; align-items: center; font-size: .85rem; }
+.cg-n { font-size: .82rem; line-height: 1.15; }
 .cg-bar { position: relative; height: 10px; border-radius: 5px; background: var(--line); }
 .cg-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; z-index: 1; }
 .cg-bar .cg-ok { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--ink); z-index: 2; opacity: .9; }
@@ -2020,7 +2020,7 @@ const BACK = [
   ['soleo', 'M112 380 C120 378 126 382 126 390 L124 404 C118 406 112 404 112 398 Z M 88 380 C 80 378 74 382 74 390 L 76 404 C 82 406 88 404 88 398 Z']
 ];
 let bodySel = null;
-const SHORT = { deltoides: 'Deltoides', 'deltoides-post': 'Deltoides post.', lumbar: 'Lumbar', gluteo: 'Glúteo', 'gluteo-medio': 'Glúteo medio', dorsal: 'Dorsal', antebrazo: 'Antebrazo', abdominales: 'Abdominales', flexores: 'Flex. cadera' };
+const SHORT = { deltoides: 'Deltoides ant.', 'deltoides-post': 'Deltoides post.', isquios: 'Isquios', lumbar: 'Lumbar', gluteo: 'Glúteo', 'gluteo-medio': 'Glúteo medio', dorsal: 'Dorsal', antebrazo: 'Antebrazo', abdominales: 'Abdominales', flexores: 'Flex. cadera' };
 function drawBody(svgId, parts) {
   $(svgId).innerHTML = `<g class="fig" transform="translate(90 0)"><g class="sil">${SIL}</g>` + parts.map(([id, d]) => `<path class="m" data-m="${id}" d="${d}"><title>${esc(MUSCLES[id].n)}</title></path>`).join('') + (parts === FRONT ? `<g class="ln">${DEC_F}</g>` : '') + '</g><g class="labels"></g>';
   $(svgId).querySelectorAll('.m').forEach(p => p.addEventListener('click', () => bodySelect(p.dataset.m)));
@@ -2083,7 +2083,7 @@ function cargaMuscular() {
     pp.forEach(id => { if (tot[id]) tot[id].p += n; });
     muscleIds(c.secundario).filter(id => !pp.includes(id)).forEach(id => { if (tot[id]) tot[id].s += n; });
   });
-  const out = Object.keys(tot).filter(id => id !== 'cuello' && id !== 'flexores').map(id => { const ciclo = tot[id].p + tot[id].s * 0.5; return { id, n: MUSCLES[id].n, ciclo, sem: Math.round(ciclo * vueltas * 10) / 10, p: tot[id].p, s: tot[id].s }; });
+  const out = Object.keys(tot).filter(id => id !== 'cuello' && id !== 'flexores').map(id => { const ciclo = tot[id].p + tot[id].s * 0.5; return { id, n: (typeof SHORT !== 'undefined' && SHORT[id]) || MUSCLES[id].n, ciclo, sem: Math.round(ciclo * vueltas * 10) / 10, p: tot[id].p, s: tot[id].s }; });
   return { out, porSemana: Math.round(porSemana * 10) / 10, nd };
 }
 /* meta por músculo: los grandes y los que importan para postura, 10 a 20 series por semana; los chicos o que ya
@@ -2480,7 +2480,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0258';
+const APP_VERSION = '2026.11.03-0301';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
