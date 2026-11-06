@@ -143,6 +143,8 @@ label { min-width: 0; }
 .ex-inputs .full { grid-column: 1 / -1; }
 .sets { display: flex; gap: 6px; }
 .serie-grid { display: grid; grid-template-columns: 58px repeat(var(--n), 1fr); gap: 6px; align-items: center; }
+.ex-inputs textarea { width: 100%; box-sizing: border-box; resize: none; overflow: hidden; min-height: 42px; font: inherit; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); line-height: 1.35; }
+.ex-inputs textarea:focus { outline: none; border-color: var(--day); }
 .serie-grid input { padding: 9px 4px; text-align: center; min-width: 0; }
 .serie-grid .sg-l { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .serie-grid .sg-n { text-align: center; font-size: .7rem; color: var(--muted); }
@@ -1125,7 +1127,7 @@ function plan(e) {
   while (rr(W) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
   const rmin = Math.max(1, Math.round(repsFor(L, load(W))));
   let r = Math.max(1, Math.round(repsFor(T, load(W)))); if (f > 1 && r <= rmin) r = rmin + 1;
-  return { W, r, rmin, it, l, b };
+  return { W, r, rmin, it, l, b, T, L, load };
 }
 function suggestion(e) {
   const l = lastDone(e.id), n = Number(e.series) || 3;
@@ -1240,9 +1242,9 @@ function exCardHtml(e, items, big) {
       <div class="full serie-grid" style="--n:${n}"><span class="sg-l">${e.barra ? 'Kg total' : isBody(e) ? 'Kg extra' : 'Kg'}</span>${(() => { const kg = setKgs(it, n); let prev = null; return Array.from({ length: n }, (_, k) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (pl && pl.W != null ? fmt(pl.W) : isBody(e) ? '0' : ''); if (v != null) prev = v; return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; }).join(''); })()}
         <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : isBody(e) ? e.reps : repRange(e)[0])}" value="${sets[k] ?? ''}">`).join('')}
         <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>
-      <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior.</p>
+      <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior. <b class="kg-tip"></b></p>
       <div class="full esf"><span class="sg-l">¿Cómo te costó? <button type="button" class="esf-q" aria-label="Ayuda">?</button><small class="esf-g" hidden>En la última serie, ¿cuántas reps más podías hacer bien? Fácil 3+ · Justo 1 o 2 · Al límite 0</small></span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
-      <label class="full">Nota<input type="text" data-f="nota" placeholder="Opcional" value="${esc(it.nota ?? '')}"></label>
+      <label class="full">Nota<textarea data-f="nota" rows="1" placeholder="Opcional">${esc(it.nota ?? '')}</textarea></label>
     </div>
     ${totalLine(e, it.carga ?? null)}
     <div class="ex-actions">
@@ -1253,6 +1255,7 @@ function exCardHtml(e, items, big) {
   </article>`;
 }
 function wireCards(root, ejs) {
+  root.querySelectorAll('textarea[data-f="nota"]').forEach(t => { const grow = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }; t.addEventListener('input', () => { grow(); scheduleSave(); }); grow(); });
   root.querySelectorAll('input').forEach(i => i.addEventListener('input', () => {
     scheduleSave();
     if (i.dataset.f === 'setkg') {
@@ -1260,6 +1263,14 @@ function wireCards(root, ejs) {
       const ins = [...art.querySelectorAll('[data-f="setkg"]')]; let prev = null;
       ins.forEach(x => { if (prev != null) x.placeholder = fmt(prev); const v = num(x.value); if (v != null) prev = v; });
       if (t && e) { const tmp = document.createElement('div'); tmp.innerHTML = totalLine(e, cardCarga(art)); t.replaceWith(tmp.firstChild); }
+      /* peso distinto del sugerido: reps que corresponden según el historial */
+      const pl = e && !isBody(e) ? plan(e) : null, kgs = cardKgs(art), reps = [...art.querySelectorAll('[data-f="set"]')];
+      if (pl && pl.T) {
+        reps.forEach((r, k) => { const v = kgs[k]; if (v == null) return; const est = Math.max(1, Math.round(repsFor(pl.T, pl.load(v)))), mn = Math.max(1, Math.round(repsFor(pl.L, pl.load(v)))); r.placeholder = est; r.title = `Con ${fmt(v)} kg: meta ${est}, mínimo ${mn}`; });
+        const k0 = kgs.find(v => v != null), tip = art.querySelector('.kg-tip');
+        if (k0 != null && k0 !== pl.W) { const est = Math.max(1, Math.round(repsFor(pl.T, pl.load(k0)))), mn = Math.max(1, Math.round(repsFor(pl.L, pl.load(k0)))); if (tip) tip.textContent = `Con ${fmt(k0)} kg: meta ${est} reps · mínimo ${mn}`; }
+        else if (tip) tip.textContent = '';
+      }
     }
     if (S.focus) fsUpdateNext();
   }));
@@ -2480,7 +2491,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.03-0301';
+const APP_VERSION = '2026.11.06-2357';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
