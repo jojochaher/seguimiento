@@ -2408,14 +2408,27 @@ async function camOpen(k, fallbackInput) {
 }
 async function camStart() {
   camStop();
+  const v = $('cam-video');
+  const get = c => navigator.mediaDevices.getUserMedia({ video: Object.assign({ facingMode: CAM.facing }, c), audio: false });
   try {
-    CAM.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: CAM.facing, width: { ideal: 1600 }, height: { ideal: 2000 } }, audio: false });
-    const v = $('cam-video'); v.srcObject = CAM.stream; v.classList.toggle('mirror', CAM.facing === 'user'); await v.play().catch(() => {});
-    /* campo lo más amplio posible: zoom mínimo si el teléfono lo expone */
-    try { const t = CAM.stream.getVideoTracks()[0], cap = t.getCapabilities ? t.getCapabilities() : null; if (cap && cap.zoom && cap.zoom.min != null) await t.applyConstraints({ advanced: [{ zoom: cap.zoom.min }] }); } catch (e) {}
+    /* 4:3 vertical = el sensor completo del iPhone (los modos 16:9 recortan); si igual viene apaisado, se pide sin tamaño */
+    try { CAM.stream = await get({ width: { ideal: 1440 }, height: { ideal: 1920 }, aspectRatio: { ideal: 3 / 4 } }); } catch (e) { CAM.stream = await get({}); }
+    v.srcObject = CAM.stream; v.classList.toggle('mirror', CAM.facing === 'user'); await v.play().catch(() => {});
+    await camMeta(v);
+    if (v.videoWidth > v.videoHeight) { try { const s2 = await get({}); camStop(); CAM.stream = s2; v.srcObject = s2; await v.play().catch(() => {}); await camMeta(v); } catch (e) {} }
+    camFitGuide();
     return true;
   } catch (e) { CAM.stream = null; return false; }
 }
+function camMeta(v) { return new Promise(r => { if (v.videoWidth) return r(); const t = setTimeout(r, 1500); v.addEventListener('loadedmetadata', () => { clearTimeout(t); r(); }, { once: true }); }); }
+/* la silueta ocupa solo lo que ocupa el video dentro del recuadro (sin pisar las franjas negras) */
+function camFitGuide() {
+  const v = $('cam-video'), g = $('cam-guide'); if (!v.videoWidth) { g.style.cssText = ''; return; }
+  const W = v.clientWidth, H = v.clientHeight, ar = v.videoWidth / v.videoHeight;
+  let w = W, h = W / ar; if (h > H) { h = H; w = H * ar; }
+  g.style.cssText = `width:${w}px;height:${h}px;align-self:center;justify-self:center`;
+}
+window.addEventListener('resize', () => { if (!$('cam').hidden) camFitGuide(); });
 function camStop() { if (CAM.stream) { CAM.stream.getTracks().forEach(t => t.stop()); CAM.stream = null; } }
 function camClose() { camStop(); $('cam').hidden = true; $('cam-count').hidden = true; document.body.classList.remove('locked'); CAM.busy = false; CAM.seq = false; }
 async function camCountdown(n0, label) {
@@ -2615,7 +2628,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.07-1457';
+const APP_VERSION = '2026.11.07-1505';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
