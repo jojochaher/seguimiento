@@ -1282,13 +1282,16 @@ function setRowsRefresh(art) {
   const rows = [...art.querySelectorAll('.setrow')]; if (!rows.length) return;
   const kgs = cardKgs(art), sets = [...art.querySelectorAll('[data-f="set"]')].map(i => num(i.value));
   const e = S.ej.find(x => x.id === art.dataset.ej);
-  let cur = sets.findIndex(v => v == null);
+  /* la fila donde está escribiendo no se cierra hasta que salga del casillero */
+  const act = rows.findIndex(r => r.contains(document.activeElement));
+  let cur = sets.findIndex(v => v == null); if (act >= 0) cur = act;
   rows.forEach((r, k) => {
-    const done = sets[k] != null;
+    const done = sets[k] != null && k !== act;
     r.classList.toggle('done', done); r.classList.toggle('cur', k === cur); r.classList.toggle('todo', !done && k !== cur);
     if (!done) r.classList.remove('edit');
     const chip = r.querySelector('.setchip');
-    chip.textContent = done ? `${k + 1}ª · ${e && isBody(e) && kgs[k] == null ? 'cuerpo' : fmt(kgs[k] ?? 0) + ' kg'} × ${sets[k]} ✓` : '';
+    const kgIn = r.querySelector('[data-f="setkg"]'), kv = kgs[k] ?? num(kgIn && kgIn.placeholder);
+    chip.textContent = done ? `${k + 1}ª · ${kv == null || (e && isBody(e) && !kv) ? (e && isBody(e) ? 'cuerpo' : '— kg') : fmt(kv) + ' kg'} × ${sets[k]} ✓` : '';
   });
   const esf = art.querySelector('.esf'); if (esf) esf.hidden = cur !== -1;
 }
@@ -1345,6 +1348,7 @@ function wireCards(root, ejs) {
   }));
   root.querySelectorAll('.setchip').forEach(b => b.addEventListener('click', () => { const r = b.closest('.setrow'); r.classList.toggle('edit'); if (r.classList.contains('edit')) { const i = r.querySelector('[data-f="set"]'); if (i) i.focus(); } }));
   root.querySelectorAll('.ex').forEach(setRowsRefresh);
+  root.querySelectorAll('.setrows').forEach(g => g.addEventListener('focusout', () => setTimeout(() => setRowsRefresh(g.closest('.ex')), 0)));
   root.querySelectorAll('button[data-esf]').forEach(b => b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') === 'true'; b.closest('.esf').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false')); if (!on) b.setAttribute('aria-pressed', 'true'); scheduleSave(); }));
   root.querySelectorAll('button[data-rest]').forEach(b => b.addEventListener('click', () => { if (rest && rest.ej === b.dataset.ej) restStop(); else restStart(Number(b.dataset.rest), b.dataset.ej); }));
   root.querySelectorAll('button[data-pg]').forEach(b => b.addEventListener('click', () => { if (S.focus) fsClose(); openProgreso(b.dataset.pg); }));
@@ -2628,7 +2632,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.07-1505';
+const APP_VERSION = '2026.11.07-2153';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
