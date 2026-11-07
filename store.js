@@ -125,9 +125,16 @@
     })();
     return pushing;
   }
+  /* leer un archivo del repo de datos (p. ej. respuestas.json que escribe Claude) */
+  async function syncFetch(name) {
+    const c = syncCfg(); if (!c || !c.token || !c.repo) return null;
+    const r = await fetch(`https://api.github.com/repos/${c.repo}/contents/${name}?ref=main`, { headers: { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' });
+    if (r.status === 404) return null; if (!r.ok) throw new Error('GitHub ' + r.status);
+    return r.json();
+  }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') setTimeout(() => syncPush(), 1500); });
   setInterval(() => syncPush(), 5 * 60000);
 
   const ready = (async () => { await seedIfEmpty(); await loadAssets(); })();
-  window.claude = { use: async (name) => { await ready; return name === 'db' ? db : name === 'assets' ? assets : null; }, local: true, exportAll, importAll, syncCfg, syncSave, syncPush };
+  window.claude = { use: async (name) => { await ready; return name === 'db' ? db : name === 'assets' ? assets : null; }, local: true, exportAll, importAll, syncCfg, syncSave, syncPush, syncFetch };
 })();

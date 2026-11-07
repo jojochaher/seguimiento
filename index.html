@@ -196,13 +196,47 @@ body.locked { overflow: hidden; }
 .fs-st h2 { font-size: 1.25rem; }
 .fs-foot { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 10px 14px 14px; }
 .fs-foot .btn { font-size: 1.15rem; padding: 12px 16px; }
-.fs-rest { position: absolute; inset: 0 14px; background: var(--bg); display: grid; align-content: start; gap: 12px; text-align: center; padding-top: 10vh; overflow-y: auto; }
+.fs-rest { position: absolute; inset: 0 14px; background: var(--bg); display: grid; align-content: start; gap: 10px; text-align: center; padding-top: 3vh; overflow-y: auto; }
 .fs-rest .k { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .fs-rest .n { font-family: var(--font-display); font-weight: 700; font-size: 4.5rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--day); }
 .fs-next-set { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; color: var(--ink); margin-top: 8px; }
 .fs-rest .tec { text-align: left; margin-top: 8px; }
 .fs-fact { text-align: left; font-size: .86rem; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
 .fs-fact b { color: var(--ink); }
+#fb-box textarea { width: 100%; resize: none; font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
+.badge { display: inline-block; min-width: 18px; padding: 1px 6px; border-radius: 999px; background: var(--day); color: var(--on-day); font-size: .7rem; font-weight: 700; text-align: center; vertical-align: middle; margin-left: 6px; }
+.fb-item { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); display: grid; gap: 4px; }
+.fb-item .fb-meta { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.fb-item.resp { border-left: 4px solid var(--day); }
+.fb-item .fb-txt { white-space: pre-wrap; font-size: .92rem; }
+.fb-item.mine .fb-txt { color: var(--muted); font-style: italic; }
+
+/* modo sesión: una serie a la vez */
+.setrows { display: grid; gap: 6px; }
+.setrow { display: grid; grid-template-columns: 34px 1fr 1fr; gap: 8px; align-items: end; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); }
+.setrow .sr-n { font-family: var(--font-display); font-weight: 700; color: var(--muted); font-size: .9rem; padding-bottom: 10px; }
+.setrow label { display: grid; gap: 2px; margin: 0; }
+.setrow label span { font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.setrow input { width: 100%; text-align: center; padding: 10px 4px; font-size: 18px; }
+.setrow.cur { border-color: var(--day); box-shadow: 0 0 0 2px color-mix(in srgb, var(--day) 25%, transparent); }
+.setrow.cur .sr-n { color: var(--day); }
+.setrow.cur input { padding: 14px 4px; font-size: 22px; font-weight: 700; }
+.setrow.todo { opacity: .45; }
+.setrow.todo input { padding: 6px 4px; font-size: 14px; }
+.setrow .setchip { display: none; grid-column: 1 / -1; background: none; border: none; padding: 4px 0; font: inherit; font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--ok, #2a8a4a); text-align: left; cursor: pointer; }
+.setrow.done:not(.edit) { padding: 6px 12px; align-items: center; }
+.setrow.done:not(.edit) .setchip { display: block; }
+.setrow.done:not(.edit) .sr-n, .setrow.done:not(.edit) label { display: none; }
+.fs-card .ex.big .sg-hint { display: none; }
+.fs-rest-set { display: grid; gap: 8px; margin: 4px auto 0; max-width: 340px; text-align: left; padding: 12px; border: 1.5px solid var(--day); border-radius: 14px; background: var(--surface); }
+.fs-rest-set .k { text-align: center; }
+.fs-rest-set .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fs-rest-set label { display: grid; gap: 2px; margin: 0; }
+.fs-rest-set label span { font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.fs-rest-set input { text-align: center; padding: 14px 4px; font-size: 22px; font-weight: 700; }
+.fs-rest-set textarea { width: 100%; resize: none; font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+.fs-rest-set .done { text-align: center; font-weight: 600; color: var(--ok, #2a8a4a); }
+
 .list { display: grid; gap: 6px; }
 .item { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; }
 .item .d { font-family: var(--font-display); font-weight: 600; font-size: 1rem; font-variant-numeric: tabular-nums; color: var(--muted); }
@@ -486,6 +520,13 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
         <button class="btn ghost small" type="button" id="ses-fecha-go">Abrir ese día</button>
       </div>
     </details>
+    <details class="box" id="fb-box">
+      <summary>Para Claude <span class="badge" id="fb-badge" hidden></span></summary>
+      <p class="hint">Lo que escribís acá lo leo cada noche junto con tu sesión. Las devoluciones aparecen abajo.</p>
+      <textarea id="fb-text" rows="2" placeholder="Qué te molestó, qué querés cambiar, qué te dolió…"></textarea>
+      <div class="row"><button class="btn small" type="button" id="fb-send">Enviar</button><span class="status" id="fb-status"></span></div>
+      <div class="list" id="fb-list"></div>
+    </details>
     <div id="pg-list" class="panel"></div>
   </section>
 
@@ -652,7 +693,7 @@ function ORDER_IDS() { return DIAS().filter(d => d.activo !== false).map(d => d.
 const TABS = ['entreno', 'rutina', 'progreso', 'cuerpo', 'fisico'];
 const GRUPOS = ['Pectorales', 'Hombros', 'Trapecios', 'Bíceps', 'Espalda', 'Tríceps', 'Piernas', 'Abdominales', 'Espinales', 'Otros'];
 const REST_DEFAULT = { compuesto: 120, aislado: 75 };
-const S = { db: null, ej: [], cat: [], dias: [], ses: [], peso: [], fotos: [], medidas: [], rutinas: [], tab: 'entreno', color: null, rtColor: 'verde', fecha: today(), focus: false, focusIdx: 0, loaded: { ej: false, ses: false, cat: false, dias: false } };
+const S = { db: null, ej: [], cat: [], dias: [], ses: [], peso: [], fotos: [], medidas: [], rutinas: [], feedback: [], tab: 'entreno', color: null, rtColor: 'verde', fecha: today(), focus: false, focusIdx: 0, loaded: { ej: false, ses: false, cat: false, dias: false } };
 const $ = id => document.getElementById(id);
 
 function today() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -804,7 +845,7 @@ function restRender() {
 }
 function restStart(sec, ejId) {
   restStop();
-  rest = { end: Date.now() + sec * 1000, ej: ejId, iv: null };
+  rest = { end: Date.now() + sec * 1000, ej: ejId, iv: null }; rest.end0 = rest.end;
   document.querySelectorAll('.ex-actions .rest').forEach(b => b.classList.toggle('on', b.dataset.ej === ejId));
   rest.iv = setInterval(() => {
     if (!rest) return;
@@ -1223,11 +1264,39 @@ function bodyMini(e) {
   const view = parts => `<g class="sil">${SIL}</g>${parts.map(([id, d]) => `<path class="m${prim.includes(id) ? ' p' : sec.includes(id) ? ' s' : ''}" d="${d}"/>`).join('')}`;
   return `<svg class="body mini" viewBox="0 0 400 420" aria-hidden="true">${view(FRONT)}<g transform="translate(200 0)">${view(BACK)}</g></svg>`;
 }
+function setsHtml(e, it, n, pl, big) {
+  const sets = parseSets(it, n), kg = setKgs(it, n);
+  const kgL = e.barra ? 'Kg total' : isBody(e) ? 'Kg extra' : 'Kg';
+  const kgIn = (k, prev) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (pl && pl.W != null ? fmt(pl.W) : isBody(e) ? '0' : ''); return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; };
+  const repIn = k => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : isBody(e) ? e.reps : repRange(e)[0])}" value="${sets[k] ?? ''}">`;
+  let prev = null; const kgs = [], reps = [];
+  for (let k = 0; k < n; k++) { kgs.push(kgIn(k, prev)); if (kg[k] != null) prev = kg[k]; reps.push(repIn(k)); }
+  if (!big) return `<div class="full serie-grid" style="--n:${n}"><span class="sg-l">${kgL}</span>${kgs.join('')}
+        <span class="sg-l">Reps</span>${reps.join('')}
+        <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>`;
+  /* modo sesión: una serie a la vez */
+  return `<div class="full setrows">${Array.from({ length: n }, (_, k) => `<div class="setrow" data-k="${k}"><button type="button" class="setchip" data-edit="${k}"></button><span class="sr-n">${k + 1}ª</span><label><span>${kgL}</span>${kgs[k]}</label><label><span>Reps</span>${reps[k]}</label></div>`).join('')}</div>`;
+}
+/* actualiza el estado de las filas (hecha / actual / pendiente) en modo sesión */
+function setRowsRefresh(art) {
+  const rows = [...art.querySelectorAll('.setrow')]; if (!rows.length) return;
+  const kgs = cardKgs(art), sets = [...art.querySelectorAll('[data-f="set"]')].map(i => num(i.value));
+  const e = S.ej.find(x => x.id === art.dataset.ej);
+  let cur = sets.findIndex(v => v == null);
+  rows.forEach((r, k) => {
+    const done = sets[k] != null;
+    r.classList.toggle('done', done); r.classList.toggle('cur', k === cur); r.classList.toggle('todo', !done && k !== cur);
+    if (!done) r.classList.remove('edit');
+    const chip = r.querySelector('.setchip');
+    chip.textContent = done ? `${k + 1}ª · ${e && isBody(e) && kgs[k] == null ? 'cuerpo' : fmt(kgs[k] ?? 0) + ' kg'} × ${sets[k]} ✓` : '';
+  });
+  const esf = art.querySelector('.esf'); if (esf) esf.hidden = cur !== -1;
+}
 function exCardHtml(e, items, big) {
   const it = items[e.id] || {};
   const c = catOf(e) || {};
-  const sets = parseSets(it, Number(e.series));
   const n = Math.max(1, Number(e.series) || 3);
+  const sets = parseSets(it, n);
   const skipped = it.skip != null;
   const sug = suggestion(e), pl = skipped ? null : plan(e);
   const pts = seriesFor(e.id, e);
@@ -1239,11 +1308,9 @@ function exCardHtml(e, items, big) {
     ${skipped ? `<div class="ex-actions"><span class="skipnote"><span>Salteado hoy:</span><input type="text" data-f="skip" value="${esc(it.skip)}" placeholder="motivo"></span><button type="button" data-unskip="1">Deshacer</button></div>` : `
     <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, !!e.asistida)}</button></div>
     <div class="ex-inputs">
-      <div class="full serie-grid" style="--n:${n}"><span class="sg-l">${e.barra ? 'Kg total' : isBody(e) ? 'Kg extra' : 'Kg'}</span>${(() => { const kg = setKgs(it, n); let prev = null; return Array.from({ length: n }, (_, k) => { const v = kg[k]; const show = v != null && (k === 0 || v !== prev); const ph = prev != null ? fmt(prev) : (pl && pl.W != null ? fmt(pl.W) : isBody(e) ? '0' : ''); if (v != null) prev = v; return `<input type="text" inputmode="decimal" data-f="setkg" data-k="${k}" placeholder="${ph}" value="${show ? fmt(v) : ''}">`; }).join(''); })()}
-        <span class="sg-l">Reps</span>${Array.from({ length: n }, (_, k) => `<input type="number" inputmode="numeric" min="0" max="99" data-f="set" data-k="${k}" placeholder="${esc(pl ? pl.r : isBody(e) ? e.reps : repRange(e)[0])}" value="${sets[k] ?? ''}">`).join('')}
-        <span></span>${Array.from({ length: n }, (_, k) => `<small class="sg-n">${k + 1}ª</small>`).join('')}</div>
+      ${setsHtml(e, it, n, pl, big)}
       <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior. <b class="kg-tip"></b></p>
-      <div class="full esf"><span class="sg-l">¿Cómo te costó? <button type="button" class="esf-q" aria-label="Ayuda">?</button><small class="esf-g" hidden>En la última serie, ¿cuántas reps más podías hacer bien? Fácil 3+ · Justo 1 o 2 · Al límite 0</small></span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
+      <div class="full esf"${sets.length && sets.every(v => v != null) ? '' : ' hidden'}><span class="sg-l">¿Cuánto te costó? <button type="button" class="esf-q" aria-label="Ayuda">?</button><small class="esf-g" hidden>En la última serie, ¿cuántas reps más podías hacer bien? Fácil 3+ · Justo 1 o 2 · Al límite 0</small></span>${Object.entries(ESF).map(([k, v]) => `<button type="button" data-esf="${k}" aria-pressed="${it.esf === k}">${v.n}</button>`).join('')}</div>
       <label class="full">Nota<textarea data-f="nota" rows="1" placeholder="Opcional">${esc(it.nota ?? '')}</textarea></label>
     </div>
     ${totalLine(e, it.carga ?? null)}
@@ -1272,8 +1339,12 @@ function wireCards(root, ejs) {
         else if (tip) tip.textContent = '';
       }
     }
+    if (i.dataset.f === 'set') { const art = i.closest('.ex'); S.lastSet = { ej: art.dataset.ej, k: Number(i.dataset.k), t: Date.now(), inRest: !!rest }; }
+    { const art = i.closest('.ex'); if (art.querySelector('.setrows')) setRowsRefresh(art); else { const sets = [...art.querySelectorAll('[data-f="set"]')].map(x => num(x.value)), esf = art.querySelector('.esf'); if (esf) esf.hidden = !sets.every(v => v != null); } }
     if (S.focus) fsUpdateNext();
   }));
+  root.querySelectorAll('.setchip').forEach(b => b.addEventListener('click', () => { const r = b.closest('.setrow'); r.classList.toggle('edit'); if (r.classList.contains('edit')) { const i = r.querySelector('[data-f="set"]'); if (i) i.focus(); } }));
+  root.querySelectorAll('.ex').forEach(setRowsRefresh);
   root.querySelectorAll('button[data-esf]').forEach(b => b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') === 'true'; b.closest('.esf').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false')); if (!on) b.setAttribute('aria-pressed', 'true'); scheduleSave(); }));
   root.querySelectorAll('button[data-rest]').forEach(b => b.addEventListener('click', () => { if (rest && rest.ej === b.dataset.ej) restStop(); else restStart(Number(b.dataset.rest), b.dataset.ej); }));
   root.querySelectorAll('button[data-pg]').forEach(b => b.addEventListener('click', () => { if (S.focus) fsClose(); openProgreso(b.dataset.pg); }));
@@ -1303,6 +1374,32 @@ function buildForm() {
   setStatus('ses-status', (isToday ? 'Hoy' : dmy(S.fecha)) + (cur ? ' · guardada' : ' · sin datos todavía'), cur ? 'ok' : '');
   renderClock();
 }
+
+/* ---------- feedback para Claude + devoluciones ---------- */
+let RESP = null;
+function fbSeen() { try { return localStorage.getItem('seg-fb-seen') || ''; } catch (e) { return ''; } }
+function renderFeedback() {
+  const box = $('fb-list'); if (!box) return;
+  const fb = (S.feedback || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : -1);
+  const rs = (RESP && RESP.items || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : -1);
+  const all = fb.map(f => ({ t: f.fecha, kind: 'mine', texto: f.texto })).concat(rs.map(r => ({ t: r.fecha, kind: 'resp', texto: r.texto }))).sort((a, b) => a.t < b.t ? 1 : -1).slice(0, 30);
+  const fdate = t => new Date(t).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  box.innerHTML = all.length ? all.map(x => `<div class="fb-item ${x.kind}"><div class="fb-meta"><span>${x.kind === 'resp' ? 'Claude' : 'Vos'}</span><span>${fdate(x.t)}</span></div><div class="fb-txt">${esc(x.texto)}</div></div>`).join('') : '<div class="empty">Todavía no hay mensajes.</div>';
+  const unread = rs.filter(r => r.fecha > fbSeen()).length;
+  const bd = $('fb-badge'); bd.hidden = !unread; bd.textContent = unread;
+  if ($('fb-box').open && rs.length) { try { localStorage.setItem('seg-fb-seen', rs[0].fecha); } catch (e) {} }
+}
+async function loadRespuestas() {
+  if (!window.claude.syncFetch) return;
+  try { const r = await window.claude.syncFetch('respuestas.json'); if (r) { RESP = r; renderFeedback(); } } catch (e) { console.warn('respuestas', e); }
+}
+$('fb-box').addEventListener('toggle', () => { if ($('fb-box').open) { loadRespuestas(); renderFeedback(); } });
+$('fb-send').addEventListener('click', async () => {
+  const t = $('fb-text').value.trim(); if (!t) return;
+  const id = new Date().toISOString();
+  try { await S.db.collection('feedback').doc(id).set({ fecha: id, texto: t, app: APP_VERSION, dia: S.color, sesion: currentSession() ? sessionId() : null }); $('fb-text').value = ''; setStatus('fb-status', 'Enviando…'); const r = await window.claude.syncPush(true); setStatus('fb-status', r.ok ? 'Enviado ✓ · lo leo esta noche' : 'Guardado; se sube cuando haya conexión', r.ok ? 'ok' : ''); }
+  catch (e) { setStatus('fb-status', 'No se pudo guardar', 'err'); }
+});
 
 /* ---------- modo sesión (pantalla completa, cards) ---------- */
 function fsSteps() {
@@ -1459,17 +1556,36 @@ function fsRestRender() {
   panel.hidden = false;
   const left = Math.max(0, Math.round((rest.end - Date.now()) / 1000));
   $('fs-rest-n').textContent = clockText(left * 1000);
-  if (panel.dataset.ej !== e.id) {
-    panel.dataset.ej = e.id;
+  if (panel.dataset.ej !== e.id + ':' + rest.end0) {
+    panel.dataset.ej = e.id + ':' + rest.end0;
     const c = catOf(e) || {};
     const art = $('fs-card').querySelector('.ex');
-    const sets = art ? [...art.querySelectorAll('[data-f="set"]')].map(i => num(i.value)) : [];
-    const done = sets.filter(v => v != null).length, total = Number(e.series) || 3;
-    const kgsNow = art ? cardKgs(art) : []; const carga = kgsNow.length ? (kgsNow[Math.min(done, kgsNow.length - 1)] ?? kgsNow.filter(v => v != null).pop() ?? null) : null;
+    const repIns = art ? [...art.querySelectorAll('[data-f="set"]')] : [], kgIns = art ? [...art.querySelectorAll('[data-f="setkg"]')] : [];
+    const sets = repIns.map(i => num(i.value));
+    const total = Number(e.series) || 3;
+    /* la serie que acaba de hacer: la primera sin reps, salvo que haya cargado una hace menos de 45 s */
+    let k = sets.findIndex(v => v == null);
+    const ls = S.lastSet; if (ls && ls.ej === e.id && !ls.inRest && Date.now() - ls.t < 45000 && sets[ls.k] != null) k = ls.k;
+    const kgsNow = art ? cardKgs(art) : [];
+    const pl = plan(e) || {};
     const ids = muscleIds(c.primario); const m = ids.length ? MUSCLES[ids[Math.floor(Math.random() * ids.length)]] : null;
-    $('fs-rest-info').innerHTML = `<div class="fs-next-set">${done >= total ? 'Series completas. Al terminar el descanso, Siguiente.' : `Próxima: serie ${done + 1} de ${total} · meta ${esc((plan(e) || {}).r || repRange(e)[0])} reps${carga != null ? ' · ' + fmt(carga) + ' kg' : ''}`}</div>
+    const nota = art ? art.querySelector('[data-f="nota"]') : null;
+    let setBlock = '';
+    if (k >= 0 && repIns[k]) {
+      const kgPh = kgIns[k].placeholder || (kgsNow[k] != null ? fmt(kgsNow[k]) : ''), rPh = repIns[k].placeholder;
+      setBlock = `<div class="fs-rest-set"><div class="k">Serie ${k + 1} de ${total} · anotá lo que hiciste</div>
+        <div class="pair"><label><span>${e.barra ? 'Kg total' : isBody(e) ? 'Kg extra' : 'Kg'}</span><input type="text" inputmode="decimal" id="fsr-kg" placeholder="${esc(kgPh)}" value="${esc(kgIns[k].value)}"></label><label><span>Reps</span><input type="number" inputmode="numeric" min="0" max="99" id="fsr-reps" placeholder="${esc(rPh)}" value="${esc(repIns[k].value)}"></label></div>
+        <textarea id="fsr-nota" rows="1" placeholder="Nota (opcional)">${esc(nota ? nota.value : '')}</textarea></div>`;
+    } else setBlock = `<div class="fs-rest-set"><div class="done">Series completas ✓</div><textarea id="fsr-nota" rows="1" placeholder="Nota (opcional)">${esc(nota ? nota.value : '')}</textarea></div>`;
+    const nxt = k >= 0 && k + 1 < total ? `Próxima: serie ${k + 2} de ${total} · meta ${esc(pl.r || repRange(e)[0])} reps` : k >= 0 ? 'Última serie hecha. Después del descanso: ¿Cuánto te costó? y Siguiente.' : 'Al terminar el descanso, Siguiente.';
+    $('fs-rest-info').innerHTML = `${setBlock}<div class="fs-next-set">${nxt}</div>
       ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
       ${m ? `<div class="fs-fact"><b>${esc(m.n)}</b>: ${esc(m.por)}</div>` : ''}`;
+    /* los casilleros del descanso escriben en los de la ficha */
+    const mirror = (id, sel) => { const src = $(id); if (!src) return; src.addEventListener('input', () => { const target = $('fs-card').querySelector(sel); if (!target) return; target.value = src.value; target.dispatchEvent(new Event('input', { bubbles: true })); }); };
+    if (k >= 0 && repIns[k]) { mirror('fsr-kg', `[data-f="setkg"][data-k="${k}"]`); mirror('fsr-reps', `[data-f="set"][data-k="${k}"]`); }
+    mirror('fsr-nota', '[data-f="nota"]');
+    const ta = $('fsr-nota'); if (ta) ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; });
   }
 }
 $('fs-rest-stop').addEventListener('click', () => restStop());
@@ -1558,7 +1674,7 @@ function renderHist() {
   });
 }
 
-function formBusy() { const a = document.activeElement; return !!(a && ($('ex-list').contains(a) || $('fs-card').contains(a))) || !!saveTimer || saving; }
+function formBusy() { const a = document.activeElement; return !!(a && ($('ex-list').contains(a) || $('fs-card').contains(a) || $('fs-rest').contains(a))) || !!saveTimer || saving; }
 function exCards() { return [...$('ex-list').querySelectorAll('.ex'), ...(S.focus ? $('fs-card').querySelectorAll('.ex') : [])]; }
 
 /* ---------- rutina editable ---------- */
@@ -2487,11 +2603,13 @@ showTab(startTab);
   snap('peso', 'peso', renderPeso);
   snap('fotos', 'fotos', renderFotos);
   snap('medidas', 'medidas', renderMedidas);
+  snap('feedback', 'feedback', renderFeedback);
+  loadRespuestas();
 })();
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.06-2357';
+const APP_VERSION = '2026.11.07-0238';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
