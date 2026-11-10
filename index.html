@@ -209,7 +209,13 @@ nav.bottom button .dot { position: absolute; top: 4px; right: 18%; width: 9px; h
 .cl-estado .wait { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--day); border-radius: 50%; animation: spin 1s linear infinite; vertical-align: -2px; margin-right: 6px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .fb-item.resp .fb-txt { font-size: .98rem; line-height: 1.45; }
-.fb-item .fb-t { font-family: var(--font-display); font-weight: 700; }
+.fb-item.resp { border-left: none; padding: 0; overflow: hidden; }
+.fb-item.resp .fb-head { background: var(--day); color: var(--on-day); padding: 10px 14px; display: grid; gap: 2px; }
+.fb-item.resp .fb-head .fb-t { font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; letter-spacing: .01em; }
+.fb-item.resp .fb-head .fb-meta { color: inherit; opacity: .85; }
+.fb-item.resp .fb-txt { padding: 12px 14px; }
+.fb-item.mine { margin-left: 24px; }
+#fb-list { gap: 14px; }
 
 #fb-box textarea { width: 100%; resize: none; font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
 .badge { display: inline-block; min-width: 18px; padding: 1px 6px; border-radius: 999px; background: var(--day); color: var(--on-day); font-size: .7rem; font-weight: 700; text-align: center; vertical-align: middle; margin-left: 6px; }
@@ -1407,7 +1413,9 @@ function renderClaude() {
   const rs = (RESP && RESP.items || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : -1);
   const all = fb.map(f => ({ t: f.fecha, kind: 'mine', texto: f.texto })).concat(rs.map(r => ({ t: r.fecha, kind: 'resp', texto: r.texto, titulo: r.titulo }))).sort((a, b) => a.t < b.t ? 1 : -1).slice(0, 40);
   const fdate = t => new Date(t).toLocaleString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  box.innerHTML = all.length ? all.map(x => `<div class="fb-item ${x.kind}"><div class="fb-meta"><span>${x.kind === 'resp' ? 'Claude' : 'Vos'}</span><span>${fdate(x.t)}</span></div>${x.titulo ? `<div class="fb-t">${esc(x.titulo)}</div>` : ''}<div class="fb-txt">${esc(x.texto)}</div></div>`).join('') : '<div class="empty">Todavía no hay devoluciones.</div>';
+  box.innerHTML = all.length ? all.map(x => x.kind === 'resp'
+    ? `<div class="fb-item resp"><div class="fb-head"><div class="fb-t">${esc(x.titulo || 'Devolución')}</div><div class="fb-meta"><span>Claude</span><span>${fdate(x.t)}</span></div></div><div class="fb-txt">${esc(x.texto)}</div></div>`
+    : `<div class="fb-item mine"><div class="fb-meta"><span>Vos</span><span>${fdate(x.t)}</span></div><div class="fb-txt">${esc(x.texto)}</div></div>`).join('') : '<div class="empty">Todavía no hay devoluciones.</div>';
   /* estado: esperando / última */
   const aw = awaiting(); const last = rs[0];
   if (aw && last && new Date(last.fecha).getTime() > aw) lsSet('seg-await', '0');
@@ -2696,7 +2704,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.10-0257';
+const APP_VERSION = '2026.11.10-0306';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
