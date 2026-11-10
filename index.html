@@ -74,8 +74,8 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; lett
 .sub { color: var(--muted); font-size: .9rem; margin: 4px 0 0; }
 .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; }
 .dock .sesbar { margin: 0 10px 6px; }
-nav.bottom { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px max(6px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-right, 0px)); }
-nav.bottom button { min-width: 0; display: grid; justify-items: center; gap: 2px; font-family: var(--font-display); font-weight: 700; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; border: none; background: transparent; color: var(--muted); border-radius: 10px; padding: 6px 2px; cursor: pointer; }
+nav.bottom { display: grid; grid-template-columns: repeat(6, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px max(6px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-right, 0px)); }
+nav.bottom button { min-width: 0; display: grid; justify-items: center; gap: 2px; font-family: var(--font-display); font-weight: 700; font-size: .68rem; position: relative; letter-spacing: .04em; text-transform: uppercase; border: none; background: transparent; color: var(--muted); border-radius: 10px; padding: 6px 2px; cursor: pointer; }
 nav.bottom button .ic { font-size: 1.25rem; line-height: 1; filter: grayscale(1); opacity: .7; }
 nav.bottom button[aria-selected="true"] { color: var(--day); }
 nav.bottom button[aria-selected="true"] .ic { filter: none; opacity: 1; }
@@ -203,6 +203,14 @@ body.locked { overflow: hidden; }
 .fs-rest .tec { text-align: left; margin-top: 8px; }
 .fs-fact { text-align: left; font-size: .86rem; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
 .fs-fact b { color: var(--ink); }
+nav.bottom button .dot { position: absolute; top: 4px; right: 18%; width: 9px; height: 9px; border-radius: 50%; background: var(--day, #e0533a); }
+.cl-estado { display: grid; gap: 6px; }
+.cl-estado .big { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+.cl-estado .wait { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--day); border-radius: 50%; animation: spin 1s linear infinite; vertical-align: -2px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.fb-item.resp .fb-txt { font-size: .98rem; line-height: 1.45; }
+.fb-item .fb-t { font-family: var(--font-display); font-weight: 700; }
+
 #fb-box textarea { width: 100%; resize: none; font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
 .badge { display: inline-block; min-width: 18px; padding: 1px 6px; border-radius: 999px; background: var(--day); color: var(--on-day); font-size: .7rem; font-weight: 700; text-align: center; vertical-align: middle; margin-left: 6px; }
 .fb-item { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); display: grid; gap: 4px; }
@@ -520,13 +528,6 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
         <button class="btn ghost small" type="button" id="ses-fecha-go">Abrir ese día</button>
       </div>
     </details>
-    <details class="box" id="fb-box">
-      <summary>Para Claude <span class="badge" id="fb-badge" hidden></span></summary>
-      <p class="hint">Lo que escribís acá lo leo cada noche junto con tu sesión. Las devoluciones aparecen abajo.</p>
-      <textarea id="fb-text" rows="2" placeholder="Qué te molestó, qué querés cambiar, qué te dolió…"></textarea>
-      <div class="row"><button class="btn small" type="button" id="fb-send">Enviar</button><span class="status" id="fb-status"></span></div>
-      <div class="list" id="fb-list"></div>
-    </details>
     <div id="pg-list" class="panel"></div>
   </section>
 
@@ -593,6 +594,19 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
       <div class="row"><button class="btn ghost small" type="button" id="sync-save">Guardar y sincronizar</button><button class="btn ghost small" type="button" id="sync-off">Desconectar</button><span class="status" id="sync-status"></span></div>
     </details>
   </section>
+  <section class="panel" id="p-claude" hidden>
+    <div class="box" id="cl-estado-box">
+      <div id="cl-estado" class="cl-estado"></div>
+    </div>
+    <div class="box" id="fb-box">
+      <h3>Para Claude</h3>
+      <p class="hint">Lo que escribís acá llega junto con tu sesión. Las devoluciones aparecen abajo, en la app, y te avisan con una notificación.</p>
+      <textarea id="fb-text" rows="2" placeholder="Qué te molestó, qué querés cambiar, qué te dolió…"></textarea>
+      <div class="row"><button class="btn small" type="button" id="fb-send">Enviar</button><span class="status" id="fb-status"></span></div>
+      <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="push-btn">Activar notificaciones</button><span class="status" id="push-status"></span></div>
+    </div>
+    <div class="list" id="fb-list"></div>
+  </section>
 </div>
 
 <div class="dock" id="dock">
@@ -622,6 +636,7 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
   <button role="tab" id="tab-progreso" data-tab="progreso"><span class="ic">📈</span>Progreso</button>
   <button role="tab" id="tab-cuerpo" data-tab="cuerpo"><span class="ic">🫀</span>Cuerpo</button>
   <button role="tab" id="tab-fisico" data-tab="fisico"><span class="ic">⚖️</span>Físico</button>
+  <button role="tab" id="tab-claude" data-tab="claude"><span class="ic">💬</span>Claude<span class="dot" id="tab-claude-dot" hidden></span></button>
 </nav>
 </div>
 
@@ -690,7 +705,8 @@ const ELONG_NAMES = { verde: 'Pecho, hombros y tríceps', naranja: 'Piernas y ab
 function DIAS() { return S.loaded.dias && S.dias.length ? [...S.dias].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)) : DEFAULT_DIAS; }
 function dia(id) { return DIAS().find(d => d.id === id) || { id, nombre: id === 'extra' ? 'Extra' : id, color: 'gris', elong: '', modo: 'orden' }; }
 function ORDER_IDS() { return DIAS().filter(d => d.activo !== false).map(d => d.id); }
-const TABS = ['entreno', 'rutina', 'progreso', 'cuerpo', 'fisico'];
+const TABS = ['entreno', 'rutina', 'progreso', 'cuerpo', 'fisico', 'claude'];
+const VAPID_PUB = 'BMweOivPGmd674pYDTaLYLVouoZu2k4rM_qQ7AjCLcwayKNgc8hd_14tS0Nrs_7JaTN04-MKa0iTVBNW_IFPq9M';
 const GRUPOS = ['Pectorales', 'Hombros', 'Trapecios', 'Bíceps', 'Espalda', 'Tríceps', 'Piernas', 'Abdominales', 'Espinales', 'Otros'];
 const REST_DEFAULT = { compuesto: 120, aislado: 75 };
 const S = { db: null, ej: [], cat: [], dias: [], ses: [], peso: [], fotos: [], medidas: [], rutinas: [], feedback: [], tab: 'entreno', color: null, rtColor: 'verde', fecha: today(), focus: false, focusIdx: 0, loaded: { ej: false, ses: false, cat: false, dias: false } };
@@ -717,6 +733,7 @@ function showTab(t) {
   $('sesbar').hidden = t !== 'entreno'; document.body.classList.toggle('entreno', t === 'entreno');
   try { localStorage.setItem('seg-tab', t); } catch (e) {}
   if (t === 'rutina') renderRutina(); else applyDay();
+  if (t === 'claude') { renderClaude(); loadRespuestas(); }
   renderNudge();
   wakeSync();
 }
@@ -1379,31 +1396,76 @@ function buildForm() {
   renderClock();
 }
 
-/* ---------- feedback para Claude + devoluciones ---------- */
+/* ---------- pestaña Claude: devoluciones, feedback, notificaciones ---------- */
 let RESP = null;
-function fbSeen() { try { return localStorage.getItem('seg-fb-seen') || ''; } catch (e) { return ''; } }
-function renderFeedback() {
+const lsGet = (k, d = '') => { try { return localStorage.getItem(k) ?? d; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const awaiting = () => Number(lsGet('seg-await', '0')) || 0;
+function renderClaude() {
   const box = $('fb-list'); if (!box) return;
-  const fb = (S.feedback || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : -1);
+  const fb = (S.feedback || []).slice();
   const rs = (RESP && RESP.items || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : -1);
-  const all = fb.map(f => ({ t: f.fecha, kind: 'mine', texto: f.texto })).concat(rs.map(r => ({ t: r.fecha, kind: 'resp', texto: r.texto }))).sort((a, b) => a.t < b.t ? 1 : -1).slice(0, 30);
-  const fdate = t => new Date(t).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  box.innerHTML = all.length ? all.map(x => `<div class="fb-item ${x.kind}"><div class="fb-meta"><span>${x.kind === 'resp' ? 'Claude' : 'Vos'}</span><span>${fdate(x.t)}</span></div><div class="fb-txt">${esc(x.texto)}</div></div>`).join('') : '<div class="empty">Todavía no hay mensajes.</div>';
-  const unread = rs.filter(r => r.fecha > fbSeen()).length;
-  const bd = $('fb-badge'); bd.hidden = !unread; bd.textContent = unread;
-  if ($('fb-box').open && rs.length) { try { localStorage.setItem('seg-fb-seen', rs[0].fecha); } catch (e) {} }
+  const all = fb.map(f => ({ t: f.fecha, kind: 'mine', texto: f.texto })).concat(rs.map(r => ({ t: r.fecha, kind: 'resp', texto: r.texto, titulo: r.titulo }))).sort((a, b) => a.t < b.t ? 1 : -1).slice(0, 40);
+  const fdate = t => new Date(t).toLocaleString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  box.innerHTML = all.length ? all.map(x => `<div class="fb-item ${x.kind}"><div class="fb-meta"><span>${x.kind === 'resp' ? 'Claude' : 'Vos'}</span><span>${fdate(x.t)}</span></div>${x.titulo ? `<div class="fb-t">${esc(x.titulo)}</div>` : ''}<div class="fb-txt">${esc(x.texto)}</div></div>`).join('') : '<div class="empty">Todavía no hay devoluciones.</div>';
+  /* estado: esperando / última */
+  const aw = awaiting(); const last = rs[0];
+  if (aw && last && new Date(last.fecha).getTime() > aw) lsSet('seg-await', '0');
+  const est = $('cl-estado');
+  if (awaiting()) { const min = Math.round((Date.now() - awaiting()) / 60000); est.innerHTML = `<div class="big"><span class="wait"></span>Esperando la devolución…</div><div class="hint">Terminaste hace ${min} min. Suele tardar 2 o 3 minutos${min > 15 ? '. Ya pasó bastante: fijate que la sincronización esté bien (Físico → Respaldo) o preguntale a Claude en el chat' : ''}.</div>`; }
+  else if (last) est.innerHTML = `<div class="big">Última devolución: ${esc(last.titulo || '')}</div><div class="hint">${fdate(last.fecha)}</div>`;
+  else est.innerHTML = `<div class="big">Acá llegan las devoluciones</div><div class="hint">Cuando terminás una sesión, Claude la revisa y la respuesta aparece acá.</div>`;
+  /* no leídas */
+  const unread = rs.filter(r => r.fecha > lsGet('seg-fb-seen')).length;
+  $('tab-claude-dot').hidden = !unread || S.tab === 'claude';
+  if (S.tab === 'claude' && rs.length) lsSet('seg-fb-seen', rs[0].fecha);
+  pushStatus();
 }
+let loadingResp = null;
 async function loadRespuestas() {
-  if (!window.claude.syncFetch) return;
-  try { const r = await window.claude.syncFetch('respuestas.json'); if (r) { RESP = r; renderFeedback(); } } catch (e) { console.warn('respuestas', e); }
+  if (!window.claude.syncFetch || loadingResp) return loadingResp;
+  loadingResp = (async () => { try { const r = await window.claude.syncFetch('respuestas.json'); if (r) { RESP = r; renderClaude(); } } catch (e) { console.warn('respuestas', e); } finally { loadingResp = null; } })();
+  return loadingResp;
 }
-$('fb-box').addEventListener('toggle', () => { if ($('fb-box').open) { loadRespuestas(); renderFeedback(); } });
+/* mientras se espera la devolución, se consulta seguido */
+setInterval(() => { if (awaiting() && document.visibilityState === 'visible') loadRespuestas(); }, 45000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { loadRespuestas(); } });
 $('fb-send').addEventListener('click', async () => {
   const t = $('fb-text').value.trim(); if (!t) return;
   const id = new Date().toISOString();
-  try { await S.db.collection('feedback').doc(id).set({ fecha: id, texto: t, app: APP_VERSION, dia: S.color, sesion: currentSession() ? sessionId() : null }); $('fb-text').value = ''; setStatus('fb-status', 'Enviando…'); const r = await window.claude.syncPush(true); setStatus('fb-status', r.ok ? 'Enviado ✓ · lo leo esta noche' : 'Guardado; se sube cuando haya conexión', r.ok ? 'ok' : ''); }
+  try { await S.db.collection('feedback').doc(id).set({ fecha: id, texto: t, app: APP_VERSION, dia: S.color, sesion: currentSession() ? sessionId() : null }); $('fb-text').value = ''; setStatus('fb-status', 'Enviando…'); const r = await window.claude.syncPush(true); if (r.ok) { lsSet('seg-await', String(Date.now())); renderClaude(); } setStatus('fb-status', r.ok ? 'Enviado ✓' : 'Guardado; se manda cuando haya conexión', r.ok ? 'ok' : ''); }
   catch (e) { setStatus('fb-status', 'No se pudo guardar', 'err'); }
 });
+/* notificaciones push (iPhone: solo con la app instalada en la pantalla de inicio) */
+const b64ToU8 = s => { const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+async function pushState() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'no';
+  const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription();
+  return sub ? 'on' : Notification.permission === 'denied' ? 'denied' : 'off';
+}
+async function pushStatus() {
+  const b = $('push-btn'); if (!b) return;
+  const st = await pushState().catch(() => 'no');
+  b.hidden = st === 'no' || st === 'denied'; b.textContent = st === 'on' ? 'Notificaciones activas ✓' : 'Activar notificaciones';
+  if (st === 'no') setStatus('push-status', camAllowed() ? 'Este teléfono no soporta notificaciones web' : 'Para recibir notificaciones, abrí la app desde la pantalla de inicio');
+  else if (st === 'denied') setStatus('push-status', 'Notificaciones bloqueadas: activalas en Ajustes → Notificaciones → Seguimiento');
+  else setStatus('push-status', '');
+}
+async function pushEnable() {
+  try {
+    const perm = await Notification.requestPermission(); if (perm !== 'granted') { pushStatus(); return; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID_PUB) });
+    const cur = (await window.claude.syncFetch('push-subs.json').catch(() => null)) || { subs: [] };
+    const j = sub.toJSON(); cur.subs = (cur.subs || []).filter(x => x.endpoint !== j.endpoint).concat([j]);
+    const r = await window.claude.syncWrite('push-subs.json', cur, 'suscripción push');
+    setStatus('push-status', r.ok ? 'Listo: te aviso cuando haya devolución' : 'No se pudo guardar la suscripción: ' + r.msg, r.ok ? 'ok' : 'err');
+    pushStatus();
+  } catch (e) { setStatus('push-status', 'No se pudo: ' + (e.message || e), 'err'); }
+}
+$('push-btn').addEventListener('click', async () => { const st = await pushState(); if (st === 'on') { setStatus('push-status', 'Ya están activas'); return; } pushEnable(); });
+if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', ev => { if (ev.data && ev.data.tipo === 'devolucion') { loadRespuestas(); } });
 
 /* ---------- modo sesión (pantalla completa, cards) ---------- */
 function fsSteps() {
@@ -1528,7 +1590,9 @@ async function fsFinish() {
   const cur = currentSession();
   if (cur && cur.inicio && !cur.fin) { const body = sessionBody(collect()); body.inicio = cur.inicio; body.fin = Date.now(); delete body.ult; try { await S.db.collection('sesiones').doc(sessionId()).set(body); } catch (e) { err(e, 'ses-status'); } }
   fsClose();
-  showTab('progreso'); $('ses-hist-box').open = true;
+  if (cur && cur.inicio) { lsSet('seg-await', String(Date.now())); }
+  showTab('claude'); renderClaude();
+  try { const r = await window.claude.syncPush(true); if (!r.ok) setStatus('push-status', 'No se pudo sincronizar: ' + r.msg, 'err'); } catch (e) {}
 }
 $('focus-btn').addEventListener('click', () => { if (S.focus) fsClose(); else fsOpen(); });
 $('fs-close').addEventListener('click', fsClose);
@@ -2626,13 +2690,13 @@ showTab(startTab);
   snap('peso', 'peso', renderPeso);
   snap('fotos', 'fotos', renderFotos);
   snap('medidas', 'medidas', renderMedidas);
-  snap('feedback', 'feedback', renderFeedback);
+  snap('feedback', 'feedback', renderClaude);
   loadRespuestas();
 })();
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.07-2153';
+const APP_VERSION = '2026.11.10-0257';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
@@ -2680,6 +2744,7 @@ if (window.claude && window.claude.local) {
   });
   $('sync-off').addEventListener('click', () => { try { localStorage.removeItem('seg-sync'); } catch (e) {} syncShow(); });
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (new URLSearchParams(location.search).get('claude')) { showTab('claude'); history.replaceState(null, '', location.pathname); }
 } else { const r = $('respaldo'); if (r) r.hidden = true; }
 </script>
 </body>

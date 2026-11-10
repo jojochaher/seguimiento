@@ -132,9 +132,19 @@
     if (r.status === 404) return null; if (!r.ok) throw new Error('GitHub ' + r.status);
     return r.json();
   }
+  async function syncWrite(name, obj, msg) {
+    const c = syncCfg(); if (!c || !c.token || !c.repo) return { ok: false, msg: 'Sin configurar' };
+    try {
+      const url = `https://api.github.com/repos/${c.repo}/contents/${name}`, H = { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github+json' };
+      let sha; const g = await fetch(url + '?ref=main', { headers: H, cache: 'no-store' }); if (g.ok) sha = (await g.json()).sha; else if (g.status !== 404) throw new Error('GitHub ' + g.status);
+      const p = await fetch(url, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, H), body: JSON.stringify({ message: msg || name, content: b64utf8(JSON.stringify(obj, null, 1)), sha, branch: 'main' }) });
+      if (!p.ok) throw new Error('GitHub ' + p.status);
+      return { ok: true };
+    } catch (e) { return { ok: false, msg: String(e.message || e) }; }
+  }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') setTimeout(() => syncPush(), 1500); });
   setInterval(() => syncPush(), 5 * 60000);
 
   const ready = (async () => { await seedIfEmpty(); await loadAssets(); })();
-  window.claude = { use: async (name) => { await ready; return name === 'db' ? db : name === 'assets' ? assets : null; }, local: true, exportAll, importAll, syncCfg, syncSave, syncPush, syncFetch };
+  window.claude = { use: async (name) => { await ready; return name === 'db' ? db : name === 'assets' ? assets : null; }, local: true, exportAll, importAll, syncCfg, syncSave, syncPush, syncFetch, syncWrite };
 })();
