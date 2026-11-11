@@ -1271,9 +1271,16 @@ function pendingIds() {
     return !S.ses.some(s => s.fecha > prev.fecha && s.fecha < S.fecha && itemDone((s.items || {})[id]));
   });
 }
+function ejFromSession(id, it) {
+  const c = S.cat.find(x => x.id === id) || S.cat.find(x => x.id === catKey(id));
+  const n = (it && it.sets && it.sets.length) || 3;
+  return { id, nombre: c ? c.nombre : id, series: n, reps: 10, color: S.color, cat: c ? c.id : undefined, barra: it && it.tot && c && /barra/i.test(c.nombre) ? 20 : undefined, orden: 0, _virtual: true };
+}
 function todayOrder() {
   let ejs = S.ej.filter(e => e.color === S.color).sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
   if (dia(S.color).modo === 'alternado') ejs = interleave(ejs);
+  /* sesión de una rutina anterior (el día ya no existe): se arma con los ejercicios que tiene la sesión, para poder verla y editarla */
+  if (!ejs.length) { const cur0 = currentSession(); if (cur0 && cur0.items) ejs = Object.keys(cur0.items).map(id => S.ej.find(x => x.id === id) || ejFromSession(id, cur0.items[id])).filter(Boolean); }
   const pend = pendingIds().map(id => S.ej.find(x => x.id === id)).filter(Boolean);
   ejs = ejs.concat(pend);
   const cur = currentSession() || {}, items = cur.items || {}, cola = cur.cola || [];
@@ -2704,7 +2711,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.10-0306';
+const APP_VERSION = '2026.11.11-0034';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
