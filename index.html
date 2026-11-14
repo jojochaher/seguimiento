@@ -246,6 +246,19 @@ nav.bottom button .dot { position: absolute; top: 4px; right: 18%; width: 9px; h
 .setrow.done:not(.edit) .setchip { display: block; }
 .setrow.done:not(.edit) .sr-n, .setrow.done:not(.edit) label { display: none; }
 .fs-card .ex.big .sg-hint { display: none; }
+
+/* filas compactas en modo sesión: las pendientes son una línea, se abren al tocarlas */
+.setrow.todo { opacity: .6; padding: 6px 12px; grid-template-columns: 34px 1fr; align-items: center; cursor: pointer; }
+.setrow.todo label { display: none; }
+.setrow.todo .sr-n { padding-bottom: 0; }
+.setrow.todo::after { content: 'pendiente'; font-size: .75rem; color: var(--muted); }
+.setrow.todo.edit { opacity: 1; grid-template-columns: 34px 1fr 1fr; align-items: end; }
+.setrow.todo.edit label { display: grid; }
+.setrow.todo.edit::after { content: none; }
+.setrow.cur input { padding: 11px 4px; font-size: 20px; }
+.setrow.cur { padding: 8px 10px; }
+/* el botón de descanso siempre a la vista en modo sesión */
+.fs-card .ex.big .ex-actions { position: sticky; bottom: 0; background: var(--surface); padding: 8px 0 2px; margin: 0 -2px; border-top: 1px solid var(--line); z-index: 2; }
 .fs-rest-set { display: grid; gap: 8px; margin: 4px auto 0; max-width: 340px; text-align: left; padding: 12px; border: 1.5px solid var(--day); border-radius: 14px; background: var(--surface); }
 .fs-rest-set .k { text-align: center; }
 .fs-rest-set .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -732,7 +745,9 @@ function setStatus(id, text, kind) { const el = $(id); el.textContent = text; el
 function slug(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'ej'; }
 function catOf(e) { return S.cat.find(c => c.id === (e.cat || e.id)); }
 function isBody(e) { const c = catOf(e); return !!(e.corporal || (c && c.corporal)); }
-function restFor(e) { if (e.descanso) return e.descanso; const c = catOf(e); return REST_DEFAULT[(c && c.tipo) || 'aislado']; }
+function restFor(e) { if (e.descanso) return e.descanso; const c = catOf(e); const base = REST_DEFAULT[(c && c.tipo) || 'aislado']; return isUnilateral(e) ? Math.max(30, base - 30) : base; }
+/* ejercicios a una mano o una pierna: entre series ya descansa un lado mientras trabaja el otro */
+function isUnilateral(e) { const n = (e.nombre || '') + ' ' + ((catOf(e) || {}).nombre || ''); return /alternad|concentrad|remo con mancuerna|una mano|unilateral|oblicuo/i.test(n); }
 
 /* ---------- pestañas ---------- */
 function showTab(t) {
@@ -1349,7 +1364,7 @@ function setRowsRefresh(art) {
   rows.forEach((r, k) => {
     const done = sets[k] != null && k !== act;
     r.classList.toggle('done', done); r.classList.toggle('cur', k === cur); r.classList.toggle('todo', !done && k !== cur);
-    if (!done) r.classList.remove('edit');
+    if (done) {} else if (k !== act) r.classList.remove('edit');
     const chip = r.querySelector('.setchip');
     const kgIn = r.querySelector('[data-f="setkg"]'), kv = kgs[k] ?? num(kgIn && kgIn.placeholder);
     chip.textContent = done ? `${k + 1}ª · ${kv == null || (e && isBody(e) && !kv) ? (e && isBody(e) ? 'cuerpo' : '— kg') : fmt(kv) + ' kg'} × ${sets[k]} ✓` : '';
@@ -1410,6 +1425,7 @@ function wireCards(root, ejs) {
     if (S.focus) fsUpdateNext();
   }));
   root.querySelectorAll('.setchip').forEach(b => b.addEventListener('click', () => { const r = b.closest('.setrow'); r.classList.toggle('edit'); if (r.classList.contains('edit')) { const i = r.querySelector('[data-f="set"]'); if (i) i.focus(); } }));
+  root.querySelectorAll('.setrow').forEach(r => r.addEventListener('click', ev => { if (r.classList.contains('todo') && !r.classList.contains('edit') && !ev.target.closest('input')) { r.classList.add('edit'); const i = r.querySelector('[data-f="setkg"]'); if (i) i.focus(); } }));
   root.querySelectorAll('.ex').forEach(setRowsRefresh);
   root.querySelectorAll('.setrows').forEach(g => g.addEventListener('focusout', () => setTimeout(() => setRowsRefresh(g.closest('.ex')), 0)));
   root.querySelectorAll('button[data-esf]').forEach(b => b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') === 'true'; b.closest('.esf').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false')); if (!on) b.setAttribute('aria-pressed', 'true'); scheduleSave(); }));
@@ -1724,7 +1740,7 @@ function fsRestRender() {
     const mirror = (id, sel) => { const src = $(id); if (!src) return; src.addEventListener('input', () => { const target = $('fs-card').querySelector(sel); if (!target) return; target.value = src.value; target.dispatchEvent(new Event('input', { bubbles: true })); }); };
     if (k >= 0 && repIns[k]) { mirror('fsr-kg', `[data-f="setkg"][data-k="${k}"]`); mirror('fsr-reps', `[data-f="set"][data-k="${k}"]`); }
     mirror('fsr-nota', '[data-f="nota"]');
-    const ta = $('fsr-nota'); if (ta) ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; });
+    const ta = $('fsr-nota'); if (ta) { const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(ta.scrollHeight, 44) + 'px'; }; ta.addEventListener('input', grow); ta.addEventListener('focus', grow); grow(); }
   }
 }
 $('fs-rest-stop').addEventListener('click', () => restStop());
@@ -2767,7 +2783,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.14-0121';
+const APP_VERSION = '2026.11.14-2356';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
