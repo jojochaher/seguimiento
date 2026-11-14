@@ -155,6 +155,10 @@ label { min-width: 0; }
 .esf .sg-l { width: 100%; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .esf button { flex: 1; white-space: nowrap; padding: 7px 6px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
 .esf button[aria-pressed="true"] { border-color: var(--day); background: var(--day); color: #fff; font-weight: 700; }
+.vars { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 8px 0 2px; }
+.vars .sg-l { width: 100%; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.vars button { flex: 1; white-space: nowrap; padding: 7px 6px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
+.vars button[aria-pressed="true"] { border-color: var(--day); background: var(--day); color: #fff; font-weight: 700; }
 .sg-hint { margin: -2px 0 0; font-size: .72rem; }
 .fs-card .ex.big .serie-grid input { padding: 12px 4px; font-size: 18px; }
 .sets input { padding: 9px 4px; text-align: center; }
@@ -1134,7 +1138,32 @@ function resolveKgs(raw) { let last = null; return raw.map(v => { if (v != null)
 function cardKgs(art) { return resolveKgs([...art.querySelectorAll('[data-f="setkg"]')].map(i => num(i.value))); }
 function cardCarga(art) { const a = cardKgs(art).filter(v => v != null); return a.length ? Math.max(...a) : null; }
 /* series hechas con la carga de trabajo (la más alta): son las que cuentan para subir */
-function workSets(it, n) { const sets = parseSets(it, n), kgs = setKgs(it, sets.length || n); if (!Array.isArray(it.cargas) || it.carga == null) return sets; return sets.filter((v, k) => kgs[k] === it.carga); }
+function workSets(it, n) { const sets = parseSets(it, n), kgs = setKgs(it, sets.length || n); if (!Array.isArray(it.cargas) || it.carga == null) return sets; const wl = workLoad(it, n); return sets.filter((v, k) => kgs[k] === wl); }
+/* carga de trabajo: la más alta, sin contar un peso "de prueba" (todas sus series de menos de 4 reps
+   cuando con otro peso hubo series de 4 o más). Una rep suelta con más peso no cambia la meta ni el progreso. */
+function workLoad(it, n) {
+  if (!it || it.carga == null) return null;
+  if (!Array.isArray(it.cargas)) return Number(it.carga);
+  const sets = parseSets(it, n), kgs = setKgs(it, sets.length || n), by = {};
+  sets.forEach((r, k) => { if (r == null || kgs[k] == null) return; (by[kgs[k]] = by[kgs[k]] || []).push(r); });
+  const loads = Object.keys(by).map(Number); if (!loads.length) return Number(it.carga);
+  const real = loads.filter(L => by[L].some(r => r >= 4));
+  return Math.max(...(real.length ? real : loads));
+}
+/* variantes de un mismo ejercicio que no se comparan entre sí (a una o dos manos, barra o mancuernas).
+   La meta, la "última vez" y el progreso miran solo las sesiones de la variante elegida. Sin marcar = la primera. */
+const VARIANTES = { 'extensiones-mancuerna': ['2 manos', '1 mano'], 'press-hombro': ['Mancuernas', 'Barra', 'Smith'] };
+function varsOf(e) { return (e && VARIANTES[e.cat || e.id]) || null; }
+function varOf(it, e) { const v = varsOf(e); return v ? ((it && it.var) || v[0]) : null; }
+function curVar(e) {
+  const v = varsOf(e); if (!v) return null;
+  const sel = S.varSel && S.varSel[sessionId() + '|' + e.id]; if (sel) return sel;
+  const cur = currentSession(), it = cur ? itemOf(cur, e) : null;
+  if (it && it.var) return it.var;
+  if (itemDone(it)) return v[0];
+  const prev = S.ses.filter(s => s.fecha <= S.fecha).map(s => ({ s, it: itemOf(s, e) })).filter(x => itemDone(x.it)).sort((a, b) => a.s.fecha < b.s.fecha ? -1 : 1).pop();
+  return prev ? varOf(prev.it, e) : v[0];
+}
 function setsDesc(it, n, e) {
   const sets = parseSets(it, n); if (!Array.isArray(it.cargas) || !sets.length) return null;
   const kgs = setKgs(it, sets.length), b = 0;
@@ -1154,7 +1183,8 @@ function itemOf(s, e) {
 }
 function lastDone(ejOrId) {
   const e = typeof ejOrId === 'string' ? (S.ej.find(x => x.id === ejOrId) || { id: ejOrId }) : ejOrId;
-  return S.ses.filter(s => s.fecha < S.fecha).map(s => ({ s, it: itemOf(s, e) })).filter(x => x.it && x.it.skip == null && (x.it.carga != null || x.it.reps || (x.it.sets || []).some(v => v != null))).sort((a, b) => a.s.fecha < b.s.fecha ? -1 : 1).map(x => Object.assign({}, x.s, { items: Object.assign({}, x.s.items, { [e.id]: x.it }) })).pop();
+  const cv = curVar(e);
+  return S.ses.filter(s => s.fecha < S.fecha).map(s => ({ s, it: itemOf(s, e) })).filter(x => x.it && x.it.skip == null && (x.it.carga != null || x.it.reps || (x.it.sets || []).some(v => v != null)) && (cv == null || varOf(x.it, e) === cv)).sort((a, b) => a.s.fecha < b.s.fecha ? -1 : 1).map(x => Object.assign({}, x.s, { items: Object.assign({}, x.s.items, { [e.id]: x.it }) })).pop();
 }
 /* progresión por esfuerzo: la meta sale de la fuerza estimada (Epley) de la última sesión,
    ajustada por cuánto costó (fácil +5 %, justo +2,5 %, al límite = igualar). El mínimo es igualar. */
@@ -1176,22 +1206,22 @@ function plan(e) {
     return { body: true, r, rmin, it, l };
   }
   if (it.carga == null) return null;
-  const kgs = setKgs(it, sets.length), b = 0, bw = bodyKg();
+  const kgs = setKgs(it, sets.length), b = 0, bw = bodyKg(), wl = workLoad(it, n);
   const load = v => e.asistida ? Math.max(1, bw - v) : isBody(e) ? bw + v : v + b;
-  const work = done.filter(x => (kgs[x.k] ?? it.carga) === it.carga);
+  const work = done.filter(x => (kgs[x.k] ?? it.carga) === wl);
   const use = work.length ? work : done;
   const L = use.reduce((a, x) => a + load(kgs[x.k] ?? it.carga) * (1 + x.r / 30), 0) / use.length;
   const T = L * f, step = Math.abs(increment(e)) || 5;
   const [lo, hi] = repRange(e);
   const up = v => Math.round((Math.floor(v / step + 1e-9) + 1) * step * 100) / 100, down = v => Math.round((Math.ceil(v / step - 1e-9) - 1) * step * 100) / 100;
   const heavier = v => e.asistida ? Math.max(0, down(v)) : up(v), lighter = v => e.asistida ? up(v) : Math.max(e.barra || 0, down(v));
-  let W = it.carga, guard = 0;
+  let W = wl, guard = 0;
   const rr = v => Math.round(repsFor(T, load(v)));
   while (rr(W) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W || rr(nw) < lo) break; W = nw; }
   while (rr(W) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
   const rmin = Math.max(1, Math.round(repsFor(L, load(W))));
   let r = Math.max(1, Math.round(repsFor(T, load(W)))); if (f > 1 && r <= rmin) r = rmin + 1;
-  return { W, r, rmin, it, l, b, T, L, load };
+  return { W, r, rmin, it, l, b, T, L, load, wl };
 }
 function suggestion(e) {
   const l = lastDone(e.id), n = Number(e.series) || 3;
@@ -1204,8 +1234,8 @@ function suggestion(e) {
   const head = `Última (${dmy(l.fecha)}): ${did}${esf}.`;
   if (!p) return { cls: '', html: `${head} Hoy anotá kg y reps para poder sugerirte.` };
   if (p.body) return { cls: '', html: `${head}<br>Meta hoy: <b>${p.r} reps por serie</b> · mínimo ${p.rmin}.` };
-  const w = kgTxt(p.W), changed = p.W !== it.carga;
-  return { cls: changed ? 'ok' : '', html: `${head}<br>Meta hoy: <b>${w} × ${p.r}</b> por serie · mínimo ${p.rmin}.${changed ? (e.asistida ? ' Cambia la asistencia.' : p.W > it.carga ? ' Subís de peso.' : ' Bajás un poco el peso.') : ''}` };
+  const w = kgTxt(p.W), changed = p.W !== p.wl;
+  return { cls: changed ? 'ok' : '', html: `${head}<br>Meta hoy: <b>${w} × ${p.r}</b> por serie · mínimo ${p.rmin}.${changed ? (e.asistida ? ' Cambia la asistencia.' : p.W > p.wl ? ' Subís de peso.' : ' Bajás un poco el peso.') : ''}` };
 }
 /* métrica de progreso: 'e1rm' (Epley con la mejor serie), 'carga' o 'volumen' */
 let PG_METRIC = 'e1rm';
@@ -1215,18 +1245,19 @@ function metricLabel(e) { const m = metricOf(e); return m === 'reps' ? 'reps' : 
 function seriesFor(ejId, e) {
   const m = metricOf(e);
   const ee = e || S.ej.find(x => x.id === ejId) || { id: ejId };
-  const rows = S.ses.map(s => ({ s, it: itemOf(s, ee) })).filter(x => x.it && x.it.skip == null).sort((a, b) => a.s.fecha < b.s.fecha ? -1 : 1);
+  const cv = curVar(ee);
+  const rows = S.ses.map(s => ({ s, it: itemOf(s, ee) })).filter(x => x.it && x.it.skip == null && (cv == null || varOf(x.it, ee) === cv)).sort((a, b) => a.s.fecha < b.s.fecha ? -1 : 1);
   const out = [];
   rows.forEach(({ s, it }) => { sets = parseSets(it, Number((e && e.series) || 3)).filter(v => v != null);
     if (m === 'reps') { if (sets.length) out.push({ fecha: s.fecha, kg: sets.reduce((x, y) => x + y, 0) }); return; }
     if (it.carga == null) return;
-    const total = it.carga;
-    if (m === 'carga') { out.push({ fecha: s.fecha, kg: it.carga }); return; }
+    const wl = workLoad(it, Number((e && e.series) || 3));
+    if (m === 'carga') { out.push({ fecha: s.fecha, kg: wl }); return; }
     const raw = parseSets(it, Number((e && e.series) || 3));
     const reps = raw.length ? raw : Array.from({ length: Number((e && e.series) || 3) }, () => Number((e && e.reps) || 10));
     const kgs = setKgs(it, reps.length).map(v => (v != null ? v : it.carga));
     if (m === 'volumen') { out.push({ fecha: s.fecha, kg: Math.round(reps.reduce((acc, r, k) => acc + (r || 0) * kgs[k], 0)) }); return; }
-    const best = Math.max(...reps.map((r, k) => r == null ? 0 : kgs[k] * (1 + r / 30)));
+    const best = Math.max(...reps.map((r, k) => r == null || (!e || !e.asistida) && kgs[k] > wl ? 0 : kgs[k] * (1 + r / 30)));
     out.push({ fecha: s.fecha, kg: Math.round(best * 10) / 10 });
   });
   return out;
@@ -1333,12 +1364,14 @@ function exCardHtml(e, items, big) {
   const skipped = it.skip != null;
   const sug = suggestion(e), pl = skipped ? null : plan(e);
   const pts = seriesFor(e.id, e);
+  const vars = varsOf(e), cv = curVar(e);
   return `<article class="ex${skipped ? ' skipped' : ''}${big ? ' big' : ''}" data-ej="${esc(e.id)}">
     <div class="ex-head">${big ? `<button class="minibody" type="button" data-body="${esc(c.id || '')}" aria-label="Ver en el cuerpo">${bodyMini(e)}</button>` : ''}<h3>${esc(e.nombre)}${e.color !== S.color ? `<span class="pendtag" style="--c: var(--${esc(dia(e.color).color)})">pendiente · ${esc(dia(e.color).nombre)}</span>` : ''}</h3><span class="target">${esc(e.series)} series</span></div>
     ${musclesLine(e)}
     ${c.tecnica ? `<div class="tec">${esc(c.tecnica)} <button type="button" class="linkbtn" data-prac-ej="${esc(c.id)}">Practicar</button></div>` : ''}
     ${e.asistida ? '<div class="assist">Carga = kg de asistencia. Menos es mejor.</div>' : isBody(e) ? '<div class="assist">Peso corporal: lo que progresa son las reps.</div>' : ''}
     ${skipped ? `<div class="ex-actions"><span class="skipnote"><span>Salteado hoy:</span><input type="text" data-f="skip" value="${esc(it.skip)}" placeholder="motivo"></span><button type="button" data-unskip="1">Deshacer</button></div>` : `
+    ${vars ? `<div class="vars"><span class="sg-l">¿Cómo lo hacés hoy?</span>${vars.map(v => `<button type="button" data-var="${esc(v)}" aria-pressed="${v === cv}">${esc(v)}</button>`).join('')}</div>` : ''}
     <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, !!e.asistida)}</button></div>
     <div class="ex-inputs">
       ${setsHtml(e, it, n, pl, big)}
@@ -1380,6 +1413,17 @@ function wireCards(root, ejs) {
   root.querySelectorAll('.ex').forEach(setRowsRefresh);
   root.querySelectorAll('.setrows').forEach(g => g.addEventListener('focusout', () => setTimeout(() => setRowsRefresh(g.closest('.ex')), 0)));
   root.querySelectorAll('button[data-esf]').forEach(b => b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') === 'true'; b.closest('.esf').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false')); if (!on) b.setAttribute('aria-pressed', 'true'); scheduleSave(); }));
+  root.querySelectorAll('button[data-var]').forEach(b => b.addEventListener('click', () => {
+    if (b.getAttribute('aria-pressed') === 'true') return;
+    const art = b.closest('.ex'), id = art.dataset.ej;
+    b.closest('.vars').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    (S.varSel = S.varSel || {})[sessionId() + '|' + id] = b.dataset.var;
+    const typed = [...art.querySelectorAll('[data-f="set"],[data-f="setkg"]')].some(i => i.value !== '') || art.querySelector('[data-f="nota"]').value.trim() !== '';
+    if (!typed) { buildForm(); return; }
+    scheduleSave();
+    const e = ejs.find(x => x.id === id), g = art.querySelector('.goal .g');
+    if (e && g) { const sg = suggestion(e); g.className = 'g ' + sg.cls; g.innerHTML = sg.html; }
+  }));
   root.querySelectorAll('button[data-rest]').forEach(b => b.addEventListener('click', () => { if (rest && rest.ej === b.dataset.ej) restStop(); else restStart(Number(b.dataset.rest), b.dataset.ej); }));
   root.querySelectorAll('button[data-pg]').forEach(b => b.addEventListener('click', () => { if (S.focus) fsClose(); openProgreso(b.dataset.pg); }));
   root.querySelectorAll('button[data-body]').forEach(b => b.addEventListener('click', () => { if (!b.dataset.body) return; if (S.focus) fsClose(); showTab('cuerpo'); $('body-pick').value = b.dataset.body; bodyShowExercise(b.dataset.body); window.scrollTo({ top: 0 }); }));
@@ -1531,6 +1575,18 @@ function migrateCatalogo() {
 }
 /* migración única (2/11): en ejercicios con barra la carga pasa a ser el total con la barra.
    Antes del 2/11 se anotaban solo los discos: se les suma la barra. Se marca cada item con tot: 1 para no repetir. */
+/* migración puntual (14/11): variante de las sesiones viejas, según las notas de José. Hasta el 7/11 hizo las
+   extensiones con mancuerna a una mano; el press de hombro del 13/10 fue con barra. Solo toca items sin variante. */
+function migrateVariantes() {
+  if (!S.db) return;
+  S.ses.forEach(s => {
+    const items = Object.assign({}, s.items || {}); let changed = false;
+    const mark = (id, v) => { const it = items[id]; if (it && !it.var && it.skip == null) { items[id] = Object.assign({}, it, { var: v }); changed = true; } };
+    if (s.fecha < '2026-11-07') mark('extensiones-mancuerna', '1 mano');
+    if (s.fecha === '2026-10-13') mark('press-hombro', 'Barra');
+    if (changed) { const b = Object.assign({}, s, { items }); delete b.id; S.db.collection('sesiones').doc(s.id).set(b).catch(() => {}); }
+  });
+}
 function migrateBarra() {
   if (!S.db || !S.loaded.ej) return;
   S.ses.forEach(s => {
@@ -1688,7 +1744,7 @@ function collect() {
     const nota = ex.querySelector('[data-f="nota"]').value.trim();
     const any = sets.some(v => v != null);
     const esfB = ex.querySelector('button[data-esf][aria-pressed="true"]');
-    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; if (esfB) items[id].esf = esfB.dataset.esf; const ee = S.ej.find(x => x.id === id); if (ee && ee.barra) items[id].tot = 1; }
+    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; if (esfB) items[id].esf = esfB.dataset.esf; const vb = ex.querySelector('button[data-var][aria-pressed="true"]'); if (vb) items[id].var = vb.dataset.var; const ee = S.ej.find(x => x.id === id); if (ee && ee.barra) items[id].tot = 1; }
   });
   Object.keys(prev).forEach(id => { if (!items[id] && !seen.has(id)) items[id] = prev[id]; });
   return items;
@@ -2155,7 +2211,7 @@ function renderProgreso() {
         const m = metricOf(e);
         const fv = m === 'carga' && !e.asistida ? f + b : f, lv = m === 'carga' && !e.asistida ? l + b : l;
         delta = `${fmt(fv)} → ${fmt(lv)} ${metricLabel(e)}` + (df ? ` (${df > 0 ? '+' : ''}${fmt(df)})` : '');
-        meta = `${pts.length} ${pts.length === 1 ? 'sesión' : 'sesiones'} · desde ${dmy(pts[0].fecha)}`;
+        meta = `${pts.length} ${pts.length === 1 ? 'sesión' : 'sesiones'} · desde ${dmy(pts[0].fecha)}` + (curVar(e) ? ` · ${esc(curVar(e))}` : '');
       } else { delta = isBody(e) ? 'Sin reps anotadas todavía' : 'Sin cargas todavía'; meta = ''; }
       return `<div class="pg" id="pg-${esc(e.id)}" style="--c: var(--${esc(g.d.color)})"><div><h3>${esc(e.nombre)}</h3><div class="delta ${cls}">${delta}</div><div class="meta">${meta}</div></div>${spark(pts, g.d.color, 120, 44, !!e.asistida)}</div>`;
     }).join('');
@@ -2696,7 +2752,7 @@ showTab(startTab);
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); renderRutinas(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
-    if (first) { autoClose(); migrateBarra(); }
+    if (first) { autoClose(); migrateBarra(); migrateVariantes(); }
     if (first && !colorPicked) { colorPicked = true; if (!resumeRunning()) { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
@@ -2711,7 +2767,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.11-0034';
+const APP_VERSION = '2026.11.14-0121';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
