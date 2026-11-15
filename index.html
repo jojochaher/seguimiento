@@ -461,9 +461,51 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 @media (max-width: 380px) { .tiles { grid-template-columns: 1fr 1fr; } .rt .fields { grid-template-columns: 1fr 1fr 1fr; } }
 @media (max-width: 460px) { .rt .fields { grid-template-columns: repeat(3, 1fr); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* secciones de la app: Gym (todo lo anterior) y Estilo (resumen, bitácora, referencias) */
+.secsw { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+.secsw button { font-family: var(--font-display); font-weight: 700; font-size: .95rem; letter-spacing: .06em; text-transform: uppercase; border: none; background: transparent; color: var(--muted); border-radius: 9px; padding: 7px 4px; cursor: pointer; }
+.secsw button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+body.sec-estilo { --day: var(--ink); --on-day: var(--bg); padding-bottom: 100px; }
+body.sec-estilo .panel:not(.est), body.sec-estilo #sesbar, body.sec-estilo #nav-gym, body.sec-estilo #peso-nudge { display: none !important; }
+body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: none !important; }
+#nav-estilo { grid-template-columns: repeat(3, 1fr); }
+.panel.est { display: grid; gap: 14px; }
+.est textarea { width: 100%; resize: none; overflow: hidden; font: inherit; font-size: 16px; letter-spacing: 0; text-transform: none; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); line-height: 1.4; min-height: 46px; }
+.est textarea:focus { outline: none; border-color: var(--ink); }
+.est .k { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: block; margin-bottom: 4px; }
+.est-pr { font-size: 1.1rem; line-height: 1.45; margin: 0; white-space: pre-wrap; }
+.est ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: .95rem; line-height: 1.4; }
+.est-paso { border-left: 4px solid var(--ink); padding: 8px 10px; background: var(--bg); border-radius: 0 8px 8px 0; font-size: .95rem; line-height: 1.4; white-space: pre-wrap; }
+.est-sug { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; font-size: .95rem; line-height: 1.4; border-top: 1px solid var(--line); padding-top: 8px; }
+.est-sug .v, .ref .v { display: flex; gap: 4px; }
+.est-sug .v button, .ref .v button { font-size: 1rem; line-height: 1; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 6px 8px; cursor: pointer; opacity: .45; }
+.est-sug .v button[aria-pressed="true"], .ref .v button[aria-pressed="true"] { opacity: 1; border-color: var(--ink); }
+.est-seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.est-seg button { font: inherit; font-size: .88rem; letter-spacing: 0; text-transform: none; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.est-seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.est-entry { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+.est-entry .meta { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.est-entry .txt { white-space: pre-wrap; font-size: .95rem; line-height: 1.4; overflow-wrap: anywhere; }
+.est .del { background: transparent; border: none; color: var(--muted); font-size: .82rem; text-decoration: underline; cursor: pointer; padding: 0; justify-self: start; }
+.est .del.confirm { color: var(--bad); font-weight: 700; }
+.est-ph { display: flex; gap: 6px; flex-wrap: wrap; }
+.est-ph a, .est-ph .p { display: block; width: 72px; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+.est-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.est-ph .p button { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; border: none; border-radius: 50%; background: rgba(0,0,0,.65); color: #fff; font-size: .9rem; line-height: 1; cursor: pointer; padding: 0; }
+.refs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+.ref { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: grid; align-content: start; min-width: 0; }
+.ref .im { aspect-ratio: 3 / 4; background: var(--bg); display: block; }
+.ref .im img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ref.no .im img { filter: grayscale(.7); opacity: .7; }
+.ref .b { padding: 8px 10px; display: grid; gap: 6px; }
+.ref .v button { flex: 1; }
+.ref .n { font-size: .86rem; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ref a.lk { font-size: .82rem; color: var(--ink); overflow-wrap: anywhere; }
 </style>
 
 <div class="wrap">
+
+  <div class="secsw" role="tablist" aria-label="Partes de la app"><button type="button" role="tab" data-sec="gym" aria-selected="true">Gym</button><button type="button" role="tab" data-sec="estilo" aria-selected="false">Estilo</button></div>
 
   <div id="notice" class="notice" hidden></div>
   <button id="peso-nudge" class="nudge" type="button" hidden></button>
@@ -630,6 +672,38 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
     </div>
     <div class="list" id="fb-list"></div>
   </section>
+  <!-- ESTILO: resumen que escribe Claude + notas, bitácora y referencias de José -->
+  <section class="panel est" id="p-est-resumen">
+    <div id="est-resumen" style="display:grid;gap:14px"></div>
+  </section>
+  <section class="panel est" id="p-est-bitacora" hidden>
+    <form class="box" id="bit-form">
+      <h2>Nueva entrada</h2>
+      <div class="row">
+        <label style="flex:1 1 130px">Fecha<input type="date" id="bit-fecha" required></label>
+        <label style="flex:1 1 130px">Área<select id="bit-area"></select></label>
+      </div>
+      <label>Qué pasó y qué te pareció<textarea id="bit-texto" rows="3" placeholder="Fui a cortarme, probé tal cosa, me gustó, me hizo ruido…"></textarea></label>
+      <div class="est-ph" id="bit-ph"></div>
+      <div class="row" style="align-items:center"><label class="btn ghost small">📷 Sumar fotos<input type="file" accept="image/*" multiple id="bit-file" hidden></label><button class="btn" type="submit">Guardar</button><span class="status" id="bit-status"></span></div>
+    </form>
+    <div class="list" id="bit-list" style="gap:10px"></div>
+  </section>
+  <section class="panel est" id="p-est-refs" hidden>
+    <form class="box" id="ref-form">
+      <h2>Nueva referencia</h2>
+      <p class="hint">Algo que viste y te gustó o no: un corte, una prenda, un look. Captura de pantalla o link. Lo que más sirve es el porqué.</p>
+      <div class="row" style="align-items:center"><label class="btn ghost small">🖼 Elegir imagen<input type="file" accept="image/*" id="ref-file" hidden></label><div class="est-ph" id="ref-ph"></div></div>
+      <label>Link (opcional)<input type="text" id="ref-url" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://…"></label>
+      <label>Área<select id="ref-area"></select></label>
+      <div class="est-seg" id="ref-gusta"><button type="button" data-g="1" aria-pressed="true">👍 Me gusta</button><button type="button" data-g="-1" aria-pressed="false">👎 No me gusta</button><button type="button" data-g="0" aria-pressed="false">🤔 No sé</button></div>
+      <label>Por qué<textarea id="ref-nota" rows="2" placeholder="Qué tiene que te gusta o te hace ruido"></textarea></label>
+      <div class="row" style="align-items:center"><button class="btn" type="submit">Guardar</button><span class="status" id="ref-status"></span></div>
+    </form>
+    <p class="hint" id="ref-count"></p>
+    <div class="est-seg" id="ref-filtro"></div>
+    <div class="refs" id="ref-list"></div>
+  </section>
 </div>
 
 <div class="dock" id="dock">
@@ -653,13 +727,18 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
       </div>
     </div>
   </div>
-<nav class="bottom" role="tablist" aria-label="Secciones">
+<nav class="bottom" id="nav-gym" role="tablist" aria-label="Secciones">
   <button role="tab" id="tab-entreno" data-tab="entreno"><span class="ic">🏋️</span>Entreno</button>
   <button role="tab" id="tab-rutina" data-tab="rutina"><span class="ic">📋</span>Rutina</button>
   <button role="tab" id="tab-progreso" data-tab="progreso"><span class="ic">📈</span>Progreso</button>
   <button role="tab" id="tab-cuerpo" data-tab="cuerpo"><span class="ic">🫀</span>Cuerpo</button>
   <button role="tab" id="tab-fisico" data-tab="fisico"><span class="ic">⚖️</span>Físico</button>
   <button role="tab" id="tab-claude" data-tab="claude"><span class="ic">💬</span>Claude<span class="dot" id="tab-claude-dot" hidden></span></button>
+</nav>
+<nav class="bottom" id="nav-estilo" role="tablist" aria-label="Estilo">
+  <button role="tab" data-est="resumen"><span class="ic">📌</span>Resumen</button>
+  <button role="tab" data-est="bitacora"><span class="ic">📓</span>Bitácora</button>
+  <button role="tab" data-est="refs"><span class="ic">🖼</span>Referencias</button>
 </nav>
 </div>
 
@@ -751,8 +830,9 @@ function isUnilateral(e) { const n = (e.nombre || '') + ' ' + ((catOf(e) || {}).
 
 /* ---------- pestañas ---------- */
 function showTab(t) {
+  if (S.sec === 'estilo') secApply('gym');
   S.tab = t;
-  document.querySelectorAll('nav.bottom button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  document.querySelectorAll('#nav-gym button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   TABS.forEach(p => { $('p-' + p).hidden = p !== t; });
   window.scrollTo({ top: 0 });
   $('sesbar').hidden = t !== 'entreno'; document.body.classList.toggle('entreno', t === 'entreno');
@@ -762,7 +842,7 @@ function showTab(t) {
   renderNudge();
   wakeSync();
 }
-document.querySelectorAll('nav.bottom button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+document.querySelectorAll('#nav-gym button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
 function setBodyView(v) {
   $('body-wrap').dataset.view = v;
   const vb = '80 -4 220 424';
@@ -2514,7 +2594,7 @@ const LB = { items: [], i: 0, fecha: '' };
 function openLightbox(items, i, fecha) { LB.items = items; LB.i = i; LB.fecha = fecha; $('lb').hidden = false; document.body.classList.add('locked'); lbRender(); }
 function lbRender() {
   const it = LB.items[LB.i]; if (!it) return;
-  $('lb-img').src = blobUrl(it.id); $('lb-cap').textContent = LB.fecha + ' · ' + it.t + (LB.items.length > 1 ? ` (${LB.i + 1}/${LB.items.length})` : '');
+  $('lb-img').src = blobUrl(it.id); $('lb-cap').textContent = (LB.fecha ? LB.fecha + ' · ' : '') + it.t + (LB.items.length > 1 ? ` (${LB.i + 1}/${LB.items.length})` : '');
   $('lb-prev').hidden = LB.items.length < 2; $('lb-next').hidden = LB.items.length < 2;
 }
 function lbClose() { $('lb').hidden = true; document.body.classList.remove('locked'); $('lb-img').src = ''; }
@@ -2737,8 +2817,207 @@ function err(e, statusId) {
   if (statusId) setStatus(statusId, msg, 'err'); else console.warn(e);
 }
 
+/* ---------- ESTILO: segunda sección de la app ----------
+   Resumen: lo escribe Claude en estilo-claude.json del repo privado de datos (principio, áreas, próximo paso, sugerencias).
+   Mis notas / Bitácora / Referencias: lo que carga José (colecciones est_notas, est_bitacora, est_refs, est_sug). Las fotos quedan solo en el teléfono. */
+Object.assign(S, { sec: 'gym', estTab: 'resumen', estNotas: [], estBit: [], estRefs: [], estSug: [], estClaude: null, refF: { area: '', g: '' } });
+const EST_TABS = ['resumen', 'bitacora', 'refs'];
+const EST_AREAS = [{ id: 'pelo', nombre: 'Pelo' }, { id: 'barba', nombre: 'Barba y bigote' }, { id: 'ropa', nombre: 'Ropa' }, { id: 'calzado', nombre: 'Calzado' }, { id: 'otro', nombre: 'Otro' }];
+const EST_CK = 'seg-estilo-claude';
+try { S.estClaude = JSON.parse(localStorage.getItem(EST_CK) || 'null'); } catch (e) {}
+function estAreas() {
+  const out = (S.estClaude && Array.isArray(S.estClaude.areas) ? S.estClaude.areas : []).filter(a => a && a.id).map(a => ({ id: String(a.id), nombre: a.nombre || String(a.id) }));
+  EST_AREAS.forEach(a => { if (!out.some(x => x.id === a.id)) out.push(a); });
+  return out.sort((a, b) => (a.id === 'otro') - (b.id === 'otro'));
+}
+function areaName(id) { const a = estAreas().find(x => x.id === id); return a ? a.nombre : (id || ''); }
+function fillAreaSelects() { ['bit-area', 'ref-area'].forEach(i => { const s = $(i), v = s.value; s.innerHTML = estAreas().map(a => `<option value="${esc(a.id)}">${esc(a.nombre)}</option>`).join(''); if (v) s.value = v; }); }
+function secApply(sec) {
+  S.sec = sec; document.body.classList.toggle('sec-estilo', sec === 'estilo');
+  document.querySelectorAll('.secsw button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.sec === sec)));
+  try { sessionStorage.setItem('seg-sec', sec); } catch (e) {}
+}
+function showSec(sec) { if (sec === 'estilo') { flushSave(); secApply('estilo'); showEst(S.estTab); } else { secApply('gym'); showTab(S.tab); } }
+function showEst(t) {
+  if (!EST_TABS.includes(t)) t = 'resumen';
+  S.estTab = t;
+  document.querySelectorAll('#nav-estilo button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.est === t)));
+  EST_TABS.forEach(p => { $('p-est-' + p).hidden = p !== t; });
+  window.scrollTo({ top: 0 });
+  try { localStorage.setItem('seg-esttab', t); } catch (e) {}
+  if (t === 'resumen') { renderEstResumen(); loadEstClaude(); } else if (t === 'bitacora') renderBit(); else renderRefs();
+}
+document.querySelectorAll('.secsw button').forEach(b => b.addEventListener('click', () => showSec(b.dataset.sec)));
+document.querySelectorAll('#nav-estilo button').forEach(b => b.addEventListener('click', () => showEst(b.dataset.est)));
+function grow(t) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
+['bit-texto', 'ref-nota'].forEach(i => $(i).addEventListener('input', () => grow($(i))));
+
+/* resumen de Claude: se lee del repo privado y se guarda una copia para verlo sin conexión */
+let estFetchAt = 0;
+async function loadEstClaude(force) {
+  if (!(window.claude && window.claude.syncFetch)) return;
+  if (!force && Date.now() - estFetchAt < 60000) return;
+  estFetchAt = Date.now();
+  try {
+    const r = await window.claude.syncFetch('estilo-claude.json');
+    if (!r || typeof r !== 'object') return;
+    const changed = JSON.stringify(r) !== JSON.stringify(S.estClaude);
+    S.estClaude = r; try { localStorage.setItem(EST_CK, JSON.stringify(r)); } catch (e) {}
+    if (changed) { fillAreaSelects(); renderEstResumen(); if (S.estTab === 'bitacora') renderBit(); if (S.estTab === 'refs') renderRefs(); }
+  } catch (e) { console.warn('estilo', e); }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.sec === 'estilo') loadEstClaude(); });
+
+/* mis notas por área: se guardan solas al dejar de escribir */
+const notaTimers = {};
+function notaSave(area, texto) { clearTimeout(notaTimers[area]); delete notaTimers[area]; if (!S.db) return; const prev = (S.estNotas.find(n => n.id === area) || {}).texto || ''; if (prev === texto) return; S.db.collection('est_notas').doc(area).set({ texto, mod: new Date().toISOString() }).catch(err); }
+function estTyping() { const a = document.activeElement; return !!(a && a.closest && a.closest('.panel.est') && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)); }
+function estDirty() { return estTyping() || Object.keys(notaTimers).length > 0 || BITP.length > 0 || !!REFP || !!$('bit-texto').value.trim() || !!$('ref-nota').value.trim() || !!$('ref-url').value.trim(); }
+function ulist(arr) { return Array.isArray(arr) && arr.length ? '<ul>' + arr.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : ''; }
+function blk(k, arr) { const u = ulist(arr); return u ? `<div><span class="k">${k}</span>${u}</div>` : ''; }
+function renderEstResumen() {
+  const box = $('est-resumen'); if (!box) return;
+  if (box.contains(document.activeElement) && estTyping()) return;
+  const c = S.estClaude || {};
+  const notas = Object.fromEntries(S.estNotas.map(n => [n.id, n.texto || '']));
+  const reac = Object.fromEntries(S.estSug.map(s => [s.id, s.r]));
+  const sugs = Array.isArray(c.sugerencias) ? c.sugerencias.filter(s => s && s.id && s.texto) : [];
+  const ids = estAreas().map(a => a.id);
+  let h = `<div class="box"><div><span class="k">Principio</span>${c.principio ? `<p class="est-pr">${esc(c.principio)}</p>` : '<p class="hint">Todavía no hay resumen. Lo escribe Claude a partir de lo que hablan; aparece acá cuando la app sincroniza (Físico → Compartir con Claude).</p>'}</div>${blk('Criterios', c.criterios)}</div>`;
+  estAreas().forEach(a => {
+    const ca = (Array.isArray(c.areas) ? c.areas : []).find(x => x && x.id === a.id) || {};
+    const ss = sugs.filter(s => (ids.includes(s.area) ? s.area : 'otro') === a.id);
+    const has = ca.paso || ca.definido || ca.datos || ca.evitar || ca.probar || ca.abierto || ss.length;
+    if (a.id === 'otro' && !has && !notas[a.id]) return;
+    h += `<div class="box">
+      <h2>${esc(a.nombre)}</h2>
+      ${ca.paso ? `<div><span class="k">Próximo paso</span><div class="est-paso">${esc(ca.paso)}</div></div>` : ''}
+      ${blk('Definido', ca.definido)}${blk('Datos', ca.datos)}${blk('No va', ca.evitar)}${blk('Para probar', ca.probar)}${blk('Abierto', ca.abierto)}
+      ${ss.length ? `<div><span class="k">Sugerencias de Claude</span>${ss.map(s => `<div class="est-sug"><span>${esc(s.texto)}</span><span class="v"><button type="button" data-sug="${esc(s.id)}" data-r="1" aria-pressed="${reac[s.id] === 1}" aria-label="Me sirve">👍</button><button type="button" data-sug="${esc(s.id)}" data-r="-1" aria-pressed="${reac[s.id] === -1}" aria-label="No me sirve">👎</button></span></div>`).join('')}</div>` : ''}
+      <label>Mis notas<textarea data-nota="${esc(a.id)}" rows="2" placeholder="Lo que vayas pensando">${esc(notas[a.id] || '')}</textarea></label>
+    </div>`;
+  });
+  if (Array.isArray(c.frases) && c.frases.length) h += `<details class="box"><summary>Frases para decir</summary>${ulist(c.frases)}</details>`;
+  h += `<p class="hint" style="text-align:center">El resumen lo escribe Claude con lo que hablan y lo que cargás acá.${c.actualizado ? ' Actualizado ' + esc(dmy(String(c.actualizado).slice(0, 10))) + '.' : ''}</p>`;
+  box.innerHTML = h;
+  box.querySelectorAll('textarea[data-nota]').forEach(t => {
+    grow(t);
+    t.addEventListener('input', () => { grow(t); const a = t.dataset.nota; clearTimeout(notaTimers[a]); notaTimers[a] = setTimeout(() => notaSave(a, t.value.trim()), 900); });
+    t.addEventListener('blur', () => notaSave(t.dataset.nota, t.value.trim()));
+  });
+  box.querySelectorAll('button[data-sug]').forEach(b => b.addEventListener('click', () => {
+    if (!S.db) return; const id = b.dataset.sug, r = Number(b.dataset.r), cur = (S.estSug.find(s => s.id === id) || {}).r;
+    if (cur === r) S.db.collection('est_sug').doc(id).delete().catch(err); else S.db.collection('est_sug').doc(id).set({ r, mod: new Date().toISOString() }).catch(err);
+  }));
+}
+
+/* borrar con confirmación (dos toques) */
+function wireDel(root, fn) {
+  root.querySelectorAll('button.del').forEach(b => b.addEventListener('click', () => {
+    if (b.classList.contains('confirm')) fn(b.dataset.del);
+    else { b.classList.add('confirm'); b.textContent = '¿Seguro?'; setTimeout(() => { if (b.isConnected) { b.classList.remove('confirm'); b.textContent = 'Borrar'; } }, 4000); }
+  }));
+}
+async function delAssets(ids) { try { assetsApi = assetsApi || await window.claude.use('assets'); if (assetsApi) for (const id of ids) if (id) await assetsApi.delete(id); } catch (e) {} }
+
+/* bitácora: entradas con fecha, área, texto y fotos */
+const BITP = [];
+function renderBitPending() {
+  $('bit-ph').innerHTML = BITP.map((p, i) => `<div class="p"><img src="${p.url}" alt=""><button type="button" data-i="${i}" aria-label="Quitar">×</button></div>`).join('');
+  $('bit-ph').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { const p = BITP.splice(Number(b.dataset.i), 1)[0]; if (p) URL.revokeObjectURL(p.url); renderBitPending(); }));
+}
+$('bit-file').addEventListener('change', async () => {
+  const fs = [...($('bit-file').files || [])]; $('bit-file').value = '';
+  for (const f of fs) { const blob = await shrink(f); BITP.push({ blob, url: URL.createObjectURL(blob) }); }
+  renderBitPending();
+});
+$('bit-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const texto = $('bit-texto').value.trim();
+  if (!texto && !BITP.length) { setStatus('bit-status', 'Escribí algo o sumá una foto', 'err'); return; }
+  if (!S.db) { setStatus('bit-status', 'Sin conexión a tus datos', 'err'); return; }
+  try {
+    setStatus('bit-status', 'Guardando…');
+    assetsApi = assetsApi || await window.claude.use('assets');
+    const fotos = []; for (const p of BITP) { const r = await assetsApi.upload(p.blob); fotos.push(r.id); }
+    const id = new Date().toISOString();
+    await S.db.collection('est_bitacora').doc(id).set({ fecha: $('bit-fecha').value || today(), area: $('bit-area').value, texto, fotos, creado: id });
+    BITP.splice(0).forEach(p => URL.revokeObjectURL(p.url)); renderBitPending();
+    $('bit-texto').value = ''; grow($('bit-texto')); setStatus('bit-status', 'Guardado ✓', 'ok');
+  } catch (x) { err(x, 'bit-status'); }
+});
+function renderBit() {
+  const list = [...S.estBit].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.creado || '').localeCompare(a.creado || ''));
+  const box = $('bit-list');
+  box.innerHTML = list.length ? list.map(b => {
+    const fotos = (b.fotos || []).filter(id => blobUrl(id));
+    return `<div class="est-entry" data-id="${esc(b.id)}"><div class="meta">${esc(dmy(b.fecha))} · ${esc(areaName(b.area))}</div>${b.texto ? `<div class="txt">${esc(b.texto)}</div>` : ''}${fotos.length ? `<div class="est-ph">${fotos.map(id => `<a href="#" data-lb="${esc(id)}"><img src="${blobUrl(id)}" loading="lazy" alt=""></a>`).join('')}</div>` : ''}${(b.fotos || []).length > fotos.length ? '<div class="hint">Las fotos de esta entrada están en otro dispositivo.</div>' : ''}<button type="button" class="del" data-del="${esc(b.id)}">Borrar</button></div>`;
+  }).join('') : '<div class="empty">Todavía no hay entradas. Anotá lo que vayas probando: un corte, una prenda, algo que te hizo ruido.</div>';
+  box.querySelectorAll('a[data-lb]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); const en = a.closest('.est-entry'), b = S.estBit.find(x => x.id === en.dataset.id) || {};
+    const group = [...en.querySelectorAll('a[data-lb]')].map(x => ({ id: x.dataset.lb, t: areaName(b.area) }));
+    openLightbox(group, group.findIndex(x => x.id === a.dataset.lb), dmy(b.fecha));
+  }));
+  wireDel(box, async id => { const b = S.estBit.find(x => x.id === id); await S.db.collection('est_bitacora').doc(id).delete().catch(err); if (b) delAssets(b.fotos || []); });
+}
+
+/* referencias: imagen o link + me gusta / no me gusta + por qué */
+let REFP = null, refG = 1;
+function renderRefPending() {
+  $('ref-ph').innerHTML = REFP ? `<div class="p"><img src="${REFP.url}" alt=""><button type="button" aria-label="Quitar">×</button></div>` : '';
+  const b = $('ref-ph').querySelector('button'); if (b) b.addEventListener('click', () => { URL.revokeObjectURL(REFP.url); REFP = null; renderRefPending(); });
+}
+$('ref-file').addEventListener('change', async () => {
+  const f = $('ref-file').files && $('ref-file').files[0]; $('ref-file').value = ''; if (!f) return;
+  const blob = await shrink(f); if (REFP) URL.revokeObjectURL(REFP.url); REFP = { blob, url: URL.createObjectURL(blob) }; renderRefPending();
+});
+$('ref-gusta').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { refG = Number(b.dataset.g); $('ref-gusta').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
+$('ref-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nota = $('ref-nota').value.trim(); let url = $('ref-url').value.trim();
+  if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if (!REFP && !url) { setStatus('ref-status', 'Elegí una imagen o pegá un link', 'err'); return; }
+  if (!S.db) { setStatus('ref-status', 'Sin conexión a tus datos', 'err'); return; }
+  try {
+    setStatus('ref-status', 'Guardando…');
+    let img = null; if (REFP) { assetsApi = assetsApi || await window.claude.use('assets'); img = (await assetsApi.upload(REFP.blob)).id; }
+    const id = new Date().toISOString();
+    await S.db.collection('est_refs').doc(id).set({ area: $('ref-area').value, img, url, gusta: refG, nota, creado: id });
+    if (REFP) { URL.revokeObjectURL(REFP.url); REFP = null; renderRefPending(); }
+    $('ref-nota').value = ''; $('ref-url').value = ''; grow($('ref-nota')); setStatus('ref-status', 'Guardada ✓', 'ok');
+  } catch (x) { err(x, 'ref-status'); }
+});
+const REF_G = [[1, '👍'], [-1, '👎'], [0, '🤔']];
+function host(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
+function renderRefs() {
+  const all = [...S.estRefs].sort((a, b) => (b.creado || '').localeCompare(a.creado || ''));
+  const n = g => all.filter(r => r.gusta === g).length;
+  $('ref-count').textContent = all.length ? `${all.length} ${all.length === 1 ? 'referencia' : 'referencias'}: ${n(1)} 👍 · ${n(-1)} 👎 · ${n(0)} 🤔. Con 20 o 30 ya se ve un criterio.` : '';
+  const areas = estAreas().filter(a => all.some(r => r.area === a.id));
+  const F = S.refF; if (F.area && !areas.some(a => a.id === F.area)) F.area = '';
+  $('ref-filtro').innerHTML = all.length > 1 ? `<button type="button" data-fa="" aria-pressed="${!F.area}">Todas</button>${areas.map(a => `<button type="button" data-fa="${esc(a.id)}" aria-pressed="${F.area === a.id}">${esc(a.nombre)}</button>`).join('')}${REF_G.map(([g, ic]) => `<button type="button" data-fg="${g}" aria-pressed="${F.g === String(g)}">${ic}</button>`).join('')}` : '';
+  $('ref-filtro').querySelectorAll('button[data-fa]').forEach(b => b.addEventListener('click', () => { F.area = b.dataset.fa; renderRefs(); }));
+  $('ref-filtro').querySelectorAll('button[data-fg]').forEach(b => b.addEventListener('click', () => { F.g = F.g === b.dataset.fg ? '' : b.dataset.fg; renderRefs(); }));
+  const list = all.filter(r => (!F.area || r.area === F.area) && (F.g === '' || String(r.gusta) === F.g));
+  const box = $('ref-list');
+  box.innerHTML = list.length ? list.map(r => {
+    const src = r.img ? blobUrl(r.img) : '';
+    return `<div class="ref${r.gusta === -1 ? ' no' : ''}" data-id="${esc(r.id)}">${src ? `<a class="im" href="#" data-lb="${esc(r.img)}"><img src="${src}" loading="lazy" alt=""></a>` : ''}<div class="b"><span class="k" style="margin:0">${esc(areaName(r.area))}</span><div class="v">${REF_G.map(([g, ic]) => `<button type="button" data-g="${g}" aria-pressed="${r.gusta === g}">${ic}</button>`).join('')}</div>${r.nota ? `<div class="n">${esc(r.nota)}</div>` : ''}${r.url ? `<a class="lk" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(host(r.url))} ↗</a>` : ''}${r.img && !src ? '<div class="hint">La imagen está en otro dispositivo.</div>' : ''}<button type="button" class="del" data-del="${esc(r.id)}">Borrar</button></div></div>`;
+  }).join('') : `<div class="empty" style="grid-column:1/-1">${all.length ? 'Nada con ese filtro.' : 'Todavía no hay referencias. Guardá también lo que NO te gusta: define tanto como lo que sí.'}</div>`;
+  box.querySelectorAll('a[data-lb]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); const group = list.filter(r => r.img && blobUrl(r.img)).map(r => ({ id: r.img, t: (REF_G.find(g => g[0] === r.gusta) || ['', ''])[1] + ' ' + areaName(r.area) + (r.nota ? ' · ' + r.nota : '') }));
+    openLightbox(group, group.findIndex(x => x.id === a.dataset.lb), '');
+  }));
+  box.querySelectorAll('.v button').forEach(b => b.addEventListener('click', () => {
+    const id = b.closest('.ref').dataset.id, r = S.estRefs.find(x => x.id === id); if (!r || !S.db) return;
+    const d = Object.assign({}, r, { gusta: Number(b.dataset.g) }); delete d.id; S.db.collection('est_refs').doc(id).set(d).catch(err);
+  }));
+  wireDel(box, async id => { const r = S.estRefs.find(x => x.id === id); await S.db.collection('est_refs').doc(id).delete().catch(err); if (r && r.img) delAssets([r.img]); });
+}
+fillAreaSelects();
+
 /* ---------- arranque ---------- */
-['fis-fecha', 'ses-fecha'].forEach(i => $(i).value = today());
+['fis-fecha', 'ses-fecha', 'bit-fecha'].forEach(i => $(i).value = today());
 let startTab = 'entreno';
 const h = (location.hash || '').slice(1);
 if (TABS.includes(h)) startTab = h;
@@ -2747,6 +3026,8 @@ drawBody('body-front', FRONT); drawBody('body-back', BACK);
 setBodyView('both');
 S.color = 'verde'; applyDay(); renderColors(); renderRtColors(); renderDias(); renderRutina(); renderPeso(); renderFotos(); renderMedidas(); renderClock(); renderProgreso();
 showTab(startTab);
+try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes(et)) S.estTab = et; } catch (e) {}
+{ let sec = 'gym'; try { if (sessionStorage.getItem('seg-sec') === 'estilo') sec = 'estilo'; } catch (e) {} if ((location.hash || '') === '#estilo') sec = 'estilo'; if (sec === 'estilo') showSec('estilo'); }
 
 (async () => {
   const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
@@ -2778,14 +3059,18 @@ showTab(startTab);
   snap('fotos', 'fotos', renderFotos);
   snap('medidas', 'medidas', renderMedidas);
   snap('feedback', 'feedback', renderClaude);
+  snap('est_notas', 'estNotas', renderEstResumen);
+  snap('est_sug', 'estSug', renderEstResumen);
+  snap('est_bitacora', 'estBit', renderBit);
+  snap('est_refs', 'estRefs', renderRefs);
   loadRespuestas();
 })();
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.15-0005';
+const APP_VERSION = '2026.11.15-0023';
 let updateTo = null;
-function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
+function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
   if (!updateTo) return;
   if (!safeToReload()) { setTimeout(tryReload, 3000); return; }
