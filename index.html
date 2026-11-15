@@ -830,7 +830,7 @@ const DEFAULT_DIAS = [
   { id: 'amarillo', nombre: 'Espalda', color: 'amarillo', elong: 'amarillo', orden: 3, modo: 'orden' },
   { id: 'azul', nombre: 'Brazos', color: 'azul', elong: 'azul', orden: 4, modo: 'alternado' }
 ];
-const ELONG_NAMES = { verde: 'Pecho, hombros y tríceps', naranja: 'Piernas y abdominales', amarillo: 'Espalda, trapecio y bíceps', azul: 'Bíceps, tríceps y antebrazos', '': 'Solo movilidad general' };
+const ELONG_NAMES = { domingo: 'Domingo: cuerpo entero + control muscular', verde: 'Pecho, hombros y tríceps', naranja: 'Piernas y abdominales', amarillo: 'Espalda, trapecio y bíceps', azul: 'Bíceps, tríceps y antebrazos', '': 'Solo movilidad general' };
 function DIAS() { return S.loaded.dias && S.dias.length ? [...S.dias].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)) : DEFAULT_DIAS; }
 function dia(id) { return DIAS().find(d => d.id === id) || { id, nombre: id === 'extra' ? 'Extra' : id, color: 'gris', elong: '', modo: 'orden' }; }
 function ORDER_IDS() { return DIAS().filter(d => d.activo !== false).map(d => d.id); }
@@ -1060,6 +1060,8 @@ const STRETCH = {
     { f: 'balanceo', n: 'Balanceo de piernas', d: 'Apoyado en una pared, balanceá una pierna adelante y atrás, sin forzar la altura.', dose: '10 por pierna', t: 0 } ], despues: [ST.cuadriceps, ST.isquios, ST.mariposa, ST.gemelos, ST.cobra] },
   azul: { label: 'bíceps, tríceps y antebrazos', antes: MOV_SUP, despues: [ST.bicepsPared, ST.triceps, ST.antebrazo] }
 };
+/* domingo: día libre de gym. Elongación de cuerpo entero y después control muscular (CM se define más abajo y se agrega al cargar). */
+STRETCH.domingo = { label: 'cuerpo entero', antes: [...STRETCH.verde.antes, ...STRETCH.amarillo.antes.filter(x => x.f === 'gatoVaca')], despues: [...new Map(Object.values(STRETCH).flatMap(d => d.despues).map(x => [x.f, x])).values()] };
 /* postura: retracción de mentón y pecho en el marco al final de todos los días */
 Object.values(STRETCH).forEach(d => { const ids = d.despues.map(x => x.f); if (!ids.includes('pechoMarco')) d.despues.push(ST.pechoMarco); d.despues.push(ST.menton); });
 let activeTimer = null;
@@ -1227,6 +1229,7 @@ Object.assign(PRAC, {
 });
 FIG.cm = '<circle cx="60" cy="50" r="30" fill="none" stroke="var(--line)" stroke-width="2"/><path d="M48 40c0-4 6-4 6 0v14M54 38c0-4 6-4 6 0v16M60 40c0-4 6-4 6 0v14M66 44c0-4 6-4 6 0v10c0 10-6 16-14 16s-12-5-14-12l-3-10c-1-3 4-5 6-2l3 6" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
 CM.forEach(it => { if (!FIG[it.f]) FIG[it.f] = FIG.cm; it.dose = '5 s × 5, cada lado'; });
+STRETCH.domingo.despues = STRETCH.domingo.despues.concat(CM);
 function renderCmHome() {
   const box = $('cm-home'); if (!box) return;
   box.innerHTML = `<h2>Control muscular</h2><p class="hint">Práctica para el día libre, 20 a 30 min, sin cargas: aprender a contraer cada músculo a voluntad y a distinguirlo de los vecinos. En ejercicios aislados, pensar en el músculo (y no en mover el peso) aumenta la activación y el crecimiento (Schoenfeld 2018: bíceps +12 % vs +7 % en 8 semanas); en compuestos pesados no cambia nada, ahí pensás en mover la carga. Sirve para los que "no sentís": oblicuos, glúteo, dorsal, deltoides posterior.</p>
@@ -1236,8 +1239,8 @@ function renderCmHome() {
     <details class="cm-hist"><summary>De dónde viene esto: Maxick (Bregenz 1882 – Buenos Aires 1961)</summary>
       <p>Max Sick nació en 1882 en Bregenz, Austria, de padres suizos. Entre los dos y los cinco años estuvo casi siempre enfermo: pulmones, raquitismo, hidropesía. No caminó hasta los seis. A los diez se armó sus propias pesas; sus padres se las destruyeron. De adulto medía 1,63 y pesaba 67 kg, y levantaba en dos tiempos el doble de su peso.</p>
       <p>Su marca no fue la fuerza sino el control: aprendió a contraer y relajar cada músculo a voluntad, por separado, y a hacerlo "bailar" bajo la piel. En 1910 publicó <i>Muscle Control</i>, el libro que inventa la práctica que estás por hacer. Su socio inglés, Monte Saldo, fusionó "Max" y "Sick" en <b>Maxick</b>: alguien que vendía salud no podía apellidarse "enfermo". El método se siguió vendiendo como "Maxalding" hasta los años 70.</p>
-      <p>En 1933, cuando llegaron los nazis, se fue de Alemania. Recorrió Centro y Sudamérica y se instaló en Buenos Aires, donde tuvo un gimnasio y estudio de salud. Murió acá en 1961, a punto de cumplir 80. La última mañana pulseó con un amigo, ganó como siempre, volvió en bicicleta a su casa y ahí lo encontraron. Dejó una nota: sabía que se estaba muriendo y se había preparado. No hay una "última frase" documentada; lo que queda es eso.</p>
-      <p class="hint">Fuentes: Wikipedia (Max Sick); R. Tyrrell, "Marvelous Max: the story of Maxick" (Natural Strength).</p>
+      <p>En 1933, cuando llegaron los nazis, se fue de Alemania. Recorrió Centro y Sudamérica y se instaló en Buenos Aires, donde tuvo un gimnasio y estudio de salud. Murió acá en 1961, a punto de cumplir 80. La última mañana pulseó con un amigo, ganó como siempre, volvió en bicicleta a su casa y ahí lo encontraron. Dejó una nota doblada bajo el talón derecho, fechada "10 de mayo de 1961, 22 horas": <i>"Mi corazón late bastante lento, siento mucho frío, creo que pronto va a terminar. Recuerden: lo infinito es nuestra libertad manifestada a través de nuestra conciencia."</i> (Original en inglés, citado por Dennis Mitchell, USAWA, 2010.) Dónde quedaba su gimnasio en Buenos Aires no figura en ninguna fuente publicada: queda por investigar en archivos.</p>
+      <p class="hint">Fuentes: Wikipedia (Max Sick); R. Tyrrell, "Marvelous Max" (The Iron Master, 2000); D. Mitchell, "Max Sick (Maxick)" (USAWA, 2010); J. Roark, "Gyms of the Past" (Iron Game History, 1992).</p>
     </details>`;
   box.querySelectorAll('.prac-item').forEach(b => b.addEventListener('click', () => openPractice(CM.find(x => x.f === b.dataset.f), CM)));
 }
@@ -1619,7 +1622,7 @@ function buildForm() {
   if (!S.loaded.ej) { list.innerHTML = '<div class="empty">Cargando la rutina…</div>'; renderClock(); return; }
   const ejs = todayOrder();
   if (S.focus) { list.innerHTML = ''; fsRender(); renderClock(); return; }
-  if (!ejs.length) { list.innerHTML = '<div class="empty">No hay ejercicios cargados para este día. Agregalos en la pestaña Rutina.</div>'; renderClock(); return; }
+  if (!ejs.length) { list.innerHTML = dia(S.color).elong === 'domingo' ? '<div class="empty">Día libre de gym. Hoy: elongación de cuerpo entero y control muscular, 20 a 30 min. Tocá <b>Sesión</b> y seguí los pasos; al final, Terminar ✓ como siempre.</div>' : '<div class="empty">No hay ejercicios cargados para este día. Agregalos en la pestaña Rutina.</div>'; renderClock(); return; }
   const cur = currentSession();
   const items = (cur && cur.items) || {};
   list.innerHTML = ejs.map(e => exCardHtml(e, items, false)).join('') + (cur ? `<div class="row"><button class="btn danger" type="button" id="del-ses">Borrar esta sesión</button></div>` : '');
@@ -1785,6 +1788,13 @@ function migrateAbs2() {
   };
   add('mar', 'abs-maquina', 4); add('vie', 'elevar-piernas', 3);
   setTimeout(() => { const t = document.createElement('div'); t.className = 'vtoast'; t.textContent = 'Rutina: abdominales ahora martes y viernes, como acordaste'; document.body.appendChild(t); setTimeout(() => t.remove(), 6000); }, 1500);
+}
+/* día 7 de la rutina (decidido 15/11): domingo = elongación + control muscular, sin gym */
+function migrateDom() {
+  if (!S.db || !S.loaded.dias) return;
+  const dias = S.dias || DIAS(); const ids = new Set(dias.map(d => d.id));
+  if (ids.has('dom') || !['lun', 'mar', 'mie', 'jue', 'vie', 'sab'].every(d => ids.has(d))) return;
+  S.db.collection('dias').doc('dom').set({ nombre: 'Domingo · elongar y control muscular', color: 'gris', elong: 'domingo', orden: 7, modo: 'orden', activo: true, dow: 7 });
 }
 function migrateVariantes() {
   if (!S.db) return;
@@ -2118,7 +2128,7 @@ function renderDias() {
         <label>Orden de ejercicios<select data-f="modo"><option value="orden"${(d.modo || 'orden') === 'orden' ? ' selected' : ''}>En orden</option><option value="alternado"${d.modo === 'alternado' ? ' selected' : ''}>Alternando grupos</option></select></label>
       </div>
       <div class="two">
-        <label>Elongación<select data-f="elong">${['verde', 'naranja', 'amarillo', 'azul', ''].map(k => `<option value="${k}"${k === (d.elong || '') ? ' selected' : ''}>${ELONG_NAMES[k]}</option>`).join('')}</select></label>
+        <label>Elongación<select data-f="elong">${['verde', 'naranja', 'amarillo', 'azul', 'domingo', ''].map(k => `<option value="${k}"${k === (d.elong || '') ? ' selected' : ''}>${ELONG_NAMES[k]}</option>`).join('')}</select></label>
         <label>Día fijo<select data-f="dow"><option value="">Por turno</option>${[1,2,3,4,5,6,7].map(n => `<option value="${n}"${Number(d.dow) === n ? ' selected' : ''}>${DOW_NAMES[n]}</option>`).join('')}</select></label>
         <label>En rotación<select data-f="activo"><option value="1"${d.activo !== false ? ' selected' : ''}>Sí, es parte del ciclo</option><option value="0"${d.activo === false ? ' selected' : ''}>No, solo a demanda</option></select></label>
       </div>
@@ -3168,7 +3178,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); renderRutinas(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
-    if (first) { autoClose(); migrateHip(); migrateBarra(); migrateVariantes(); migrateAbs2(); setTimeout(() => { migrateHip(); migrateAbs2(); setTimeout(migrateBarra, 1500); }, 3000); }
+    if (first) { autoClose(); migrateHip(); migrateBarra(); migrateVariantes(); migrateAbs2(); migrateDom(); setTimeout(() => { migrateHip(); migrateAbs2(); migrateDom(); setTimeout(migrateBarra, 1500); }, 3000); }
     if (first && !colorPicked) { colorPicked = true; if (resumeRunning()) { if (S.sec === 'home') secApply('gym'); } else { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
@@ -3187,7 +3197,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.15-2112';
+const APP_VERSION = '2026.11.15-2356';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
