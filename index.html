@@ -219,6 +219,9 @@ nav.bottom button .dot { position: absolute; top: 4px; right: 18%; width: 9px; h
 .fb-item.resp .fb-head .fb-meta { color: inherit; opacity: .85; }
 .fb-item.resp .fb-txt { padding: 12px 14px; }
 .fb-item.resp summary { list-style: none; cursor: pointer; }
+.cm-hist { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.cm-hist summary { cursor: pointer; font-weight: 700; font-family: var(--font-display); }
+.cm-hist p { font-size: .92rem; line-height: 1.5; }
 .fb-item.resp summary::-webkit-details-marker { display: none; }
 .fb-item.resp summary .fb-t::after { content: ' ▾'; font-size: .8em; opacity: .8; }
 .fb-item.resp[open] summary .fb-t::after { content: ' ▴'; }
@@ -1229,7 +1232,13 @@ function renderCmHome() {
   box.innerHTML = `<h2>Control muscular</h2><p class="hint">Práctica para el día libre, 20 a 30 min, sin cargas: aprender a contraer cada músculo a voluntad y a distinguirlo de los vecinos. En ejercicios aislados, pensar en el músculo (y no en mover el peso) aumenta la activación y el crecimiento (Schoenfeld 2018: bíceps +12 % vs +7 % en 8 semanas); en compuestos pesados no cambia nada, ahí pensás en mover la carga. Sirve para los que "no sentís": oblicuos, glúteo, dorsal, deltoides posterior.</p>
     <p class="hint"><b>Reglas:</b> mano sobre el músculo (si no se endurece bajo la mano, no está contrayendo) · un lado por vez y comparar en el espejo · contraer 5 s, soltar del todo, 5 veces · nada de dolor ni de aguantar la respiración · no es entrenamiento: no se progresa ni se suma.</p>
     <div class="prac-grid">${CM.map(it => `<button type="button" class="prac-item" data-f="${esc(it.f)}"><svg class="fig" viewBox="0 0 120 100" aria-hidden="true">${FIG[it.f]}</svg><span>${esc(it.n)}</span></button>`).join('')}</div>
-    <p class="hint">Primero la elongación de siempre; después esto, en el orden de la lista. Si un músculo no aparece, es normal al principio: volvé a él la semana siguiente.</p>`;
+    <p class="hint">Primero la elongación de siempre; después esto, en el orden de la lista. Si un músculo no aparece, es normal al principio: volvé a él la semana siguiente.</p>
+    <details class="cm-hist"><summary>De dónde viene esto: Maxick (Bregenz 1882 – Buenos Aires 1961)</summary>
+      <p>Max Sick nació en 1882 en Bregenz, Austria, de padres suizos. Entre los dos y los cinco años estuvo casi siempre enfermo: pulmones, raquitismo, hidropesía. No caminó hasta los seis. A los diez se armó sus propias pesas; sus padres se las destruyeron. De adulto medía 1,63 y pesaba 67 kg, y levantaba en dos tiempos el doble de su peso.</p>
+      <p>Su marca no fue la fuerza sino el control: aprendió a contraer y relajar cada músculo a voluntad, por separado, y a hacerlo "bailar" bajo la piel. En 1910 publicó <i>Muscle Control</i>, el libro que inventa la práctica que estás por hacer. Su socio inglés, Monte Saldo, fusionó "Max" y "Sick" en <b>Maxick</b>: alguien que vendía salud no podía apellidarse "enfermo". El método se siguió vendiendo como "Maxalding" hasta los años 70.</p>
+      <p>En 1933, cuando llegaron los nazis, se fue de Alemania. Recorrió Centro y Sudamérica y se instaló en Buenos Aires, donde tuvo un gimnasio y estudio de salud. Murió acá en 1961, a punto de cumplir 80. La última mañana pulseó con un amigo, ganó como siempre, volvió en bicicleta a su casa y ahí lo encontraron. Dejó una nota: sabía que se estaba muriendo y se había preparado. No hay una "última frase" documentada; lo que queda es eso.</p>
+      <p class="hint">Fuentes: Wikipedia (Max Sick); R. Tyrrell, "Marvelous Max: the story of Maxick" (Natural Strength).</p>
+    </details>`;
   box.querySelectorAll('.prac-item').forEach(b => b.addEventListener('click', () => openPractice(CM.find(x => x.f === b.dataset.f), CM)));
 }
 renderCmHome();
@@ -3178,7 +3187,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.15-1957';
+const APP_VERSION = '2026.11.15-2112';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
