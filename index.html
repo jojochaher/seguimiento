@@ -462,9 +462,19 @@ details summary { cursor: pointer; font-family: var(--font-display); font-weight
 @media (max-width: 460px) { .rt .fields { grid-template-columns: repeat(3, 1fr); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 /* secciones de la app: Gym (todo lo anterior) y Estilo (resumen, bitácora, referencias) */
-.secsw { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
-.secsw button { font-family: var(--font-display); font-weight: 700; font-size: .95rem; letter-spacing: .06em; text-transform: uppercase; border: none; background: transparent; color: var(--muted); border-radius: 9px; padding: 7px 4px; cursor: pointer; }
-.secsw button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+.topbar { display: flex; align-items: center; gap: 10px; }
+.topbar button { font-family: var(--font-display); font-weight: 700; font-size: .95rem; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 14px 6px 10px; cursor: pointer; }
+.topbar .t { font-family: var(--font-display); font-weight: 700; font-size: .95rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+body.sec-home { padding-bottom: 24px; }
+body.sec-home .panel, body.sec-home .dock, body.sec-home #peso-nudge, body.sec-home .topbar { display: none !important; }
+body:not(.sec-home) #home { display: none !important; }
+#home { display: grid; gap: 14px; padding-top: 8vh; }
+#home h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 6px; }
+.homecard { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; text-align: left; width: 100%; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px 18px; cursor: pointer; }
+.homecard .ic { font-size: 2rem; line-height: 1; }
+.homecard b { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; letter-spacing: .05em; text-transform: uppercase; }
+.homecard small { color: var(--muted); font-size: .9rem; }
+.homecard .go { color: var(--muted); font-size: 1.6rem; }
 body.sec-estilo { --day: var(--ink); --on-day: var(--bg); padding-bottom: 100px; }
 body.sec-estilo .panel:not(.est), body.sec-estilo #sesbar, body.sec-estilo #nav-gym, body.sec-estilo #peso-nudge { display: none !important; }
 body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: none !important; }
@@ -505,7 +515,14 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
 
 <div class="wrap">
 
-  <div class="secsw" role="tablist" aria-label="Partes de la app"><button type="button" role="tab" data-sec="gym" aria-selected="true">Gym</button><button type="button" role="tab" data-sec="estilo" aria-selected="false">Estilo</button></div>
+  <div class="topbar"><button type="button" id="back-home" aria-label="Volver al inicio">‹ Inicio</button><span class="t" id="sec-title">Gym</span></div>
+
+  <!-- INICIO: se elige la parte de la app -->
+  <section id="home">
+    <h1>Seguimiento</h1>
+    <button class="homecard" type="button" data-sec="gym"><span class="ic">🏋️</span><span><b>Gym</b><small>Entreno, rutina, progreso y físico</small></span><span class="go">›</span></button>
+    <button class="homecard" type="button" data-sec="estilo"><span class="ic">🪞</span><span><b>Estilo</b><small>Resumen, bitácora y referencias</small></span><span class="go">›</span></button>
+  </section>
 
   <div id="notice" class="notice" hidden></div>
   <button id="peso-nudge" class="nudge" type="button" hidden></button>
@@ -830,7 +847,7 @@ function isUnilateral(e) { const n = (e.nombre || '') + ' ' + ((catOf(e) || {}).
 
 /* ---------- pestañas ---------- */
 function showTab(t) {
-  if (S.sec === 'estilo') secApply('gym');
+  if (S.sec !== 'gym') secApply('gym');
   S.tab = t;
   document.querySelectorAll('#nav-gym button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   TABS.forEach(p => { $('p-' + p).hidden = p !== t; });
@@ -2833,11 +2850,15 @@ function estAreas() {
 function areaName(id) { const a = estAreas().find(x => x.id === id); return a ? a.nombre : (id || ''); }
 function fillAreaSelects() { ['bit-area', 'ref-area'].forEach(i => { const s = $(i), v = s.value; s.innerHTML = estAreas().map(a => `<option value="${esc(a.id)}">${esc(a.nombre)}</option>`).join(''); if (v) s.value = v; }); }
 function secApply(sec) {
-  S.sec = sec; document.body.classList.toggle('sec-estilo', sec === 'estilo');
-  document.querySelectorAll('.secsw button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.sec === sec)));
+  S.sec = sec; document.body.classList.toggle('sec-estilo', sec === 'estilo'); document.body.classList.toggle('sec-home', sec === 'home');
+  $('sec-title').textContent = sec === 'estilo' ? 'Estilo' : 'Gym';
   try { sessionStorage.setItem('seg-sec', sec); } catch (e) {}
 }
-function showSec(sec) { if (sec === 'estilo') { flushSave(); secApply('estilo'); showEst(S.estTab); } else { secApply('gym'); showTab(S.tab); } }
+function showSec(sec) {
+  if (sec === 'estilo') { flushSave(); secApply('estilo'); showEst(S.estTab); }
+  else if (sec === 'home') { flushSave(); secApply('home'); window.scrollTo({ top: 0 }); }
+  else { secApply('gym'); showTab(S.tab); }
+}
 function showEst(t) {
   if (!EST_TABS.includes(t)) t = 'resumen';
   S.estTab = t;
@@ -2847,7 +2868,8 @@ function showEst(t) {
   try { localStorage.setItem('seg-esttab', t); } catch (e) {}
   if (t === 'resumen') { renderEstResumen(); loadEstClaude(); } else if (t === 'bitacora') renderBit(); else renderRefs();
 }
-document.querySelectorAll('.secsw button').forEach(b => b.addEventListener('click', () => showSec(b.dataset.sec)));
+document.querySelectorAll('.homecard').forEach(b => b.addEventListener('click', () => showSec(b.dataset.sec)));
+$('back-home').addEventListener('click', () => showSec('home'));
 document.querySelectorAll('#nav-estilo button').forEach(b => b.addEventListener('click', () => showEst(b.dataset.est)));
 function grow(t) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
 ['bit-texto', 'ref-nota'].forEach(i => $(i).addEventListener('input', () => grow($(i))));
@@ -3027,7 +3049,8 @@ setBodyView('both');
 S.color = 'verde'; applyDay(); renderColors(); renderRtColors(); renderDias(); renderRutina(); renderPeso(); renderFotos(); renderMedidas(); renderClock(); renderProgreso();
 showTab(startTab);
 try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes(et)) S.estTab = et; } catch (e) {}
-{ let sec = 'gym'; try { if (sessionStorage.getItem('seg-sec') === 'estilo') sec = 'estilo'; } catch (e) {} if ((location.hash || '') === '#estilo') sec = 'estilo'; if (sec === 'estilo') showSec('estilo'); }
+/* arranque en frío: pantalla de inicio. Una recarga automática vuelve a donde estaba (sessionStorage); una sesión en curso entra directo a Gym (ver snapshot de sesiones) */
+{ let sec = 'home'; try { const st = sessionStorage.getItem('seg-sec'); if (st === 'estilo' || st === 'gym') sec = st; } catch (e) {} const hh = (location.hash || '').slice(1); if (hh === 'estilo') sec = 'estilo'; else if (TABS.includes(hh)) sec = 'gym'; if (sec !== 'gym') showSec(sec); }
 
 (async () => {
   const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
@@ -3050,7 +3073,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
     if (first) { autoClose(); migrateBarra(); migrateVariantes(); }
-    if (first && !colorPicked) { colorPicked = true; if (!resumeRunning()) { S.color = nextColor(); applyDay(); } }
+    if (first && !colorPicked) { colorPicked = true; if (resumeRunning()) { if (S.sec === 'home') secApply('gym'); } else { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
   });
@@ -3068,7 +3091,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.15-0023';
+const APP_VERSION = '2026.11.15-0614';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
