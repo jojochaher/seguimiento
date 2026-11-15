@@ -1284,7 +1284,7 @@ function setsDesc(it, n, e) {
 }
 function setsText(sets) { const a = (sets || []).filter(v => v != null); return a.length ? a.join('/') : ''; }
 function hitTarget(sets, e) { const a = (sets || []).filter(v => v != null); return a.length >= Number(e.series) && a.every(v => v >= Number(e.reps)); }
-function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Number(e.paso); if (e.asistida) return -5; if (e.barra) return 2.5; if (/mancuerna/i.test(e.nombre)) return 2; if (/barra|polea|máquina|maquina/i.test(e.nombre)) return 5; if (/curl|vuelo|extensi|franc|apertura/i.test(e.nombre)) return 2; return 5; }
+function increment(e) { if (e.paso) return e.asistida ? -Math.abs(e.paso) : Number(e.paso); if (e.asistida) return -5; if (e.barra) return 2.5; if (/mancuerna|oblicuo/i.test(e.nombre)) return 2; if (/barra|polea|máquina|maquina/i.test(e.nombre)) return 5; if (/curl|vuelo|extensi|franc|apertura/i.test(e.nombre)) return 2; return 5; }
 /* historial compartido entre instancias del mismo ejercicio del catálogo (p. ej. gemelos en dos días) */
 function catKey(id) { const e = S.ej.find(x => x.id === id); return (e && e.cat) || id; }
 function itemOf(s, e) {
@@ -1374,12 +1374,27 @@ function seriesFor(ejId, e) {
   });
   return out;
 }
-function spark(pts, color, w = 120, h = 44, invert = false) {
-  if (pts.length < 2) return `<svg viewBox="0 0 ${w} ${h}"><text x="${w / 2}" y="${h / 2 + 4}" text-anchor="middle" style="font-size:9px;fill:var(--muted)">${pts.length ? '1 sesión' : 'sin datos'}</text></svg>`;
+function spark(pts, color, w = 120, h = 44, invert = false, marks = []) {
+  /* marks: sesiones salteadas con nota (p. ej. hechas en casa): punto hueco, sin valor, para que no quede un agujero mudo */
+  const all = pts.map(p => ({ p })).concat((marks || []).map(m => ({ m }))).sort((a, b) => (a.p || a.m).fecha < (b.p || b.m).fecha ? -1 : 1);
+  if (pts.length < 2) {
+    if (!pts.length && !(marks || []).length) return `<svg viewBox="0 0 ${w} ${h}"><text x="${w / 2}" y="${h / 2 + 4}" text-anchor="middle" style="font-size:9px;fill:var(--muted)">sin datos</text></svg>`;
+    if (all.length < 2) return `<svg viewBox="0 0 ${w} ${h}"><text x="${w / 2}" y="${h / 2 + 4}" text-anchor="middle" style="font-size:9px;fill:var(--muted)">${pts.length ? '1 sesión' : 'solo en casa'}</text></svg>`;
+  }
   const val = p => invert ? -p.kg : p.kg;
-  const vals = pts.map(val); let lo = Math.min(...vals), hi = Math.max(...vals); if (hi === lo) { hi += 1; lo -= 1; }
-  const x = i => 6 + i / (pts.length - 1) * (w - 12), y = v => (h - 8) - (v - lo) / (hi - lo) * (h - 16);
-  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${pts.length} sesiones${invert ? ', menos asistencia es mejor' : ''}"><polyline fill="none" stroke="var(--${color})" stroke-width="2" stroke-linejoin="round" points="${pts.map((p, i) => x(i) + ',' + y(val(p))).join(' ')}"/>${pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(val(p))}" r="2.4" fill="var(--surface)" stroke="var(--${color})" stroke-width="1.5"/>`).join('')}</svg>`;
+  const vals = pts.map(val); let lo = vals.length ? Math.min(...vals) : 0, hi = vals.length ? Math.max(...vals) : 1; if (hi === lo) { hi += 1; lo -= 1; }
+  const x = i => 6 + i / Math.max(1, all.length - 1) * (w - 12), y = v => (h - 8) - (v - lo) / (hi - lo) * (h - 16);
+  let lastY = h / 2; const line = [], dots = [];
+  all.forEach((e, i) => {
+    if (e.p) { const yy = y(val(e.p)); lastY = yy; line.push(x(i) + ',' + yy); dots.push(`<circle cx="${x(i)}" cy="${yy}" r="2.4" fill="var(--surface)" stroke="var(--${color})" stroke-width="1.5"><title>${esc(dmy(e.p.fecha))}: ${fmt(e.p.kg)}</title></circle>`); }
+    else dots.push(`<circle cx="${x(i)}" cy="${lastY}" r="3" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="2 1.5"><title>${esc(dmy(e.m.fecha))}: ${esc(e.m.nota)}</title></circle>`);
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${pts.length} sesiones${invert ? ', menos asistencia es mejor' : ''}">${line.length > 1 ? `<polyline fill="none" stroke="var(--${color})" stroke-width="2" stroke-linejoin="round" points="${line.join(' ')}"/>` : ''}${dots.join('')}</svg>`;
+}
+/* sesiones en las que el ejercicio se salteó pero con una nota (hecho en casa, otra variante, etc.) */
+function marksFor(ejId, e) {
+  const ee = e || S.ej.find(x => x.id === ejId) || { id: ejId };
+  return S.ses.map(s => ({ s, it: itemOf(s, ee) })).filter(x => x.it && x.it.skip != null && x.it.nota).map(x => ({ fecha: x.s.fecha, nota: x.it.nota })).sort((a, b) => a.fecha < b.fecha ? -1 : 1);
 }
 function musclesLine(e) {
   const c = catOf(e); if (!c) return '';
@@ -1511,9 +1526,9 @@ function wireCards(root, ejs) {
       /* peso distinto del sugerido: reps que corresponden según el historial */
       const pl = e && !isBody(e) ? plan(e) : null, kgs = cardKgs(art), reps = [...art.querySelectorAll('[data-f="set"]')];
       if (pl && pl.T) {
-        reps.forEach((r, k) => { const v = kgs[k]; if (v == null) return; const est = Math.max(1, Math.round(repsFor(pl.T, pl.load(v)))), mn = Math.max(1, Math.round(repsFor(pl.L, pl.load(v)))); r.placeholder = est; r.title = `Con ${fmt(v)} kg: meta ${est}, mínimo ${mn}`; });
+        reps.forEach((r, k) => { const v = kgs[k]; if (v == null || !(pl.load(v) > 0)) { if (v != null) { r.placeholder = ''; r.title = ''; } return; } const est = Math.max(1, Math.round(repsFor(pl.T, pl.load(v)))), mn = Math.max(1, Math.round(repsFor(pl.L, pl.load(v)))); r.placeholder = est; r.title = `Con ${fmt(v)} kg: meta ${est}, mínimo ${mn}`; });
         const k0 = kgs.find(v => v != null), tip = art.querySelector('.kg-tip');
-        if (k0 != null && k0 !== pl.W) { const est = Math.max(1, Math.round(repsFor(pl.T, pl.load(k0)))), mn = Math.max(1, Math.round(repsFor(pl.L, pl.load(k0)))); if (tip) tip.textContent = `Con ${fmt(k0)} kg: meta ${est} reps · mínimo ${mn}`; }
+        if (k0 != null && k0 !== pl.W && pl.load(k0) > 0) { const est = Math.max(1, Math.round(repsFor(pl.T, pl.load(k0)))), mn = Math.max(1, Math.round(repsFor(pl.L, pl.load(k0)))); if (tip) tip.textContent = `Con ${fmt(k0)} kg: meta ${est} reps · mínimo ${mn}`; }
         else if (tip) tip.textContent = '';
       }
     }
@@ -1690,6 +1705,30 @@ function migrateCatalogo() {
    Antes del 2/11 se anotaban solo los discos: se les suma la barra. Se marca cada item con tot: 1 para no repetir. */
 /* migración puntual (14/11): variante de las sesiones viejas, según las notas de José. Hasta el 7/11 hizo las
    extensiones con mancuerna a una mano; el press de hombro del 13/10 fue con barra. Solo toca items sin variante. */
+const BARRA_CAT = { 'hip-thrust': 20, 'peso-muerto': 20, 'press-banco': 20 };
+/* hip thrust se anota en kg total con la barra (pedido de José 15/11); los items existentes ya eran total */
+function migrateHip() {
+  if (!S.db || !S.loaded.ej) return;
+  S.ej.forEach(e => { const c = e.cat || e.id; if (BARRA_CAT[c] && !e.barra) S.db.collection('ejercicios').doc(e.id).set(Object.assign({}, e, { barra: BARRA_CAT[c] })); });
+}
+/* abdominales a frecuencia 2 (decidido 14/11): desde el 16/11 salen de lun/mié/jue/sáb y quedan en los días de tirón (mar: abs máquina + oblicuos; vie: elevar piernas + oblicuos) */
+function migrateAbs2() {
+  if (!S.db || !S.loaded.ej || !S.loaded.dias || today() < '2026-11-16') return;
+  const dias = S.dias || DIAS(); const ids = new Set(dias.map(d => d.id));
+  if (!['lun', 'mar', 'mie', 'jue', 'vie', 'sab'].every(d => ids.has(d))) return;
+  const ABS = ['abs-maquina', 'abs-banco', 'elevar-piernas'];
+  const quitar = S.ej.filter(e => ABS.includes(e.cat || e.id) && ['lun', 'mie', 'jue', 'sab'].includes(e.color));
+  if (!quitar.length) return;
+  quitar.forEach(e => S.db.collection('ejercicios').doc(e.id).delete());
+  const add = (color, catId, series) => {
+    if (S.ej.some(e => (e.cat || e.id) === catId && e.color === color)) return;
+    const c = S.cat.find(x => x.id === catId) || { nombre: catId }; const obl = S.ej.find(e => (e.cat || e.id) === 'oblicuos' && e.color === color);
+    const orden = obl ? (obl.orden ?? 99) - 0.5 : 99;
+    S.db.collection('ejercicios').doc(catId + '-' + color).set({ id: catId + '-' + color, nombre: c.nombre, color, series, reps: 12, orden, cat: catId });
+  };
+  add('mar', 'abs-maquina', 4); add('vie', 'elevar-piernas', 3);
+  setTimeout(() => { const t = document.createElement('div'); t.className = 'vtoast'; t.textContent = 'Rutina: abdominales ahora martes y viernes, como acordaste'; document.body.appendChild(t); setTimeout(() => t.remove(), 6000); }, 1500);
+}
 function migrateVariantes() {
   if (!S.db) return;
   S.ses.forEach(s => {
@@ -2081,12 +2120,12 @@ function plantilla6() {
     { id: 'sab', nombre: 'Piernas B · glúteos e isquios', color: 'violeta', elong: 'naranja', orden: 6, modo: 'orden', activo: true, dow: 6 }
   ];
   const plan = {
-    lun: ['press-banco', 'press-hombro', 'fondos-asistida', 'vuelos-laterales', 'extensiones-polea', 'abs-maquina'],
-    mar: ['dominada-asistida', 'remo-polea-baja', 'vuelos-posteriores', 'curl-barra', 'encogimientos', 'oblicuos'],
-    mie: ['sentadilla', 'sillon-cuadriceps', 'aductores', 'abductores', 'gemelos', 'abs-banco'],
-    jue: ['press-vertical', 'aperturas', 'vuelos-frontales', 'press-frances', 'extensiones-mancuerna', 'fondos-maquina', 'elevar-piernas'],
-    vie: ['tirones-dorsalera', 'dorsal-convergente', 'remo-mancuerna', 'vuelos-posteriores', 'curl-alternado', 'concentrado-polea', 'oblicuos'],
-    sab: ['peso-muerto', 'hip-thrust', 'prensa-45', 'femoral-sentado', 'camilla-isquio', 'gemelos', 'hiperextensiones', 'abs-maquina']
+    lun: ['press-banco', 'press-hombro', 'fondos-asistida', 'vuelos-laterales', 'extensiones-polea'],
+    mar: ['dominada-asistida', 'remo-polea-baja', 'vuelos-posteriores', 'curl-barra', 'encogimientos', 'abs-maquina', 'oblicuos'],
+    mie: ['sentadilla', 'sillon-cuadriceps', 'aductores', 'abductores', 'gemelos'],
+    jue: ['press-vertical', 'aperturas', 'vuelos-frontales', 'press-frances', 'extensiones-mancuerna', 'fondos-maquina'],
+    vie: ['tirones-dorsalera', 'dorsal-convergente', 'remo-mancuerna', 'vuelos-posteriores', 'curl-alternado', 'concentrado-polea', 'elevar-piernas', 'oblicuos'],
+    sab: ['peso-muerto', 'hip-thrust', 'prensa-45', 'femoral-sentado', 'camilla-isquio', 'gemelos', 'hiperextensiones']
   };
   const seen = {}; const ejercicios = [];
   Object.keys(plan).forEach(color => plan[color].forEach((catId, k) => {
@@ -2096,7 +2135,7 @@ function plantilla6() {
     const prev = S.ej.find(x => x.id === catId || x.cat === catId) || {};
     const SER = { sentadilla: 4, abductores: 4 };
     const body = { id, nombre: c.nombre, color, series: SER[catId] || seriesDe(catId, 3), reps: prev.reps || 10, orden: k + 1, cat: catId };
-    if (c.barra || prev.barra) body.barra = prev.barra || c.barra;
+    if (c.barra || prev.barra || BARRA_CAT[catId]) body.barra = prev.barra || c.barra || BARRA_CAT[catId];
     if (c.asistida || prev.asistida) body.asistida = true;
     if (prev.paso) body.paso = prev.paso; if (prev.descanso) body.descanso = prev.descanso;
     ejercicios.push(body);
@@ -2313,7 +2352,7 @@ function renderProgreso() {
   if (extra.length) groups.push({ d: { id: 'extra', nombre: 'Fuera de la rutina', color: 'gris' }, ejs: extra });
   const html = groups.map(g => {
     const rows = g.ejs.map(e => {
-      const pts = seriesFor(e.id, e);
+      const pts = seriesFor(e.id, e), marks = marksFor(e.id, e);
       let delta = '', cls = 'same', meta = '';
       if (pts.length) {
         const f = pts[0].kg, l = pts[pts.length - 1].kg, df = l - f;
@@ -2324,9 +2363,9 @@ function renderProgreso() {
         const m = metricOf(e);
         const fv = m === 'carga' && !e.asistida ? f + b : f, lv = m === 'carga' && !e.asistida ? l + b : l;
         delta = `${fmt(fv)} → ${fmt(lv)} ${metricLabel(e)}` + (df ? ` (${df > 0 ? '+' : ''}${fmt(df)})` : '');
-        meta = `${pts.length} ${pts.length === 1 ? 'sesión' : 'sesiones'} · desde ${dmy(pts[0].fecha)}` + (curVar(e) ? ` · ${esc(curVar(e))}` : '');
-      } else { delta = isBody(e) ? 'Sin reps anotadas todavía' : 'Sin cargas todavía'; meta = ''; }
-      return `<div class="pg" id="pg-${esc(e.id)}" style="--c: var(--${esc(g.d.color)})"><div><h3>${esc(e.nombre)}</h3><div class="delta ${cls}">${delta}</div><div class="meta">${meta}</div></div>${spark(pts, g.d.color, 120, 44, !!e.asistida)}</div>`;
+        meta = `${pts.length} ${pts.length === 1 ? 'sesión' : 'sesiones'} · desde ${dmy(pts[0].fecha)}` + (curVar(e) ? ` · ${esc(curVar(e))}` : '') + (marks.length ? ` · ${marks.length} con nota (${esc(marks[marks.length - 1].nota.slice(0, 28))}${marks[marks.length - 1].nota.length > 28 ? '…' : ''})` : '');
+      } else { delta = isBody(e) ? 'Sin reps anotadas todavía' : 'Sin cargas todavía'; meta = marks.length ? `${marks.length} con nota: ${esc(marks[marks.length - 1].nota.slice(0, 40))}` : ''; }
+      return `<div class="pg" id="pg-${esc(e.id)}" style="--c: var(--${esc(g.d.color)})"><div><h3>${esc(e.nombre)}</h3><div class="delta ${cls}">${delta}</div><div class="meta">${meta}</div></div>${spark(pts, g.d.color, 120, 44, !!e.asistida, marks)}</div>`;
     }).join('');
     const n = ses.filter(s => s.color === g.d.id).length;
     return `<div class="panel" style="--c: var(--${esc(g.d.color)})"><div class="pg-head"><h2>${esc(g.d.nombre)}</h2><small>${n} ${n === 1 ? 'sesión' : 'sesiones'}</small></div>${rows || '<div class="empty">Sin ejercicios.</div>'}</div>`;
@@ -3072,7 +3111,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); renderRutinas(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
-    if (first) { autoClose(); migrateBarra(); migrateVariantes(); }
+    if (first) { autoClose(); migrateHip(); migrateBarra(); migrateVariantes(); migrateAbs2(); setTimeout(() => { migrateHip(); migrateAbs2(); setTimeout(migrateBarra, 1500); }, 3000); }
     if (first && !colorPicked) { colorPicked = true; if (resumeRunning()) { if (S.sec === 'home') secApply('gym'); } else { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
@@ -3091,7 +3130,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.15-0614';
+const APP_VERSION = '2026.11.15-1851';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
