@@ -218,6 +218,12 @@ nav.bottom button .dot { position: absolute; top: 4px; right: 18%; width: 9px; h
 .fb-item.resp .fb-head .fb-t { font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; letter-spacing: .01em; }
 .fb-item.resp .fb-head .fb-meta { color: inherit; opacity: .85; }
 .fb-item.resp .fb-txt { padding: 12px 14px; }
+.fb-item.resp summary { list-style: none; cursor: pointer; }
+.fb-item.resp summary::-webkit-details-marker { display: none; }
+.fb-item.resp summary .fb-t::after { content: ' ▾'; font-size: .8em; opacity: .8; }
+.fb-item.resp[open] summary .fb-t::after { content: ' ▴'; }
+.fb-new { display: inline-block; font-size: .65rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; background: var(--on-day); color: var(--day); border-radius: 999px; padding: 2px 7px; vertical-align: middle; margin-left: 6px; }
+
 .fb-item.mine { margin-left: 24px; }
 #fb-list { gap: 14px; }
 
@@ -680,6 +686,7 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
     <div class="box" id="cl-estado-box">
       <div id="cl-estado" class="cl-estado"></div>
     </div>
+    <div class="list" id="fb-list"></div>
     <div class="box" id="fb-box">
       <h3>Para Claude</h3>
       <p class="hint">Lo que escribís acá llega junto con tu sesión. Las devoluciones aparecen abajo, en la app, y te avisan con una notificación.</p>
@@ -687,7 +694,6 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
       <div class="row"><button class="btn small" type="button" id="fb-send">Enviar</button><span class="status" id="fb-status"></span></div>
       <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="push-btn">Activar notificaciones</button><span class="status" id="push-status"></span></div>
     </div>
-    <div class="list" id="fb-list"></div>
   </section>
   <!-- ESTILO: resumen que escribe Claude + notas, bitácora y referencias de José -->
   <section class="panel est" id="p-est-resumen">
@@ -1592,9 +1598,12 @@ function renderClaude() {
   const rs = (RESP && RESP.items || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : -1);
   const all = fb.map(f => ({ t: f.fecha, kind: 'mine', texto: f.texto })).concat(rs.map(r => ({ t: r.fecha, kind: 'resp', texto: r.texto, titulo: r.titulo }))).sort((a, b) => a.t < b.t ? 1 : -1).slice(0, 40);
   const fdate = t => new Date(t).toLocaleString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  box.innerHTML = all.length ? all.map(x => x.kind === 'resp'
-    ? `<div class="fb-item resp"><div class="fb-head"><div class="fb-t">${esc(x.titulo || 'Devolución')}</div><div class="fb-meta"><span>Claude</span><span>${fdate(x.t)}</span></div></div><div class="fb-txt">${esc(x.texto)}</div></div>`
-    : `<div class="fb-item mine"><div class="fb-meta"><span>Vos</span><span>${fdate(x.t)}</span></div><div class="fb-txt">${esc(x.texto)}</div></div>`).join('') : '<div class="empty">Todavía no hay devoluciones.</div>';
+  const seen = lsGet('seg-fb-seen'); let firstResp = true;
+  box.innerHTML = all.length ? all.map(x => {
+    if (x.kind !== 'resp') return `<div class="fb-item mine"><div class="fb-meta"><span>Vos</span><span>${fdate(x.t)}</span></div><div class="fb-txt">${esc(x.texto)}</div></div>`;
+    const open = firstResp; firstResp = false; const nueva = x.t > seen;
+    return `<details class="fb-item resp"${open ? ' open' : ''}><summary class="fb-head"><div class="fb-t">${esc(x.titulo || 'Devolución')}${nueva ? ' <span class="fb-new">nueva</span>' : ''}</div><div class="fb-meta"><span>Claude</span><span>${fdate(x.t)}</span></div></summary><div class="fb-txt">${esc(x.texto)}</div></details>`;
+  }).join('') : '<div class="empty">Todavía no hay devoluciones.</div>';
   /* estado: esperando / última */
   const aw = awaiting(); const last = rs[0];
   if (aw && last && new Date(last.fecha).getTime() > aw) lsSet('seg-await', '0');
@@ -1605,7 +1614,7 @@ function renderClaude() {
   /* no leídas */
   const unread = rs.filter(r => r.fecha > lsGet('seg-fb-seen')).length;
   $('tab-claude-dot').hidden = !unread || S.tab === 'claude';
-  if (S.tab === 'claude' && rs.length) lsSet('seg-fb-seen', rs[0].fecha);
+  if (S.tab === 'claude' && rs.length) { clearTimeout(renderClaude._t); renderClaude._t = setTimeout(() => lsSet('seg-fb-seen', rs[0].fecha), 8000); }
   pushStatus();
 }
 let loadingResp = null;
@@ -3130,7 +3139,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.15-1851';
+const APP_VERSION = '2026.11.15-1932';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
