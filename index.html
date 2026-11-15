@@ -2783,7 +2783,7 @@ showTab(startTab);
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.14-2356';
+const APP_VERSION = '2026.11.15-0005';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
@@ -2806,7 +2806,20 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 setInterval(checkUpdate, 60000); setTimeout(checkUpdate, 3000);
 (() => { let u = null; try { u = sessionStorage.getItem('seg-updated'); sessionStorage.removeItem('seg-updated'); } catch (e) {}
   const t = document.createElement('div'); t.className = 'vtoast'; t.textContent = u ? 'Actualizado ✓ versión ' + APP_VERSION : ''; if (u) { document.body.appendChild(t); setTimeout(() => t.remove(), 3500); }
-  const vf = document.createElement('p'); vf.className = 'hint'; vf.style.textAlign = 'center'; vf.textContent = 'Versión ' + APP_VERSION; const f = $('respaldo'); if (f) f.after(vf); })();
+  const vf = document.createElement('p'); vf.className = 'hint'; vf.style.textAlign = 'center'; vf.textContent = 'Versión ' + APP_VERSION; const f = $('respaldo'); if (f) f.after(vf);
+  /* registro de cambios: los commits del repo, con link al chat que hizo cada uno */
+  const chg = document.createElement('details'); chg.className = 'box'; chg.id = 'chg'; chg.innerHTML = '<summary>Qué cambió en la app</summary><div class="list" id="chg-list"><div class="empty">Cargando…</div></div>';
+  vf.after(chg);
+  chg.addEventListener('toggle', async () => {
+    if (!chg.open || chg.dataset.ok) return;
+    try {
+      const r = await fetch('https://api.github.com/repos/jojochaher/seguimiento/commits?per_page=25', { headers: { Accept: 'application/vnd.github+json' } });
+      if (!r.ok) throw new Error('GitHub ' + r.status);
+      const cs = await r.json(); chg.dataset.ok = '1';
+      const fd = d => new Date(d).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      $('chg-list').innerHTML = cs.map(c => { const m = c.commit.message || ''; const title = m.split('\n')[0]; const ses = (m.match(/Claude-Session:\s*(\S+)/) || [])[1]; const ver = (m.match(/\b20\d\d\.\d\d\.\d\d-\d{4}\b/) || [])[0]; return `<div class="fb-item"><div class="fb-meta"><span>${fd(c.commit.author.date)}</span><span>${ses ? `<a href="${esc(ses)}" target="_blank" rel="noopener">abrir chat</a>` : ''}</span></div><div class="fb-txt">${esc(title)}</div></div>`; }).join('');
+    } catch (e) { $('chg-list').innerHTML = '<div class="empty">No se pudo cargar (' + esc(String(e.message || e)) + ')</div>'; }
+  }); })();
 
 /* respaldo + service worker (solo fuera de Claude) */
 if (window.claude && window.claude.local) {
