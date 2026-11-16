@@ -546,12 +546,12 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
       </div>
     </div>
     <details class="box stretch" id="antes-box" open>
-      <summary><h2>Antes <small>movilidad · 3 min</small></h2></summary>
+      <summary><h2>Calentamiento <small>movilidad · 3 min</small></h2></summary>
       <div id="antes-list"></div>
     </details>
     <div class="list" id="ex-list"><div class="empty">Cargando la rutina…</div></div>
     <details class="box stretch" id="despues-box" open>
-      <summary><h2>Después <small id="despues-label">elongación</small></h2></summary>
+      <summary><h2>Elongación <small id="despues-label"></small></h2></summary>
       <p class="rule">Que tire, que no duela. Sin rebotes, respirando lento. Si duele la articulación, cortá.</p>
       <div id="despues-list"></div>
     </details>
@@ -1229,7 +1229,7 @@ Object.assign(PRAC, {
 });
 FIG.cm = '<circle cx="60" cy="50" r="30" fill="none" stroke="var(--line)" stroke-width="2"/><path d="M48 40c0-4 6-4 6 0v14M54 38c0-4 6-4 6 0v16M60 40c0-4 6-4 6 0v14M66 44c0-4 6-4 6 0v10c0 10-6 16-14 16s-12-5-14-12l-3-10c-1-3 4-5 6-2l3 6" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
 CM.forEach(it => { if (!FIG[it.f]) FIG[it.f] = FIG.cm; it.dose = '5 s × 5, cada lado'; });
-STRETCH.domingo.despues = STRETCH.domingo.despues.concat(CM);
+
 function renderCmHome() {
   const box = $('cm-home'); if (!box) return;
   box.innerHTML = `<h2>Control muscular</h2><p class="hint">Práctica para el día libre, 20 a 30 min, sin cargas: aprender a contraer cada músculo a voluntad y a distinguirlo de los vecinos. En ejercicios aislados, pensar en el músculo (y no en mover el peso) aumenta la activación y el crecimiento (Schoenfeld 2018: bíceps +12 % vs +7 % en 8 semanas); en compuestos pesados no cambia nada, ahí pensás en mover la carga. Sirve para los que "no sentís": oblicuos, glúteo, dorsal, deltoides posterior.</p>
@@ -1282,9 +1282,12 @@ function renderStretch() {
   const d = STRETCH[dia(S.color || 'verde').elong] || { label: 'general', antes: MOV_SUP, despues: [] };
   const a = $('antes-list'), p = $('despues-list');
   a.innerHTML = ''; p.innerHTML = '';
-  d.antes.forEach(it => a.appendChild(stCard(it)));
+  const dom = dia(S.color || 'verde').elong === 'domingo';
+  if (!dom) d.antes.forEach(it => a.appendChild(stCard(it)));
+  $('antes-box').hidden = dom;
   d.despues.forEach(it => p.appendChild(stCard(it)));
-  $('despues-label').textContent = 'elongación · ' + d.label;
+  if (dom) CM.forEach(it => p.appendChild(stCard(it)));
+  $('despues-label').textContent = dom ? 'cuerpo entero + control muscular' : d.label;
   $('despues-box').hidden = !d.despues.length;
 }
 
@@ -1717,6 +1720,7 @@ if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message',
 /* ---------- modo sesión (pantalla completa, cards) ---------- */
 function fsSteps() {
   const d = STRETCH[dia(S.color).elong] || { label: 'general', antes: MOV_SUP, despues: [] };
+  if (dia(S.color).elong === 'domingo') return [{ type: 'despues', items: d.despues, label: d.label }, { type: 'despues', items: CM, label: 'control muscular', cm: true }];
   const steps = [{ type: 'antes', items: d.antes }];
   todayOrder().forEach(e => steps.push({ type: 'ex', e }));
   if (d.despues.length) steps.push({ type: 'despues', items: d.despues, label: d.label });
@@ -1850,15 +1854,15 @@ function fsRender(dir) {
   const card = $('fs-card');
   let html = '';
   if (step.type === 'antes') {
-    html = `<div class="box stretch fs-st"><h2>Antes <small>movilidad · 3 min</small></h2><div class="fs-stlist"></div></div>`;
+    html = `<div class="box stretch fs-st"><h2>Calentamiento <small>movilidad · 3 min</small></h2><div class="fs-stlist"></div></div>`;
   } else if (step.type === 'despues') {
-    html = `<div class="box stretch fs-st"><h2>Después <small>elongación · ${esc(step.label)}</small></h2><p class="rule">Que tire, que no duela. Sin rebotes, respirando lento.</p><div class="fs-stlist"></div></div>`;
+    html = step.type === 'despues' && step.cm ? `<div class="box stretch fs-st"><h2>Control muscular <small>5 s × 5 por músculo</small></h2><p class="rule">Mano sobre el músculo, un lado por vez, espejo. Si no se endurece bajo la mano, no está contrayendo. Nada de dolor ni de aguantar la respiración.</p><div class="fs-stlist"></div></div>` : `<div class="box stretch fs-st"><h2>Elongación <small>${esc(step.label)}</small></h2><p class="rule">Que tire, que no duela. Sin rebotes, respirando lento.</p><div class="fs-stlist"></div></div>`;
   } else html = exCardHtml(step.e, items, true);
   card.innerHTML = html;
   if (step.type !== 'ex') { const l = card.querySelector('.fs-stlist'); step.items.forEach(it => l.appendChild(stCard(it))); }
   else wireCards(card, [step.e]);
   $('fs-pos').textContent = `${S.focusIdx + 1} / ${steps.length}`;
-  $('fs-title').textContent = step.type === 'ex' ? dia(S.color).nombre : step.type === 'antes' ? 'Entrada en calor' : 'Elongación';
+  $('fs-title').textContent = step.type === 'ex' ? dia(S.color).nombre : step.type === 'antes' ? 'Calentamiento' : step.cm ? 'Control muscular' : 'Elongación';
   const dots = steps.map((s, i) => `<i class="${i === S.focusIdx ? 'on' : i < S.focusIdx ? 'done' : ''}${s.type !== 'ex' ? ' st' : ''}"></i>`).join('');
   $('fs-dots').innerHTML = dots;
   fsUpdateNext();
@@ -3197,7 +3201,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.15-2356';
+const APP_VERSION = '2026.11.16-0041';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
