@@ -830,7 +830,7 @@ const DEFAULT_DIAS = [
   { id: 'amarillo', nombre: 'Espalda', color: 'amarillo', elong: 'amarillo', orden: 3, modo: 'orden' },
   { id: 'azul', nombre: 'Brazos', color: 'azul', elong: 'azul', orden: 4, modo: 'alternado' }
 ];
-const ELONG_NAMES = { domingo: 'Domingo: cuerpo entero + control muscular', verde: 'Pecho, hombros y tríceps', naranja: 'Piernas y abdominales', amarillo: 'Espalda, trapecio y bíceps', azul: 'Bíceps, tríceps y antebrazos', '': 'Solo movilidad general' };
+const ELONG_NAMES = { domingo: 'Recuperación: cuerpo entero + control muscular', verde: 'Pecho, hombros y tríceps', naranja: 'Piernas y abdominales', amarillo: 'Espalda, trapecio y bíceps', azul: 'Bíceps, tríceps y antebrazos', '': 'Solo movilidad general' };
 function DIAS() { return S.loaded.dias && S.dias.length ? [...S.dias].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)) : DEFAULT_DIAS; }
 function dia(id) { return DIAS().find(d => d.id === id) || { id, nombre: id === 'extra' ? 'Extra' : id, color: 'gris', elong: '', modo: 'orden' }; }
 function ORDER_IDS() { return DIAS().filter(d => d.activo !== false).map(d => d.id); }
@@ -1627,7 +1627,7 @@ function buildForm() {
   if (!S.loaded.ej) { list.innerHTML = '<div class="empty">Cargando la rutina…</div>'; renderClock(); return; }
   const ejs = todayOrder();
   if (S.focus) { list.innerHTML = ''; fsRender(); renderClock(); return; }
-  if (!ejs.length) { list.innerHTML = dia(S.color).elong === 'domingo' ? '<div class="empty">Día libre de gym. Hoy: elongación de cuerpo entero y control muscular, 20 a 30 min. Tocá <b>Sesión</b> y seguí los pasos; al final, Terminar ✓ como siempre.</div>' : '<div class="empty">No hay ejercicios cargados para este día. Agregalos en la pestaña Rutina.</div>'; renderClock(); return; }
+  if (!ejs.length) { list.innerHTML = dia(S.color).elong === 'domingo' ? '' : '<div class="empty">No hay ejercicios cargados para este día. Agregalos en la pestaña Rutina.</div>'; renderClock(); return; }
   const cur = currentSession();
   const items = (cur && cur.items) || {};
   list.innerHTML = ejs.map(e => exCardHtml(e, items, false)).join('') + (cur ? `<div class="row"><button class="btn danger" type="button" id="del-ses">Borrar esta sesión</button></div>` : '');
@@ -1799,8 +1799,10 @@ function migrateAbs2() {
 function migrateDom() {
   if (!S.db || !S.loaded.dias) return;
   const dias = S.dias || DIAS(); const ids = new Set(dias.map(d => d.id));
-  if (ids.has('dom') || !['lun', 'mar', 'mie', 'jue', 'vie', 'sab'].every(d => ids.has(d))) return;
-  S.db.collection('dias').doc('dom').set({ nombre: 'Domingo · elongar y control muscular', color: 'gris', elong: 'domingo', orden: 7, modo: 'orden', activo: true, dow: 7 });
+  const dom = dias.find(d => d.id === 'dom');
+  if (dom) { if (/^Domingo/.test(dom.nombre || '')) S.db.collection('dias').doc('dom').set(Object.assign({}, dom, { nombre: 'Recuperación · elongar y control muscular' })); return; }
+  if (!['lun', 'mar', 'mie', 'jue', 'vie', 'sab'].every(d => ids.has(d))) return;
+  S.db.collection('dias').doc('dom').set({ nombre: 'Recuperación · elongar y control muscular', color: 'gris', elong: 'domingo', orden: 7, modo: 'orden', activo: true, dow: 7 });
 }
 function migrateVariantes() {
   if (!S.db) return;
@@ -3203,7 +3205,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.16-0045';
+const APP_VERSION = '2026.11.16-0052';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
