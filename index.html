@@ -1796,6 +1796,15 @@ function migrateAbs2() {
   setTimeout(() => { const t = document.createElement('div'); t.className = 'vtoast'; t.textContent = 'Rutina: abdominales ahora martes y viernes, como acordaste'; document.body.appendChild(t); setTimeout(() => t.remove(), 6000); }, 1500);
 }
 /* día 7 de la rutina (decidido 15/11): domingo = elongación + control muscular, sin gym */
+/* 16/11: saltos fijos pedidos por José: hiperextensiones 75→85 (10 kg), remo con mancuerna 12→16 (no hay de 14) */
+function migratePasos() {
+  if (!S.db || !S.loaded.ej) return;
+  const PASOS = { 'hiperextensiones': 10, 'remo-mancuerna': 4 };
+  for (const [id, paso] of Object.entries(PASOS)) {
+    const e = S.ej.find(x => x.id === id);
+    if (e && !e.paso) S.db.collection('ejercicios').doc(id).set(Object.assign({}, e, { paso }));
+  }
+}
 function migrateDom() {
   if (!S.db || !S.loaded.dias) return;
   const dias = S.dias || DIAS(); const ids = new Set(dias.map(d => d.id));
@@ -3186,7 +3195,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); renderRutinas(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
-    if (first) { autoClose(); migrateHip(); migrateBarra(); migrateVariantes(); migrateAbs2(); migrateDom(); setTimeout(() => { migrateHip(); migrateAbs2(); migrateDom(); setTimeout(migrateBarra, 1500); }, 3000); }
+    if (first) { autoClose(); migrateHip(); migrateBarra(); migrateVariantes(); migrateAbs2(); migrateDom(); migratePasos(); setTimeout(() => { migrateHip(); migrateAbs2(); migrateDom(); migratePasos(); setTimeout(migrateBarra, 1500); }, 3000); }
     if (first && !colorPicked) { colorPicked = true; if (resumeRunning()) { if (S.sec === 'home') secApply('gym'); } else { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
@@ -3205,7 +3214,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.16-0052';
+const APP_VERSION = '2026.11.16-0120';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
