@@ -616,7 +616,9 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
       <p class="hint" id="pg-hint"></p>
     </div>
     <div class="box" style="gap:6px">
-      <h2 id="pg-global-title" style="color:var(--ink)">Todo junto</h2><p class="hint" id="pg-global-sub"></p>
+      <h2 id="pg-global-title" style="color:var(--ink)">Todo junto</h2>
+      <div class="seg" id="pg-by" style="justify-self:start"><button type="button" data-b="musculo">Por músculo</button><button type="button" data-b="dia">Por día de la rutina</button></div>
+      <p class="hint" id="pg-global-sub"></p>
       <svg class="chart" id="pg-global" viewBox="0 0 320 150" role="img" aria-label="Progreso global"></svg>
     </div>
     <details class="box" id="ses-hist-box">
@@ -1436,8 +1438,8 @@ function suggestion(e) {
   return { cls: changed ? 'ok' : '', html: `${head}<br>Meta hoy: <b>${w} × ${p.r}</b> por serie · mínimo ${p.rmin}.${changed ? (e.asistida ? ' Cambia la asistencia.' : p.W > p.wl ? ' Subís de peso.' : ' Bajás un poco el peso.') : ''}` };
 }
 /* métrica de progreso: 'e1rm' (Epley con la mejor serie), 'carga' o 'volumen' */
-let PG_METRIC = 'e1rm';
-try { PG_METRIC = localStorage.getItem('seg-pgmetric') || 'e1rm'; } catch (e) {}
+let PG_METRIC = 'e1rm', PG_BY = 'musculo';
+try { PG_METRIC = localStorage.getItem('seg-pgmetric') || 'e1rm'; PG_BY = localStorage.getItem('seg-pgby') || 'musculo'; } catch (e) {}
 function metricOf(e) { if (!e) return 'carga'; if (isBody(e)) return 'reps'; if (e.asistida) return 'carga'; return PG_METRIC; }
 function metricLabel(e) { const m = metricOf(e); return m === 'reps' ? 'reps' : m === 'e1rm' ? 'kg (1RM est.)' : m === 'volumen' ? 'kg × reps' : e && e.asistida ? 'kg de asistencia' : 'kg'; }
 function seriesFor(ejId, e) {
@@ -2452,31 +2454,63 @@ function ejsOfDia(d) {
   const r = (S.rutinas || []).find(x => (x.dias || []).some(y => y.id === d.id));
   return r ? (r.ejercicios || []).filter(e => e.color === d.id) : [];
 }
+/* Grupos musculares para Progreso "por músculo": independientes de la rutina. Abdominales quedan afuera (van por reps). */
+const PG_GRUPOS = [
+  { id: 'pecho', nombre: 'Pecho', color: 'verde', g: ['Pectorales'] },
+  { id: 'espalda', nombre: 'Espalda', color: 'amarillo', g: ['Espalda', 'Trapecios', 'Espinales'] },
+  { id: 'hombros', nombre: 'Hombros', color: 'celeste', g: ['Hombros'] },
+  { id: 'piernas', nombre: 'Piernas', color: 'naranja', g: ['Piernas'] },
+  { id: 'brazos', nombre: 'Brazos', color: 'azul', g: ['Bíceps', 'Tríceps'] }
+];
+/* todos los ejercicios con historial de carga, de la rutina activa y de las anteriores, uno por catálogo */
+function ejsHist() {
+  const cur = S.ej.filter(e => !isBody(e) && !e.asistida);
+  const covered = new Set(cur.map(e => e.cat || e.id));
+  const old = histDias().filter(d => d.hist).flatMap(d => ejsOfDia(d)).filter(e => !isBody(e) && !e.asistida && !S.cat.find(c => c.id === (e.cat || e.id) && c.corporal)).filter(e => { const k = e.cat || e.id; if (covered.has(k)) return false; covered.add(k); return true; });
+  return cur.concat(old);
+}
+function weekStart(f) { const d = new Date(f + 'T12:00:00'); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return d.toISOString().slice(0, 10); }
 function renderGlobal() {
   const svg = $('pg-global');
   const dias = histDias();
-  const ejsAll = S.ej.filter(e => !isBody(e) && !e.asistida);
+  $('pg-by').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.b === PG_BY)));
   let title = '', sub = '';
-  if (PG_METRIC === 'volumen') { title = 'Volumen por sesión'; sub = 'kg × reps de cada sesión, una línea por día de la rutina'; }
-  else if (PG_METRIC === 'e1rm') { title = 'Índice de fuerza'; sub = 'suma del 1RM estimado de los ejercicios de cada día, con el último valor conocido'; }
-  else { title = 'Carga total'; sub = 'suma de las cargas de los ejercicios de cada día, con el último valor conocido'; }
+  const por = PG_BY === 'dia' ? 'de cada día de la rutina' : 'de cada grupo muscular';
+  if (PG_METRIC === 'volumen') { title = PG_BY === 'dia' ? 'Volumen por sesión' : 'Volumen semanal'; sub = PG_BY === 'dia' ? 'kg × reps por sesión, una línea por día de la rutina' : 'kg × reps por semana, una línea por grupo muscular; la semana en curso no se muestra hasta que termine'; }
+  else if (PG_METRIC === 'e1rm') { title = 'Índice de fuerza'; sub = `suma del 1RM estimado de los ejercicios ${por}, con el último valor conocido`; }
+  else { title = 'Carga total'; sub = `suma de las cargas de los ejercicios ${por}, con el último valor conocido`; }
   $('pg-global-title').textContent = title; $('pg-global-sub').textContent = sub;
-  // una serie por día
-  const lines = dias.map(d => {
-    const ejs = ejsOfDia(d).filter(e => !isBody(e) && !e.asistida);
-    const series = ejs.map(e => seriesFor(e.id, e)).filter(sr => sr.length);
-    const dates = [...new Set(S.ses.filter(s => s.color === d.id && s.items && Object.keys(s.items).length).map(s => s.fecha))].sort();
-    let pts;
-    if (PG_METRIC === 'volumen') pts = dates.map(f => ({ fecha: f, kg: series.reduce((acc, sr) => { const p = sr.find(x => x.fecha === f); return acc + (p ? p.kg : 0); }, 0) })).filter(p => p.kg > 0);
-    else pts = dates.map(f => ({ fecha: f, kg: Math.round(series.reduce((acc, sr) => acc + (sr.filter(x => x.fecha <= f).pop() || sr[0]).kg, 0)) })).filter(p => p.kg > 0);
-    return { d, pts };
-  }).filter(l => l.pts.length);
+  const ptsOf = (series, dates) => PG_METRIC === 'volumen'
+    ? dates.map(f => ({ fecha: f, kg: series.reduce((acc, sr) => { const p = sr.find(x => x.fecha === f); return acc + (p ? p.kg : 0); }, 0) })).filter(p => p.kg > 0)
+    : dates.map(f => ({ fecha: f, kg: Math.round(series.reduce((acc, sr) => acc + (sr.filter(x => x.fecha <= f).pop() || sr[0]).kg, 0)) })).filter(p => p.kg > 0);
+  let lines;
+  if (PG_BY === 'dia') {
+    // una serie por día de la rutina (activa y anteriores)
+    lines = dias.map(d => {
+      const ejs = ejsOfDia(d).filter(e => !isBody(e) && !e.asistida);
+      const series = ejs.map(e => seriesFor(e.id, e)).filter(sr => sr.length);
+      const dates = [...new Set(S.ses.filter(s => s.color === d.id && s.items && Object.keys(s.items).length).map(s => s.fecha))].sort();
+      return { d, pts: ptsOf(series, dates) };
+    }).filter(l => l.pts.length);
+  } else {
+    // una serie por grupo muscular, con todos los ejercicios que alguna vez hizo
+    const all = ejsHist();
+    lines = PG_GRUPOS.map(gr => {
+      const ejs = all.filter(e => { const c = catOf(e); return c && gr.g.includes(c.grupo); });
+      const series = ejs.map(e => seriesFor(e.id, e)).filter(sr => sr.length);
+      const dates = [...new Set(series.flatMap(sr => sr.map(p => p.fecha)))].sort();
+      let pts = ptsOf(series, dates);
+      if (PG_METRIC === 'volumen') { // por semana: el volumen de un grupo se reparte distinto según la rutina, por sesión no se puede comparar
+        const wk = {}; pts.forEach(p => { const k = weekStart(p.fecha); wk[k] = (wk[k] || 0) + p.kg; });
+        const cur = weekStart(today()); pts = Object.keys(wk).filter(k => k !== cur).sort().map(k => ({ fecha: k, kg: wk[k] }));
+      }
+      return { d: { id: gr.id, nombre: gr.nombre, color: gr.color }, pts };
+    }).filter(l => l.pts.length);
+  }
   // total (solo para fuerza y carga)
   let total = [];
   if (PG_METRIC !== 'volumen') {
-    const covered = new Set(ejsAll.map(e => e.cat || e.id));
-    const old = dias.filter(d => d.hist).flatMap(d => ejsOfDia(d)).filter(e => !isBody(e) && !e.asistida && !covered.has(e.cat || e.id) && !S.cat.find(c => c.id === (e.cat || e.id) && c.corporal));
-    const series = ejsAll.concat(old).map(e => seriesFor(e.id, e)).filter(sr => sr.length);
+    const series = ejsHist().map(e => seriesFor(e.id, e)).filter(sr => sr.length);
     const dates = [...new Set(S.ses.filter(s => s.items && Object.keys(s.items).length).map(s => s.fecha))].sort();
     total = dates.map(f => ({ fecha: f, kg: Math.round(series.reduce((acc, sr) => acc + (sr.filter(x => x.fecha <= f).pop() || sr[0]).kg, 0)) })).filter(p => p.kg > 0);
   }
@@ -2726,6 +2760,7 @@ function bodySelect(id) {
     ${stretches.length ? `<h2 style="font-size:1rem">Elongación</h2><div class="mlist">${stretchRows(stretches)}</div>` : '<p class="hint">No hay una elongación específica cargada para este músculo.</p>'}`;
   $('mus-info').querySelectorAll('button[data-show]').forEach(b => b.addEventListener('click', () => { $('body-pick').value = b.dataset.show; bodyShowExercise(b.dataset.show); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
 }
+$('pg-by').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { PG_BY = b.dataset.b; try { localStorage.setItem('seg-pgby', PG_BY); } catch (e) {} renderGlobal(); }));
 $('pg-metric').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { PG_METRIC = b.dataset.m; try { localStorage.setItem('seg-pgmetric', PG_METRIC); } catch (e) {} renderProgreso(); if (!formBusy()) buildForm(); }));
 $('body-pick').addEventListener('change', () => { if ($('body-pick').value) bodyShowExercise($('body-pick').value); });
 
@@ -3298,7 +3333,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.19-1352';
+const APP_VERSION = '2026.11.19-1433';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
