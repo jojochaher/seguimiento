@@ -1392,6 +1392,7 @@ function plan(e) {
   if (it.carga == null) return null;
   const kgs = setKgs(it, sets.length), b = 0, bw = bodyKg(), wl = workLoad(it, n);
   const load = v => e.asistida ? Math.max(1, bw - v) : isBody(e) ? bw + v : v + b;
+  if (!(load(wl) > 0)) return null; // sesión anotada con 0 kg (p. ej. hecha en casa): sin meta
   const work = done.filter(x => (kgs[x.k] ?? it.carga) === wl);
   const use = work.length ? work : done;
   const L = use.reduce((a, x) => a + load(kgs[x.k] ?? it.carga) * (1 + x.r / 30), 0) / use.length;
@@ -1399,12 +1400,13 @@ function plan(e) {
   const [lo, hi] = repRange(e);
   const up = v => Math.round((Math.floor(v / step + 1e-9) + 1) * step * 100) / 100, down = v => Math.round((Math.ceil(v / step - 1e-9) - 1) * step * 100) / 100;
   const heavier = v => e.asistida ? Math.max(0, down(v)) : up(v), lighter = v => e.asistida ? up(v) : Math.max(e.barra || 0, down(v));
-  let W = wl, guard = 0;
+  let W = wl, guard = 0, forced = false;
   const rr = v => Math.round(repsFor(T, load(v)));
-  while (rr(W) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W || rr(nw) < lo) break; W = nw; }
-  while (rr(W) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
-  const rmin = Math.max(1, Math.round(repsFor(L, load(W))));
-  let r = Math.max(1, Math.round(repsFor(T, load(W)))); if (f > 1 && r <= rmin) r = rmin + 1;
+  /* si la última vez pasó el tope de reps, sube sí o sí aunque la fórmula (Epley, floja con muchas reps y pesos chicos) diga que el peso siguiente deja menos del mínimo: con mancuernas de 6 kg se quedaba clavado en 6 × 14 para siempre */
+  while (rr(W) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W) break; if (rr(nw) < lo) { W = nw; forced = true; break; } W = nw; }
+  if (!forced) while (rr(W) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
+  const rmin = forced ? lo : Math.max(1, Math.round(repsFor(L, load(W))));
+  let r = forced ? lo : Math.max(1, Math.round(repsFor(T, load(W)))); if (!forced && f > 1 && r <= rmin) r = rmin + 1;
   return { W, r, rmin, it, l, b, T, L, load, wl };
 }
 /* reps para un peso dado según la meta de hoy (misma cuenta que plan) */
@@ -3333,7 +3335,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.19-1433';
+const APP_VERSION = '2026.11.19-1440';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
