@@ -2439,9 +2439,22 @@ const PG_HINTS = {
   carga: 'Solo el peso anotado por sesión, sin mirar las reps. Peso corporal: reps totales. Asistidos: invertido.',
   volumen: 'Peso total × reps totales de la sesión. Mide cuánto trabajo hiciste, no cuánta fuerza.'
 };
+/* Días con historial: los de la rutina activa + los de rutinas guardadas que ya no están (p. ej. la de 4 días) + colores sueltos en sesiones. Progreso los mira todos. */
+function histDias() {
+  const out = DIAS().map(d => Object.assign({}, d, { hist: false }));
+  const ids = new Set(out.map(d => d.id));
+  (S.rutinas || []).slice().sort((a, b) => (a.creada || '') < (b.creada || '') ? 1 : -1).forEach(r => (r.dias || []).forEach(d => { if (!ids.has(d.id)) { ids.add(d.id); out.push(Object.assign({}, d, { hist: true, rutina: r.nombre })); } }));
+  S.ses.forEach(s => { if (s.color && s.color !== 'extra' && !ids.has(s.color) && s.items && Object.keys(s.items).length) { ids.add(s.color); out.push({ id: s.color, nombre: s.color, color: 'gris', hist: true }); } });
+  return out;
+}
+function ejsOfDia(d) {
+  if (!d.hist) return S.ej.filter(e => e.color === d.id);
+  const r = (S.rutinas || []).find(x => (x.dias || []).some(y => y.id === d.id));
+  return r ? (r.ejercicios || []).filter(e => e.color === d.id) : [];
+}
 function renderGlobal() {
   const svg = $('pg-global');
-  const dias = DIAS();
+  const dias = histDias();
   const ejsAll = S.ej.filter(e => !isBody(e) && !e.asistida);
   let title = '', sub = '';
   if (PG_METRIC === 'volumen') { title = 'Volumen por sesión'; sub = 'kg × reps de cada sesión, una línea por día de la rutina'; }
@@ -2450,7 +2463,7 @@ function renderGlobal() {
   $('pg-global-title').textContent = title; $('pg-global-sub').textContent = sub;
   // una serie por día
   const lines = dias.map(d => {
-    const ejs = ejsAll.filter(e => e.color === d.id);
+    const ejs = ejsOfDia(d).filter(e => !isBody(e) && !e.asistida);
     const series = ejs.map(e => seriesFor(e.id, e)).filter(sr => sr.length);
     const dates = [...new Set(S.ses.filter(s => s.color === d.id && s.items && Object.keys(s.items).length).map(s => s.fecha))].sort();
     let pts;
@@ -2461,14 +2474,16 @@ function renderGlobal() {
   // total (solo para fuerza y carga)
   let total = [];
   if (PG_METRIC !== 'volumen') {
-    const series = ejsAll.map(e => seriesFor(e.id, e)).filter(sr => sr.length);
+    const covered = new Set(ejsAll.map(e => e.cat || e.id));
+    const old = dias.filter(d => d.hist).flatMap(d => ejsOfDia(d)).filter(e => !isBody(e) && !e.asistida && !covered.has(e.cat || e.id) && !S.cat.find(c => c.id === (e.cat || e.id) && c.corporal));
+    const series = ejsAll.concat(old).map(e => seriesFor(e.id, e)).filter(sr => sr.length);
     const dates = [...new Set(S.ses.filter(s => s.items && Object.keys(s.items).length).map(s => s.fecha))].sort();
     total = dates.map(f => ({ fecha: f, kg: Math.round(series.reduce((acc, sr) => acc + (sr.filter(x => x.fecha <= f).pop() || sr[0]).kg, 0)) })).filter(p => p.kg > 0);
   }
   const allPts = lines.flatMap(l => l.pts);
   if (allPts.length < 2) { svg.innerHTML = `<text x="160" y="78" text-anchor="middle">Faltan sesiones para dibujar la línea</text>`; return; }
-  const rowsN = Math.ceil(lines.length / 2);
-  const W = 320, H = 160 + rowsN * 12, L = 36, R = 10, T = 16, B = 32 + rowsN * 12;
+  const cols = lines.length > 6 ? 1 : 2, rowsN = Math.ceil(lines.length / cols);
+  const W = 320, H = 170 + rowsN * 12, L = 36, R = 10, T = 16, B = 42 + rowsN * 12;
   const vals = allPts.map(p => p.kg); let lo = Math.min(...vals), hi = Math.max(...vals); if (hi === lo) hi = lo + 1;
   const pad = (hi - lo) * 0.08; lo = Math.max(0, lo - pad); hi += pad;
   const fs = allPts.map(p => p.fecha).sort();
@@ -2477,14 +2492,14 @@ function renderGlobal() {
   const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
   let g = '';
   for (let i = 0; i <= 4; i++) { const v = lo + (hi - lo) * i / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 5}" y="${y(v) + 3}" text-anchor="end">${Math.round(v)}</text>`; }
-  g += `<text x="${L}" y="${H - 30}" text-anchor="start">${dmy(fs[0])}</text><text x="${W - R}" y="${H - 30}" text-anchor="end">${dmy(fs[fs.length - 1])}</text>`;
+  const yd = H - B + 14; g += `<text x="${L}" y="${yd}" text-anchor="start">${dmy(fs[0])}</text><text x="${W - R}" y="${yd}" text-anchor="end">${dmy(fs[fs.length - 1])}</text>`;
   lines.forEach(l => {
     const c = `var(--${l.d.color})`;
-    if (l.pts.length > 1) g += `<polyline fill="none" stroke="${c}" stroke-width="2.2" stroke-linejoin="round" points="${l.pts.map(p => x(p.fecha) + ',' + y(p.kg)).join(' ')}"/>`;
+    if (l.pts.length > 1) g += `<polyline fill="none" stroke="${c}" stroke-width="2.2" stroke-linejoin="round"${l.d.hist ? ' stroke-dasharray="4 3" opacity=".75"' : ''} points="${l.pts.map(p => x(p.fecha) + ',' + y(p.kg)).join(' ')}"/>`;
     g += l.pts.map(p => `<circle cx="${x(p.fecha)}" cy="${y(p.kg)}" r="3" fill="var(--surface)" stroke="${c}" stroke-width="1.6"><title>${esc(l.d.nombre)} ${dmy(p.fecha)}: ${p.kg}</title></circle>`).join('');
   });
   // leyenda en dos columnas
-  lines.forEach((l, i) => { const f = l.pts[0].kg, last = l.pts[l.pts.length - 1].kg; const pct = f ? Math.round((last - f) / f * 100) : 0; const label = `${l.d.nombre} ${pct >= 0 ? '+' : ''}${pct} %`; const lx = L + (i % 2) * ((W - L - R) / 2), ly = H - 4 - (rowsN - 1 - Math.floor(i / 2)) * 12; g += `<rect x="${lx}" y="${ly - 7}" width="8" height="8" rx="2" fill="var(--${l.d.color})"/><text x="${lx + 11}" y="${ly}">${esc(label)}</text>`; });
+  lines.forEach((l, i) => { const f = l.pts[0].kg, last = l.pts[l.pts.length - 1].kg; const pct = f ? Math.round((last - f) / f * 100) : 0; const nm = String(l.d.nombre).split(' · ')[0], mx = cols === 1 ? 30 : 15; const label = `${nm.length > mx ? nm.slice(0, mx - 1) + '…' : nm}${l.d.hist ? ' (ant.)' : ''} ${pct >= 0 ? '+' : ''}${pct} %`; const lx = L + (i % cols) * ((W - L - R) / cols), ly = H - 4 - (rowsN - 1 - Math.floor(i / cols)) * 12; g += `<rect x="${lx}" y="${ly - 7}" width="8" height="8" rx="2" fill="var(--${l.d.color})"/><text x="${lx + 11}" y="${ly}">${esc(label)}</text>`; });
   if (total.length > 1) { const f = total[0].kg, last = total[total.length - 1].kg; g += `<text x="${W - R}" y="${T - 3}" text-anchor="end" style="fill:var(--muted)">total ${f} → ${last} (${last >= f ? '+' : ''}${Math.round((last - f) / f * 100)} %)</text>`; }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = g;
@@ -2498,10 +2513,12 @@ function renderProgreso() {
   const week = ses.filter(s => days(s.fecha, today()) < 7).length;
   let up = 0, same = 0, down = 0;
   const groups = DIAS().map(d => ({ d, ejs: S.ej.filter(e => e.color === d.id).sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)) }));
-  const seen = new Set(S.ej.map(e => e.id));
+  const covered = new Set(S.ej.map(e => e.cat || e.id));
+  histDias().filter(d => d.hist).forEach(d => { const ejs = ejsOfDia(d).filter(e => !covered.has(e.cat || e.id)); ejs.forEach(e => covered.add(e.cat || e.id)); if (ejs.length) groups.push({ d: Object.assign({}, d, { nombre: d.nombre + ' · rutina anterior' }), ejs }); });
+  const seen = new Set(S.ej.map(e => e.id)); histDias().filter(d => d.hist).forEach(d => ejsOfDia(d).forEach(e => seen.add(e.id)));
   const extra = []; S.ses.forEach(s => Object.keys(s.items || {}).forEach(id => { if (!seen.has(id)) { seen.add(id); extra.push({ id, nombre: (S.cat.find(c => c.id === id) || {}).nombre || id, color: 'extra' }); } }));
   if (extra.length) groups.push({ d: { id: 'extra', nombre: 'Fuera de la rutina', color: 'gris' }, ejs: extra });
-  const html = groups.map(g => {
+  const html = groups.filter(g => g.ejs.length).map(g => {
     const rows = g.ejs.map(e => {
       const pts = seriesFor(e.id, e), marks = marksFor(e.id, e);
       let delta = '', cls = 'same', meta = '';
@@ -3267,7 +3284,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
   });
-  snap('rutinas', 'rutinas', () => { S.loaded.rutinas = true; renderRutinas(); });
+  snap('rutinas', 'rutinas', () => { S.loaded.rutinas = true; renderRutinas(); renderProgreso(); });
   snap('peso', 'peso', renderPeso);
   snap('fotos', 'fotos', renderFotos);
   snap('medidas', 'medidas', renderMedidas);
@@ -3281,7 +3298,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.17-2304';
+const APP_VERSION = '2026.11.19-1352';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
