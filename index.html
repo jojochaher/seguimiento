@@ -1336,7 +1336,7 @@ function workLoad(it, n) {
 }
 /* variantes de un mismo ejercicio que no se comparan entre sí (a una o dos manos, barra o mancuernas).
    La meta, la "última vez" y el progreso miran solo las sesiones de la variante elegida. Sin marcar = la primera. */
-const VARIANTES = { 'extensiones-mancuerna': ['2 manos', '1 mano'], 'press-hombro': ['Mancuernas', 'Barra', 'Smith'] };
+const VARIANTES = { 'extensiones-mancuerna': ['2 manos', '1 mano'], 'press-hombro': ['Mancuernas', 'Barra', 'Smith'], 'dominada-asistida': ['Asistida', 'Sin asistencia'] };
 function varsOf(e) { return (e && VARIANTES[e.cat || e.id]) || null; }
 function varOf(it, e) { const v = varsOf(e); return v ? ((it && it.var) || v[0]) : null; }
 function curVar(e) {
@@ -1374,6 +1374,8 @@ function lastDone(ejOrId) {
    ajustada por cuánto costó (fácil +5 %, justo +2,5 %, al límite = igualar). El mínimo es igualar. */
 const ESF = { facil: { n: 'Fácil', f: 1.05 }, justo: { n: 'Justo', f: 1.025 }, limite: { n: 'Al límite', f: 1.0 } };
 function bodyKg() { return (S.peso.slice().sort((x, y) => x.fecha < y.fecha ? -1 : 1).pop() || {}).kg || 70; }
+/* peso del cuerpo a una fecha: la última pesada hasta ese día (si no hay, la primera) */
+function bodyKgAt(f) { const ps = S.peso.slice().sort((x, y) => x.fecha < y.fecha ? -1 : 1); const prev = ps.filter(x => x.fecha <= f).pop(); return (prev || ps[0] || {}).kg || 70; }
 function repsFor(T, load) { return 30 * (T / load - 1); }
 /* rango de reps: 6 a 12 para todo (José, 2/11). Para músculo da parecido en un rango amplio cerca del fallo
    (Schoenfeld 2017, 2021) y no hay una recomendación distinta por músculo. Si el peso siguiente deja menos de 6,
@@ -1442,7 +1444,9 @@ function suggestion(e) {
 /* métrica de progreso: 'e1rm' (Epley con la mejor serie), 'carga' o 'volumen' */
 let PG_METRIC = 'e1rm', PG_BY = 'musculo';
 try { PG_METRIC = localStorage.getItem('seg-pgmetric') || 'e1rm'; PG_BY = localStorage.getItem('seg-pgby') || 'musculo'; } catch (e) {}
-function metricOf(e) { if (!e) return 'carga'; if (isBody(e)) return 'reps'; if (e.asistida) return 'carga'; return PG_METRIC; }
+function metricOf(e) { if (!e) return 'carga'; if (isBody(e)) return 'reps'; if (e.asistida) return PG_METRIC === 'e1rm' ? 'e1rm' : 'carga'; return PG_METRIC; }
+/* gráfico invertido (menos es mejor): solo asistidas mirando kg de asistencia */
+function invOf(e) { return !!(e && e.asistida) && metricOf(e) === 'carga'; }
 function metricLabel(e) { const m = metricOf(e); return m === 'reps' ? 'reps' : m === 'e1rm' ? 'kg (1RM est.)' : m === 'volumen' ? 'kg × reps' : e && e.asistida ? 'kg de asistencia' : 'kg'; }
 function seriesFor(ejId, e) {
   const m = metricOf(e);
@@ -1459,7 +1463,8 @@ function seriesFor(ejId, e) {
     const reps = raw.length ? raw : Array.from({ length: Number((e && e.series) || 3) }, () => Number((e && e.reps) || 10));
     const kgs = setKgs(it, reps.length).map(v => (v != null ? v : it.carga));
     if (m === 'volumen') { out.push({ fecha: s.fecha, kg: Math.round(reps.reduce((acc, r, k) => acc + (r || 0) * kgs[k], 0)) }); return; }
-    const best = Math.max(...reps.map((r, k) => r == null || (!e || !e.asistida) && kgs[k] > wl ? 0 : kgs[k] * (1 + r / 30)));
+    const asis = !!(e && e.asistida), bw = asis ? bodyKgAt(s.fecha) : 0;
+    const best = Math.max(...reps.map((r, k) => r == null ? 0 : asis ? Math.max(1, bw - kgs[k]) * (1 + r / 30) : kgs[k] > wl ? 0 : kgs[k] * (1 + r / 30)));
     out.push({ fecha: s.fecha, kg: Math.round(best * 10) / 10 });
   });
   return out;
@@ -1589,7 +1594,7 @@ function exCardHtml(e, items, big) {
     ${e.asistida ? '<div class="assist">Carga = kg de asistencia. Menos es mejor.</div>' : isBody(e) ? '<div class="assist">Peso corporal: lo que progresa son las reps.</div>' : ''}
     ${skipped ? `<div class="ex-actions"><span class="skipnote"><span>Salteado hoy:</span><input type="text" data-f="skip" value="${esc(it.skip)}" placeholder="motivo"></span><button type="button" data-unskip="1">Deshacer</button></div>` : `
     ${vars ? `<div class="vars"><span class="sg-l">¿Cómo lo hacés hoy?</span>${vars.map(v => `<button type="button" data-var="${esc(v)}" aria-pressed="${v === cv}">${esc(v)}</button>`).join('')}</div>` : ''}
-    <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, !!e.asistida)}</button></div>
+    <div class="goal"><div class="g ${sug.cls}">${sug.html}</div><button class="mini" type="button" data-pg="${esc(e.id)}" aria-label="Ver progreso">${spark(pts, dia(S.color).color, 96, 36, invOf(e))}</button></div>
     <div class="ex-inputs">
       ${setsHtml(e, it, n, pl, big)}
       <p class="hint full sg-hint">Kg vacío = mismo peso que la serie anterior. <b class="kg-tip"></b></p>
@@ -1850,6 +1855,7 @@ function migrateVariantes() {
     const mark = (id, v) => { const it = items[id]; if (it && !it.var && it.skip == null) { items[id] = Object.assign({}, it, { var: v }); changed = true; } };
     if (s.fecha < '2026-11-07') mark('extensiones-mancuerna', '1 mano');
     if (s.fecha === '2026-10-13') mark('press-hombro', 'Barra');
+    if (s.fecha === '2026-10-16') mark('dominada-asistida', 'Sin asistencia'); /* dominadas libres a pedido del profe (4/2/3): no es la misma línea que las asistidas */
     if (changed) { const b = Object.assign({}, s, { items }); delete b.id; S.db.collection('sesiones').doc(s.id).set(b).catch(() => {}); }
   });
 }
@@ -2439,7 +2445,7 @@ function openProgreso(ejId) {
   el.classList.add('hl'); el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 const PG_HINTS = {
-  e1rm: 'Peso y reps en un solo número: kg × (1 + reps/30) con la mejor serie (fórmula de Epley). Subir reps o subir peso mueven la línea. Sesiones sin reps anotadas: se asume la meta. Peso corporal: reps totales. Asistidos: kg de asistencia, invertido (menos es mejor).',
+  e1rm: 'Peso y reps en un solo número: kg × (1 + reps/30) con la mejor serie (fórmula de Epley). Subir reps o subir peso mueven la línea. Sesiones sin reps anotadas: se asume la meta. Peso corporal: reps totales. Asistidos: la misma cuenta con tu peso menos la asistencia, así cuentan también las reps.',
   carga: 'Solo el peso anotado por sesión, sin mirar las reps. Peso corporal: reps totales. Asistidos: invertido.',
   volumen: 'Peso total × reps totales de la sesión. Mide cuánto trabajo hiciste, no cuánta fuerza.'
 };
@@ -2560,7 +2566,7 @@ function renderProgreso() {
       let delta = '', cls = 'same', meta = '';
       if (pts.length) {
         const f = pts[0].kg, l = pts[pts.length - 1].kg, df = l - f;
-        const good = e.asistida ? df < 0 : df > 0;
+        const good = invOf(e) ? df < 0 : df > 0;
         cls = df === 0 ? 'same' : good ? 'good' : 'bad';
         if (pts.length > 1) { if (df === 0) same++; else if (good) up++; else down++; }
         const b = 0;
@@ -2569,7 +2575,7 @@ function renderProgreso() {
         delta = `${fmt(fv)} → ${fmt(lv)} ${metricLabel(e)}` + (df ? ` (${df > 0 ? '+' : ''}${fmt(df)})` : '');
         meta = `${pts.length} ${pts.length === 1 ? 'sesión' : 'sesiones'} · desde ${dmy(pts[0].fecha)}` + (curVar(e) ? ` · ${esc(curVar(e))}` : '') + (marks.length ? ` · ${marks.length} con nota (${esc(marks[marks.length - 1].nota.slice(0, 28))}${marks[marks.length - 1].nota.length > 28 ? '…' : ''})` : '');
       } else { delta = isBody(e) ? 'Sin reps anotadas todavía' : 'Sin cargas todavía'; meta = marks.length ? `${marks.length} con nota: ${esc(marks[marks.length - 1].nota.slice(0, 40))}` : ''; }
-      return `<div class="pg" id="pg-${esc(e.id)}" style="--c: var(--${esc(g.d.color)})"><div><h3>${esc(e.nombre)}</h3><div class="delta ${cls}">${delta}</div><div class="meta">${meta}</div></div>${spark(pts, g.d.color, 120, 44, !!e.asistida, marks)}</div>`;
+      return `<div class="pg" id="pg-${esc(e.id)}" style="--c: var(--${esc(g.d.color)})"><div><h3>${esc(e.nombre)}</h3><div class="delta ${cls}">${delta}</div><div class="meta">${meta}</div></div>${spark(pts, g.d.color, 120, 44, invOf(e), marks)}</div>`;
     }).join('');
     const n = ses.filter(s => s.color === g.d.id).length;
     return `<div class="panel" style="--c: var(--${esc(g.d.color)})"><div class="pg-head"><h2>${esc(g.d.nombre)}</h2><small>${n} ${n === 1 ? 'sesión' : 'sesiones'}</small></div>${rows || '<div class="empty">Sin ejercicios.</div>'}</div>`;
@@ -3335,7 +3341,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.19-1440';
+const APP_VERSION = '2026.11.20-2212';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
