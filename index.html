@@ -234,6 +234,15 @@ nav.bottom button .dot { position: absolute; top: 4px; right: 18%; width: 9px; h
 .fb-new { display: inline-block; font-size: .65rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; background: var(--on-day); color: var(--day); border-radius: 999px; padding: 2px 7px; vertical-align: middle; margin-left: 6px; }
 
 .fb-item.mine { margin-left: 24px; }
+.fb-thread { display: grid; gap: 8px; padding: 0 14px 4px; }
+.fb-re { border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 2px; }
+.fb-re.mine { margin-left: 18px; }
+.fb-re.mine .fb-txt { color: var(--muted); font-style: italic; }
+.fb-wait { margin: 0; }
+.fb-item.resp .fb-re .fb-txt { padding: 0; }
+.fb-reply { padding: 4px 14px 12px; display: grid; gap: 6px; }
+.fb-reply textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); resize: vertical; }
+.fb-reply [data-reply] { justify-self: start; }
 #fb-list { gap: 14px; }
 
 #fb-box textarea { width: 100%; resize: none; font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
@@ -1799,16 +1808,33 @@ const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 const awaiting = () => Number(lsGet('seg-await', '0')) || 0;
 function renderClaude() {
   const box = $('fb-list'); if (!box) return;
+  /* no perder lo que está escribiendo ni lo que abrió si llega una devolución o un snapshot mientras tanto */
+  const keep = {}; box.querySelectorAll('details[data-resp]').forEach(d => { const ta = d.querySelector('.fb-reply textarea'); keep[d.dataset.resp] = { open: d.open, draft: ta && !d.querySelector('.fb-reply-form').hidden ? ta.value : null, focus: ta && document.activeElement === ta }; });
   const fb = (S.feedback || []).slice();
   const rs = (RESP && RESP.items || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : -1);
-  const all = fb.map(f => ({ t: f.fecha, kind: 'mine', texto: f.texto })).concat(rs.map(r => ({ t: r.fecha, kind: 'resp', texto: r.texto, titulo: r.titulo }))).sort((a, b) => a.t < b.t ? 1 : -1).slice(0, 40);
   const fdate = t => new Date(t).toLocaleString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  const seen = lsGet('seg-fb-seen'); let firstResp = true;
+  const seen = lsGet('seg-fb-seen');
+  /* hilos: una respuesta de José a una devolución (feedback.re = fecha de la devolución) y lo que Claude le contesta
+     (respuesta con para = [ese feedback]) se muestran adentro de la devolución original */
+  const fbById = new Map(fb.map(f => [f.fecha, f])), rsByF = new Map(rs.map(r => [r.fecha, r]));
+  const rootOf = r => { let x = r, g = 0; while (x && g++ < 10) { const f = (x.para || []).map(id => fbById.get(id)).find(f => f && f.re && rsByF.has(f.re)); if (!f) return x; x = rsByF.get(f.re); } return x || r; };
+  const thread = new Map(), nested = new Set();
+  const add = (root, it) => { if (!thread.has(root)) thread.set(root, []); thread.get(root).push(it); };
+  fb.forEach(f => { if (f.re && rsByF.has(f.re)) { const root = rootOf(rsByF.get(f.re)).fecha; add(root, { t: f.fecha, kind: 'mine', texto: f.texto }); nested.add('f' + f.fecha); } });
+  rs.forEach(r => { const root = rootOf(r); if (root !== r) { add(root.fecha, { t: r.fecha, kind: 'resp', texto: r.texto }); nested.add('r' + r.fecha); } });
+  const all = fb.filter(f => !nested.has('f' + f.fecha)).map(f => ({ t: f.fecha, kind: 'mine', texto: f.texto }))
+    .concat(rs.filter(r => !nested.has('r' + r.fecha)).map(r => ({ t: r.fecha, kind: 'resp', texto: r.texto, titulo: r.titulo })))
+    .sort((a, b) => a.t < b.t ? 1 : -1).slice(0, 40);
+  const openRoot = rs.length ? rootOf(rs[0]).fecha : null;
   box.innerHTML = all.length ? all.map(x => {
     if (x.kind !== 'resp') return `<div class="fb-item mine"><div class="fb-meta"><span>Vos</span><span>${fdate(x.t)}</span></div><div class="fb-txt">${esc(x.texto)}</div></div>`;
-    const open = firstResp; firstResp = false; const nueva = x.t > seen;
-    return `<details class="fb-item resp"${open ? ' open' : ''}><summary class="fb-head"><div class="fb-t">${esc(x.titulo || 'Devolución')}${nueva ? ' <span class="fb-new">nueva</span>' : ''}</div><div class="fb-meta"><span>Claude</span><span>${fdate(x.t)}</span></div></summary><div class="fb-txt">${esc(x.texto)}</div></details>`;
+    const th = (thread.get(x.t) || []).sort((a, b) => a.t < b.t ? -1 : 1);
+    const nueva = x.t > seen || th.some(m => m.kind === 'resp' && m.t > seen);
+    const thHtml = th.map(m => `<div class="fb-re ${m.kind}"><div class="fb-meta"><span>${m.kind === 'resp' ? 'Claude' : 'Vos'}</span><span>${fdate(m.t)}</span></div><div class="fb-txt">${esc(m.texto)}</div></div>`).join('');
+    const waiting = th.length && th[th.length - 1].kind === 'mine' ? '<div class="hint fb-wait">Esperando respuesta…</div>' : '';
+    return `<details class="fb-item resp"${x.t === openRoot ? ' open' : ''} data-resp="${esc(x.t)}"><summary class="fb-head"><div class="fb-t">${esc(x.titulo || 'Devolución')}${nueva ? ' <span class="fb-new">nueva</span>' : ''}</div><div class="fb-meta"><span>Claude</span><span>${fdate(x.t)}</span></div></summary><div class="fb-txt">${esc(x.texto)}</div>${thHtml ? `<div class="fb-thread">${thHtml}${waiting}</div>` : ''}<div class="fb-reply"><button type="button" class="btn ghost small" data-reply>Responder</button><div class="fb-reply-form" hidden><textarea rows="2" placeholder="Por ejemplo: la app me pedía 30, no 40"></textarea><div class="row"><button type="button" class="btn small" data-reply-send>Enviar</button><button type="button" class="btn ghost small" data-reply-cancel>Cancelar</button><span class="status"></span></div></div></div></details>`;
   }).join('') : '<div class="empty">Todavía no hay devoluciones.</div>';
+  box.querySelectorAll('details[data-resp]').forEach(d => { const k = keep[d.dataset.resp]; if (!k) return; d.open = k.open; if (k.draft != null) { d.querySelector('.fb-reply-form').hidden = false; d.querySelector('[data-reply]').hidden = true; const ta = d.querySelector('.fb-reply textarea'); ta.value = k.draft; if (k.focus) ta.focus(); } });
   /* estado: esperando / última */
   const aw = awaiting(); const last = rs[0];
   if (aw && last && new Date(last.fecha).getTime() > aw) lsSet('seg-await', '0');
@@ -1836,6 +1862,24 @@ $('fb-send').addEventListener('click', async () => {
   const id = new Date().toISOString();
   try { await S.db.collection('feedback').doc(id).set({ fecha: id, texto: t, app: APP_VERSION, dia: S.color, sesion: currentSession() ? sessionId() : null }); $('fb-text').value = ''; setStatus('fb-status', 'Enviando…'); const r = await window.claude.syncPush(true); if (r.ok) { lsSet('seg-await', String(Date.now())); renderClaude(); } setStatus('fb-status', r.ok ? 'Enviado ✓' : 'Guardado; se manda cuando haya conexión', r.ok ? 'ok' : ''); }
   catch (e) { setStatus('fb-status', 'No se pudo guardar', 'err'); }
+});
+/* responder a una devolución: queda como feedback con re = fecha de la devolución y viaja al workflow */
+$('fb-list').addEventListener('click', async ev => {
+  const d = ev.target.closest('details[data-resp]'); if (!d) return;
+  const form = d.querySelector('.fb-reply-form'), btn = d.querySelector('[data-reply]');
+  if (ev.target.closest('[data-reply]')) { form.hidden = false; btn.hidden = true; const ta = form.querySelector('textarea'); ta.focus(); return; }
+  if (ev.target.closest('[data-reply-cancel]')) { form.hidden = true; btn.hidden = false; return; }
+  if (!ev.target.closest('[data-reply-send]')) return;
+  const ta = form.querySelector('textarea'), st = form.querySelector('.status'), t = ta.value.trim(); if (!t) return;
+  const re = d.dataset.resp, r = (RESP && RESP.items || []).find(x => x.fecha === re) || {};
+  const id = new Date().toISOString();
+  ta.blur(); ta.value = ''; form.hidden = true; btn.hidden = false;
+  try {
+    await S.db.collection('feedback').doc(id).set({ fecha: id, texto: t, app: APP_VERSION, dia: S.color, sesion: r.sesion || null, re, reTitulo: r.titulo || '' });
+    const p = await window.claude.syncPush(true);
+    if (p.ok) lsSet('seg-await', String(Date.now()));
+    renderClaude(); if (!p.ok) setStatus('fb-status', 'Respuesta guardada; se manda cuando haya conexión');
+  } catch (e) { ta.value = t; form.hidden = false; btn.hidden = true; st.textContent = 'No se pudo guardar'; }
 });
 /* notificaciones push (iPhone: solo con la app instalada en la pantalla de inicio) */
 const b64ToU8 = s => { const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
@@ -2089,10 +2133,23 @@ function fsGo(delta) {
   if (j >= steps.length) { fsFinish(); return; }
   S.focusIdx = j; fsRender(delta);
 }
+/* lo que la app pidió (meta) y lo que va a pedir la próxima (prox): viajan en la sesión para que la devolución
+   compare contra la app y no contra notas viejas (21/11: la devolución le reprochó no hacer 40 en peso muerto cuando la app pedía 30) */
+function metaOf(e) {
+  try { const p = plan(e); if (!p) return null; if (p.body) return { r: p.r, min: p.rmin }; if (p.W == null) return null; return { kg: p.W, r: p.r, min: p.rmin }; } catch (x) { return null; }
+}
+function proxFor(id, body) {
+  const oldF = S.fecha, oldSes = S.ses, out = {};
+  try {
+    S.ses = oldSes.filter(s => s.id !== id).concat([Object.assign({ id }, body)]); S.fecha = body.fecha + '~';
+    S.ej.filter(e => e.color === body.color).forEach(e => { const m = metaOf(e); if (m) out[e.id] = m; });
+  } finally { S.fecha = oldF; S.ses = oldSes; }
+  return out;
+}
 async function fsFinish() {
   flushSave();
   const cur = currentSession();
-  if (cur && cur.inicio && !cur.fin) { const body = sessionBody(collect()); body.inicio = cur.inicio; body.fin = Date.now(); delete body.ult; try { await S.db.collection('sesiones').doc(sessionId()).set(body); } catch (e) { err(e, 'ses-status'); } }
+  if (cur && cur.inicio && !cur.fin) { const body = sessionBody(collect()); body.inicio = cur.inicio; body.fin = Date.now(); delete body.ult; try { body.prox = proxFor(sessionId(), body); } catch (x) {} try { await S.db.collection('sesiones').doc(sessionId()).set(body); } catch (e) { err(e, 'ses-status'); } }
   fsClose();
   if (cur && cur.inicio) { lsSet('seg-await', String(Date.now())); }
   showTab('claude'); renderClaude();
@@ -2191,7 +2248,7 @@ function collect() {
     const nota = ex.querySelector('[data-f="nota"]').value.trim();
     const any = sets.some(v => v != null);
     const esfB = ex.querySelector('button[data-esf][aria-pressed="true"]');
-    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; if (esfB) items[id].esf = esfB.dataset.esf; const vb = ex.querySelector('button[data-var][aria-pressed="true"]'); if (vb) items[id].var = vb.dataset.var; const ee = S.ej.find(x => x.id === id); if (ee && ee.barra) items[id].tot = 1; }
+    if (carga != null || any || nota) { items[id] = { carga, sets: any ? sets : [], reps: setsText(sets), nota }; if (new Set(kk).size > 1) items[id].cargas = kgs; if (esfB) items[id].esf = esfB.dataset.esf; const vb = ex.querySelector('button[data-var][aria-pressed="true"]'); if (vb) items[id].var = vb.dataset.var; const ee = S.ej.find(x => x.id === id); if (ee && ee.barra) items[id].tot = 1; const mt = ee && metaOf(ee); if (mt) items[id].meta = mt; }
   });
   Object.keys(prev).forEach(id => { if (!items[id] && !seen.has(id)) items[id] = prev[id]; });
   return items;
@@ -2201,6 +2258,7 @@ function sessionBody(items) {
   const body = { fecha: S.fecha, color: S.color, items };
   if (cur && cur.inicio) { body.inicio = cur.inicio; body.fin = cur.fin ?? null; if (!body.fin) body.ult = Date.now(); else if (cur.ult) body.ult = cur.ult; }
   if (cur && cur.cola && cur.cola.length) body.cola = cur.cola;
+  if (cur && cur.prox) body.prox = cur.prox;
   const pend = pendingIds(); if (pend.length) body.pend = pend;
   return body;
 }
@@ -3477,7 +3535,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.21-0008';
+const APP_VERSION = '2026.11.21-1451';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
@@ -3497,6 +3555,31 @@ async function checkUpdate() {
   } catch (e) {}
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
+/* iOS (app instalada): si sale a segundo plano con el teclado abierto, al volver el viewport queda achicado
+   y la barra de abajo flota en el medio de la pantalla (captura de José, 21/11). Tres defensas:
+   1) al salir, cerrar el teclado; 2) al volver, forzar un re-layout; 3) si igual queda corrida, bajarla a mano
+   al borde de lo que se ve (solo hacia abajo: con el teclado abierto de verdad la barra queda detrás, como siempre). */
+(() => {
+  const dock = $('dock'); const vv = window.visualViewport;
+  const fix = () => {
+    if (!dock || !vv) return;
+    const layoutH = document.documentElement.clientHeight, visBottom = vv.offsetTop + vv.height;
+    const gap = Math.round(Math.max(visBottom, window.innerHeight) - layoutH);
+    dock.style.transform = gap > 2 ? `translateY(${gap}px)` : '';
+  };
+  const relayout = () => {
+    const y = window.scrollY; window.scrollTo(window.scrollX, y + 1); window.scrollTo(window.scrollX, y);
+    fix(); setTimeout(fix, 300); setTimeout(fix, 1000);
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { const a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) a.blur(); }
+    else requestAnimationFrame(relayout);
+  });
+  window.addEventListener('pageshow', () => requestAnimationFrame(relayout));
+  window.addEventListener('focus', fix);
+  if (vv) { vv.addEventListener('resize', fix); vv.addEventListener('scroll', fix); }
+  document.addEventListener('focusout', () => setTimeout(fix, 350));
+})();
 setInterval(checkUpdate, 60000); setTimeout(checkUpdate, 3000);
 (() => { let u = null; try { u = sessionStorage.getItem('seg-updated'); sessionStorage.removeItem('seg-updated'); } catch (e) {}
   const t = document.createElement('div'); t.className = 'vtoast'; t.textContent = u ? 'Actualizado ✓ versión ' + APP_VERSION : ''; if (u) { document.body.appendChild(t); setTimeout(() => t.remove(), 3500); }
