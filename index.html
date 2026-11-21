@@ -1460,6 +1460,7 @@ function seriesFor(ejId, e) {
     const wl = workLoad(it, Number((e && e.series) || 3));
     if (m === 'carga') { out.push({ fecha: s.fecha, kg: wl }); return; }
     const raw = parseSets(it, Number((e && e.series) || 3));
+    if (it.sinReps && !raw.length) return; /* reps desconocidas: no se estiman (punto hueco vía marksFor) */
     const reps = raw.length ? raw : Array.from({ length: Number((e && e.series) || 3) }, () => Number((e && e.reps) || 10));
     const kgs = setKgs(it, reps.length).map(v => (v != null ? v : it.carga));
     if (m === 'volumen') { out.push({ fecha: s.fecha, kg: Math.round(reps.reduce((acc, r, k) => acc + (r || 0) * kgs[k], 0)) }); return; }
@@ -1489,7 +1490,8 @@ function spark(pts, color, w = 120, h = 44, invert = false, marks = []) {
 /* sesiones en las que el ejercicio se salteó pero con una nota (hecho en casa, otra variante, etc.) */
 function marksFor(ejId, e) {
   const ee = e || S.ej.find(x => x.id === ejId) || { id: ejId };
-  return S.ses.map(s => ({ s, it: itemOf(s, ee) })).filter(x => x.it && x.it.skip != null && x.it.nota).map(x => ({ fecha: x.s.fecha, nota: x.it.nota })).sort((a, b) => a.fecha < b.fecha ? -1 : 1);
+  const noReps = it => it.sinReps && metricOf(ee) !== 'carga' && !parseSets(it, Number(ee.series) || 3).length;
+  return S.ses.map(s => ({ s, it: itemOf(s, ee) })).filter(x => x.it && (x.it.skip != null && x.it.nota || noReps(x.it))).map(x => ({ fecha: x.s.fecha, nota: x.it.nota || 'reps sin anotar' })).sort((a, b) => a.fecha < b.fecha ? -1 : 1);
 }
 function musclesLine(e) {
   const c = catOf(e); if (!c) return '';
@@ -1856,6 +1858,17 @@ function migrateVariantes() {
     if (s.fecha < '2026-11-07') mark('extensiones-mancuerna', '1 mano');
     if (s.fecha === '2026-10-13') mark('press-hombro', 'Barra');
     if (s.fecha === '2026-10-16') mark('dominada-asistida', 'Sin asistencia'); /* dominadas libres a pedido del profe (4/2/3): no es la misma línea que las asistidas */
+    if (changed) { const b = Object.assign({}, s, { items }); delete b.id; S.db.collection('sesiones').doc(s.id).set(b).catch(() => {}); }
+  });
+}
+/* sesiones viejas sin reps anotadas en las que José no recuerda las reps: no estimarlas con la meta de la hoja */
+function migrateSinReps() {
+  if (!S.db) return;
+  const fix = { '2026-10-14': ['curl-alternado'] };
+  S.ses.forEach(s => {
+    const ids = fix[s.fecha]; if (!ids) return;
+    const items = Object.assign({}, s.items || {}); let changed = false;
+    ids.forEach(id => { const it = items[id]; if (it && !it.sinReps && !(Array.isArray(it.sets) && it.sets.length) && !it.reps) { items[id] = Object.assign({}, it, { sinReps: 1 }); changed = true; } });
     if (changed) { const b = Object.assign({}, s, { items }); delete b.id; S.db.collection('sesiones').doc(s.id).set(b).catch(() => {}); }
   });
 }
@@ -3322,7 +3335,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
   snap('ejercicios', 'ej', () => { S.loaded.ej = true; renderCarga(); renderRutinas(); if (!formBusy()) buildForm(); renderRutina(); renderProgreso(); });
   snap('sesiones', 'ses', () => {
     const first = !S.loaded.ses; S.loaded.ses = true;
-    if (first) { autoClose(); migrateHip(); migrateBarra(); migrateVariantes(); migrateAbs2(); migrateDom(); migratePasos(); migrateNoCorporal(); setTimeout(() => { migrateHip(); migrateAbs2(); migrateDom(); migratePasos(); migrateNoCorporal(); setTimeout(migrateBarra, 1500); }, 3000); }
+    if (first) { autoClose(); migrateHip(); migrateBarra(); migrateVariantes(); migrateSinReps(); migrateAbs2(); migrateDom(); migratePasos(); migrateNoCorporal(); setTimeout(() => { migrateHip(); migrateAbs2(); migrateDom(); migratePasos(); migrateNoCorporal(); setTimeout(migrateBarra, 1500); }, 3000); }
     if (first && !colorPicked) { colorPicked = true; if (resumeRunning()) { if (S.sec === 'home') secApply('gym'); } else { S.color = nextColor(); applyDay(); } }
     renderColors(); renderHist(); renderProgreso(); renderCarga();
     if (!formBusy()) buildForm(); else renderClock();
@@ -3341,7 +3354,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.20-2212';
+const APP_VERSION = '2026.11.20-2219';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
