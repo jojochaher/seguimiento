@@ -3535,7 +3535,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.21-1451';
+const APP_VERSION = '2026.11.22-1111';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
@@ -3561,11 +3561,18 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
    al borde de lo que se ve (solo hacia abajo: con el teclado abierto de verdad la barra queda detrás, como siempre). */
 (() => {
   const dock = $('dock'); const vv = window.visualViewport;
+  /* mide dónde quedó la barra de verdad (sin la corrección) y solo la baja si quedó por ENCIMA del borde de lo que se ve.
+     La versión del 21/11 comparaba alturas del viewport, que en la app instalada ya difieren en un arranque normal,
+     y mandaba la barra para abajo cortada (captura de José, 22/11). Con un input en foco no se toca (teclado abierto). */
+  let cur = 0;
   const fix = () => {
     if (!dock || !vv) return;
-    const layoutH = document.documentElement.clientHeight, visBottom = vv.offsetTop + vv.height;
-    const gap = Math.round(Math.max(visBottom, window.innerHeight) - layoutH);
-    dock.style.transform = gap > 2 ? `translateY(${gap}px)` : '';
+    const a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+    const natural = dock.getBoundingClientRect().bottom - cur, visBottom = vv.offsetTop + vv.height;
+    const gap = Math.round(visBottom - natural);
+    cur = gap > 40 ? gap : 0;
+    dock.style.transform = cur ? `translateY(${cur}px)` : '';
   };
   const relayout = () => {
     const y = window.scrollY; window.scrollTo(window.scrollX, y + 1); window.scrollTo(window.scrollX, y);
