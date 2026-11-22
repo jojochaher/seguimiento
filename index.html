@@ -548,6 +548,12 @@ body:not(.sec-conf) .panel.conf, body:not(.sec-comida) .panel.comida { display: 
 .conf-r .ct small { display: block; color: var(--muted); font-size: .78rem; }
 .conf-r .ca { display: grid; gap: 2px; justify-items: end; }
 .conf-hice { grid-column: 1 / -1; display: grid; gap: 4px; }
+.conf-tap { cursor: pointer; }
+.conf-tap small { color: var(--muted); }
+.conf-edit { display: grid; gap: 8px; border: 1.5px solid var(--day); border-radius: 12px; padding: 10px; margin: 6px 0; }
+.conf-edit textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); }
+.conf-edit .del { background: transparent; border: none; color: var(--muted); text-decoration: underline; cursor: pointer; margin-left: auto; }
+.conf-edit .del.confirm, .conf-log .del.confirm { color: var(--bad); font-weight: 700; }
 .cd { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); font-weight: 700; font-size: .85rem; }
 .conf-ideas { display: grid; gap: 6px; margin-top: 6px; }
 .conf-idea { display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: center; text-align: left; font: inherit; font-size: .88rem; color: var(--ink); background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 6px 8px; }
@@ -3780,7 +3786,7 @@ function renderEstResumen() {
 function wireDel(root, fn) {
   root.querySelectorAll('button.del').forEach(b => b.addEventListener('click', () => {
     if (b.classList.contains('confirm')) fn(b.dataset.del);
-    else { b.classList.add('confirm'); b.textContent = '¿Seguro?'; setTimeout(() => { if (b.isConnected) { b.classList.remove('confirm'); b.textContent = 'Borrar'; } }, 4000); }
+    else { const orig = b.textContent; b.classList.add('confirm'); b.textContent = '¿Seguro?'; setTimeout(() => { if (b.isConnected) { b.classList.remove('confirm'); b.textContent = orig; } }, 4000); }
   }));
 }
 async function delAssets(ids) { try { assetsApi = assetsApi || await window.claude.use('assets'); if (assetsApi) for (const id of ids) if (id) await assetsApi.delete(id); } catch (e) {} }
@@ -3896,7 +3902,7 @@ const CONF_IDEAS = [
   ['Ir a una clase de prueba de impro, canto o baile', 8],
   ['Proponerle un plan a alguien que te cae bien y conocés poco', 7]
 ];
-let confDif = null, confHice = null;
+let confDif = null, confHice = null, confEdit = null, confEditDif = null;
 function confWeek(f) { return weekStart(f); }
 function renderConf() {
   const box = $('conf-body'); if (!box) return;
@@ -3929,7 +3935,13 @@ function renderConf() {
         ${confHice === r.id ? `<div class="conf-hice"><span class="k">¿Qué tan difícil fue esta vez?</span><div class="cm-int">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(d => `<button type="button" data-hd="${d}">${d}</button>`).join('')}</div></div>` : ''}</div>`; }).join('')}</div>` : '<p class="hint">Vacía. Agregá tus escalones abajo, o tocá una idea.</p>'}
       <div class="row conf-add"><input id="conf-reto" placeholder="Nuevo escalón"><select id="conf-reto-dif" aria-label="Dificultad estimada">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<option value="${n}"${n === 5 ? ' selected' : ''}>${n}</option>`).join('')}</select><button class="btn small" type="button" id="conf-reto-ok">Agregar</button></div>
       <details><summary>Ideas para la escalera</summary><div class="conf-ideas">${CONF_IDEAS.filter(([t]) => !retos.some(r => r.texto === t)).map(([t, d]) => `<button type="button" class="conf-idea" data-t="${esc(t)}" data-d="${d}"><span class="cd">${d}</span>${esc(t)}</button>`).join('')}</div><p class="hint">La dificultad es una estimación: corregila borrando y volviendo a agregar.</p></details></div>
-    <div class="box"><h2>Registro</h2>${log.length ? `<div class="conf-log" id="conf-log">${log.map(x => `<div class="item" data-id="${esc(x.id)}"><span class="d">${esc(dmy(x.fecha))}</span><span class="v"><b>${x.dif ?? '?'}/10</b> ${esc(x.texto)}</span><button type="button" class="del" aria-label="Borrar">✕</button></div>`).join('')}</div>` : '<p class="hint">Todavía nada.</p>'}</div>`;
+    <div class="box"><h2>Registro</h2>${log.length ? `<p class="hint">Tocá una entrada para editarla.</p><div class="conf-log" id="conf-log">${log.map(x => confEdit === x.id ? `<div class="conf-edit" data-id="${esc(x.id)}">
+        <textarea id="conf-e-texto" rows="2">${esc(x.texto || '')}</textarea>
+        <span class="k">Qué tan difícil fue</span>
+        <div class="cm-int" id="conf-e-dif">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button type="button" data-d="${n}" aria-pressed="${(confEditDif ?? x.dif) === n}">${n}</button>`).join('')}</div>
+        <div class="row"><label style="flex:1">Fecha<input type="date" id="conf-e-fecha" value="${esc(x.fecha)}"></label></div>
+        <div class="row"><button class="btn small" type="button" id="conf-e-ok">Guardar</button><button class="btn ghost small" type="button" id="conf-e-cancel">Cancelar</button><button type="button" class="del" data-del="${esc(x.id)}">Borrar</button></div></div>`
+      : `<div class="item" data-id="${esc(x.id)}"><span class="d">${esc(dmy(x.fecha))}</span><span class="v conf-tap"><b>${x.dif ?? '?'}/10</b> ${esc(x.texto)}${x.reto ? ' <small>(escalera)</small>' : ''}</span><button type="button" class="del" data-del="${esc(x.id)}" aria-label="Borrar">✕</button></div>`).join('')}</div>` : '<p class="hint">Todavía nada.</p>'}</div>`;
   const t = $('conf-texto'); grow(t); t.addEventListener('input', () => grow(t));
   box.querySelectorAll('#conf-dif button').forEach(b => b.addEventListener('click', () => { confDif = Number(b.dataset.d); box.querySelectorAll('#conf-dif button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
   $('conf-ok').addEventListener('click', async () => {
@@ -3947,7 +3959,21 @@ function renderConf() {
   const addReto = async (texto, dif) => { if (!texto || !S.db) return; try { await S.db.collection('conf_retos').doc('r-' + Date.now().toString(36)).set({ texto, dif, creado: new Date().toISOString() }); } catch (e) { err(e); } };
   $('conf-reto-ok').addEventListener('click', () => { const v = $('conf-reto').value.trim(); if (!v) return; $('conf-reto').value = ''; $('conf-reto').blur(); addReto(v, Number($('conf-reto-dif').value)); });
   box.querySelectorAll('.conf-idea').forEach(b => b.addEventListener('click', () => addReto(b.dataset.t, Number(b.dataset.d))));
-  if ($('conf-log')) wireDel($('conf-log'), id => S.db.collection('conf_log').doc(id).delete());
+  /* borrar: el ✕ no llevaba data-del y wireDel borraba un id vacío (aviso de José 22/11) */
+  if ($('conf-log')) wireDel($('conf-log'), async id => { if (!id) return; try { await S.db.collection('conf_log').doc(id).delete(); if (confEdit === id) { confEdit = null; confEditDif = null; } renderConf(); } catch (e) { err(e); } });
+  /* editar: tocar la entrada abre el formulario en el lugar */
+  box.querySelectorAll('#conf-log .conf-tap').forEach(el => el.addEventListener('click', () => { confEdit = el.closest('.item').dataset.id; confEditDif = null; renderConf(); const ta = $('conf-e-texto'); if (ta) { grow(ta); ta.addEventListener('input', () => grow(ta)); } }));
+  if (confEdit && $('conf-e-ok')) {
+    const ta = $('conf-e-texto'); grow(ta); ta.addEventListener('input', () => grow(ta));
+    box.querySelectorAll('#conf-e-dif button').forEach(b => b.addEventListener('click', () => { confEditDif = Number(b.dataset.d); box.querySelectorAll('#conf-e-dif button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
+    $('conf-e-cancel').addEventListener('click', () => { confEdit = null; confEditDif = null; renderConf(); });
+    $('conf-e-ok').addEventListener('click', async () => {
+      const x = (S.confLog || []).find(y => y.id === confEdit); if (!x) { confEdit = null; renderConf(); return; }
+      const texto = ta.value.trim(); if (!texto) return;
+      const upd = Object.assign({}, x, { texto, dif: confEditDif ?? x.dif, fecha: $('conf-e-fecha').value || x.fecha, mod: new Date().toISOString() }); delete upd.id;
+      try { ta.blur(); await S.db.collection('conf_log').doc(confEdit).set(upd); confEdit = null; confEditDif = null; renderConf(); } catch (e) { err(e); }
+    });
+  }
 }
 
 /* ---------- Comida (desde 22/11): la distribución del día y qué entra en cada categoría, a mano ----------
@@ -3986,7 +4012,7 @@ function renderComida() {
     renderComida();
   }));
 }
-function otherDirty() { const a = document.activeElement; return !!(a && a.closest && a.closest('.panel.conf') && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) || confHice != null; }
+function otherDirty() { const a = document.activeElement; return !!(a && a.closest && a.closest('.panel.conf') && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) || confHice != null || confEdit != null; }
 
 /* ---------- Estilo → Explorar (desde 22/11): tandas de sugerencias que arma Claude en estilo-claude.json (tandas[]),
    para marcar 👍/👎/🤔 con un por qué de una línea. Reacciones en est_tanda {r, porque, mod}, id = id del ítem. */
@@ -4074,7 +4100,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.22-1705';
+const APP_VERSION = '2026.11.22-1958';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !activeTimer && !otherDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
