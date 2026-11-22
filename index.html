@@ -1255,7 +1255,8 @@ Object.assign(PRAC, {
 FIG.cm = '<circle cx="60" cy="50" r="30" fill="none" stroke="var(--line)" stroke-width="2"/><path d="M48 40c0-4 6-4 6 0v14M54 38c0-4 6-4 6 0v16M60 40c0-4 6-4 6 0v14M66 44c0-4 6-4 6 0v10c0 10-6 16-14 16s-12-5-14-12l-3-10c-1-3 4-5 6-2l3 6" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
 CM.forEach(it => { if (!FIG[it.f]) FIG[it.f] = FIG.cm; it.dose = '5 s × 5, cada lado'; });
 PRAC.cadera = { pasos: ['Pies al ancho de los hombros, rodillas apenas flojas, manos en la cintura.', 'Llevá la cadera adelante, a un costado, atrás, al otro costado: un círculo grande y lento.', '10 hacia un lado, 10 hacia el otro.'], sentir: 'Que la cadera y la zona lumbar se aflojan. Sin dolor en la espalda baja.', errores: ['Mover los hombros en vez de la cadera.', 'Círculos chiquitos y rápidos: grandes y lentos.'] };
-FIG.cadera = FIG.circulos;
+/* manos en la cintura, codos afuera, y el círculo marcado en la cadera (antes usaba la figura de círculos de brazos; aviso de José 22/11) */
+FIG.cadera = `${G}<circle class="h" cx="60" cy="16" r="7"/><path class="b" d="M60 24V58M60 58L52 90M60 58L68 90M60 30L42 44L55 56M60 30L78 44L65 56"/><ellipse class="a" cx="60" cy="58" rx="20" ry="6"/>`;
 
 function renderCmHome() {
   const box = $('cm-home'); if (!box) return;
@@ -3535,7 +3536,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.22-1111';
+const APP_VERSION = '2026.11.22-1449';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
