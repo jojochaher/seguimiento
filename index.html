@@ -506,7 +506,69 @@ body:not(.sec-home) #home { display: none !important; }
 body.sec-estilo { --day: var(--ink); --on-day: var(--bg); padding-bottom: 100px; }
 body.sec-estilo .panel:not(.est), body.sec-estilo #sesbar, body.sec-estilo #nav-gym, body.sec-estilo #peso-nudge { display: none !important; }
 body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: none !important; }
-#nav-estilo { grid-template-columns: repeat(3, 1fr); }
+#nav-estilo { grid-template-columns: repeat(4, 1fr); }
+body.sec-conf, body.sec-comida { --day: var(--ink); --on-day: var(--bg); padding-bottom: 40px; }
+body.sec-conf .panel:not(.conf), body.sec-comida .panel:not(.comida), body.sec-conf .dock, body.sec-comida .dock, body.sec-conf #peso-nudge, body.sec-comida #peso-nudge { display: none !important; }
+body:not(.sec-conf) .panel.conf, body:not(.sec-comida) .panel.comida { display: none !important; }
+.st.done { opacity: .55; } .st.done h3::after { content: ' ✓'; color: var(--verde); } .st.skip { opacity: .45; } .st.skip h3 { text-decoration: line-through; }
+.st-mark { display: flex; gap: 8px; margin-top: 4px; }
+.st-mark button { font: inherit; font-size: .78rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.st.done .st-ok { border-color: var(--verde); }
+.cm-card h2 { margin: 2px 0 4px; } .cm-card h3 { margin: 12px 0 4px; font-size: .95rem; } .cm-card p, .cm-card li { font-size: .92rem; }
+.cm-top { display: flex; justify-content: space-between; align-items: center; }
+.cm-tipo { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+.cm-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .86rem; margin: 0 0 6px; }
+.cm-leg i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; background: var(--day); }
+.cm-leg i.x, .body .m.x { background: transparent; }
+.cm-body .m.p { fill: var(--naranja); } .cm-leg i { background: var(--naranja); }
+.body .m.x { fill: var(--muted); fill-opacity: .35; stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.cm-leg i.x { border: 1.5px dashed var(--ink); width: 9px; height: 9px; }
+.cm-reg { display: grid; gap: 6px; margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.cm-reg textarea { width: 100%; }
+.cm-int { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.cm-int button { font: inherit; font-size: .9rem; padding: 8px 0; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.cm-int button[aria-pressed="true"] { background: var(--day); color: var(--on-day); border-color: var(--day); }
+.cm-niv { display: grid; grid-template-columns: repeat(3, 1fr); }
+.cm-niv button { font-size: .8rem; }
+.cm-more summary { cursor: pointer; color: var(--muted); font-size: .88rem; margin-top: 8px; }
+.cm-zch { display: flex; gap: 6px; align-items: center; font-size: .82rem; color: var(--muted); } .cm-zch select { width: auto; font-size: .85rem; padding: 4px 6px; }
+.cm-zona { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin: 8px 0; }
+.cm-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.cm-tabs button { flex: 1 1 auto; font-size: .8rem; }
+.cm-list { display: grid; gap: 6px; }
+.cm-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; }
+.cm-row small { display: block; color: var(--muted); font-size: .8rem; } .cm-row .go { color: var(--muted); }
+.cm-ico .body.mini { width: 64px; height: 67px; }
+.conf-bars { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; align-items: end; height: 110px; margin: 8px 0; }
+.conf-bars .cb { display: grid; grid-template-rows: 1fr auto auto; height: 100%; text-align: center; font-size: .72rem; color: var(--muted); }
+.conf-bars .cb i { align-self: end; display: block; background: var(--ink); border-radius: 4px 4px 0 0; min-height: 2px; }
+.conf-bars .cb span { color: var(--ink); font-weight: 700; }
+.conf-esc { display: grid; gap: 6px; }
+.conf-r { display: grid; grid-template-columns: 32px 1fr auto; gap: 8px; align-items: center; border-top: 1px solid var(--line); padding-top: 6px; }
+.conf-r .ct small { display: block; color: var(--muted); font-size: .78rem; }
+.conf-r .ca { display: grid; gap: 2px; justify-items: end; }
+.conf-hice { grid-column: 1 / -1; display: grid; gap: 4px; }
+.cd { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); font-weight: 700; font-size: .85rem; }
+.conf-ideas { display: grid; gap: 6px; margin-top: 6px; }
+.conf-idea { display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: center; text-align: left; font: inherit; font-size: .88rem; color: var(--ink); background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 6px 8px; }
+.conf-add { margin-top: 8px; } .conf-add input { flex: 1 1 160px; } .conf-new textarea { width: 100%; }
+.conf-rep { margin: 4px 0; padding-left: 18px; font-size: .9rem; }
+.com-hoy { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.com-hoy button { font: inherit; font-size: .88rem; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.com-hoy button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.com-dia .item { grid-template-columns: 1fr; } .com-dia em { font-style: normal; color: var(--muted); font-size: .8rem; }
+.com-dia .v small { display: block; color: var(--muted); }
+.com-l { display: flex; flex-wrap: wrap; gap: 6px; }
+.com-l span { font-size: .88rem; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.com-l span.fav { border-color: var(--ink); font-weight: 600; }
+.tanda { display: grid; gap: 10px; margin-top: 8px; }
+.tanda-it { display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface); }
+.tanda-it img { width: 100%; border-radius: 8px; display: block; }
+.tanda-it small { color: var(--muted); font-size: .86rem; }
+.tanda-ver { justify-self: start; text-decoration: none; }
+.tanda-r { display: flex; gap: 6px; }
+.tanda-r button { font-size: 1.2rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); }
+.tanda-r button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); }
 .panel.est { display: grid; gap: 14px; }
 .est textarea { width: 100%; resize: none; overflow: hidden; font: inherit; font-size: 16px; letter-spacing: 0; text-transform: none; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); line-height: 1.4; min-height: 46px; }
 .est textarea:focus { outline: none; border-color: var(--ink); }
@@ -549,7 +611,9 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
   <section id="home">
     <h1>Seguimiento</h1>
     <button class="homecard" type="button" data-sec="gym"><span class="ic">🏋️</span><span><b>Gym</b><small>Entreno, rutina, progreso y físico</small></span><span class="go">›</span></button>
-    <button class="homecard" type="button" data-sec="estilo"><span class="ic">🪞</span><span><b>Estilo</b><small>Resumen, bitácora y referencias</small></span><span class="go">›</span></button>
+    <button class="homecard" type="button" data-sec="comida"><span class="ic">🍽️</span><span><b>Comida</b><small>El día, qué entra en cada categoría y qué te falta hoy</small></span><span class="go">›</span></button>
+    <button class="homecard" type="button" data-sec="estilo"><span class="ic">🪞</span><span><b>Estilo</b><small>Resumen, explorar, bitácora y referencias</small></span><span class="go">›</span></button>
+    <button class="homecard" type="button" data-sec="confianza"><span class="ic">🧗</span><span><b>Confianza</b><small>Lo que hiciste a pesar de la vergüenza y tu escalera de retos</small></span><span class="go">›</span></button>
   </section>
 
   <div id="notice" class="notice" hidden></div>
@@ -723,6 +787,11 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
     </div>
   </section>
   <!-- ESTILO: resumen que escribe Claude + notas, bitácora y referencias de José -->
+  <section class="panel est" id="p-est-explorar" hidden>
+    <div id="est-explorar" style="display:grid;gap:14px"></div>
+  </section>
+  <section class="panel conf" id="p-conf"><div id="conf-body" style="display:grid;gap:14px"></div></section>
+  <section class="panel comida" id="p-comida"><div id="comida-body" style="display:grid;gap:14px"></div></section>
   <section class="panel est" id="p-est-resumen">
     <div id="est-resumen" style="display:grid;gap:14px"></div>
   </section>
@@ -787,6 +856,7 @@ body:not(.sec-estilo) .panel.est, body:not(.sec-estilo) #nav-estilo { display: n
 </nav>
 <nav class="bottom" id="nav-estilo" role="tablist" aria-label="Estilo">
   <button role="tab" data-est="resumen"><span class="ic">📌</span>Resumen</button>
+  <button role="tab" data-est="explorar"><span class="ic">✨</span>Explorar</button>
   <button role="tab" data-est="bitacora"><span class="ic">📓</span>Bitácora</button>
   <button role="tab" data-est="refs"><span class="ic">🖼</span>Referencias</button>
 </nav>
@@ -861,7 +931,7 @@ const TABS = ['entreno', 'rutina', 'progreso', 'cuerpo', 'fisico', 'claude'];
 const VAPID_PUB = 'BMweOivPGmd674pYDTaLYLVouoZu2k4rM_qQ7AjCLcwayKNgc8hd_14tS0Nrs_7JaTN04-MKa0iTVBNW_IFPq9M';
 const GRUPOS = ['Pectorales', 'Hombros', 'Trapecios', 'Bíceps', 'Espalda', 'Tríceps', 'Piernas', 'Abdominales', 'Espinales', 'Otros'];
 const REST_DEFAULT = { compuesto: 120, aislado: 75 };
-const S = { db: null, ej: [], cat: [], dias: [], ses: [], peso: [], fotos: [], medidas: [], rutinas: [], feedback: [], tab: 'entreno', color: null, rtColor: 'verde', fecha: today(), focus: false, focusIdx: 0, loaded: { ej: false, ses: false, cat: false, dias: false } };
+const S = { db: null, ej: [], cat: [], dias: [], ses: [], peso: [], fotos: [], medidas: [], rutinas: [], feedback: [], cmReg: [], confLog: [], confRetos: [], estTanda: [], tab: 'entreno', color: null, rtColor: 'verde', fecha: today(), focus: false, focusIdx: 0, loaded: { ej: false, ses: false, cat: false, dias: false } };
 const $ = id => document.getElementById(id);
 
 function today() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -1198,6 +1268,11 @@ function pracRender() {
       <p class="hint">Lento y sin apuro. La técnica primero; el peso viene después.</p>`;
     $('prac-prev').disabled = true; $('prac-next').disabled = true; $('prac-body').scrollTop = 0; return;
   }
+  if (it.pasos && it.t && /^cm-/.test(it.f)) {
+    $('prac-pos').textContent = PR.list.length > 1 ? `${PR.i + 1} / ${PR.list.length}` : '';
+    $('prac-body').innerHTML = cmCardHtml(it, today(), false); wireCm($('prac-body'));
+    $('prac-prev').disabled = PR.i === 0; $('prac-next').disabled = PR.i >= PR.list.length - 1; $('prac-body').scrollTop = 0; return;
+  }
   const p = PRAC[it.f] || { pasos: [], errores: [] };
   const fig = FIG[it.f] || FIG.circulos;
   const mus = (it.m || []).map(id => MUSCLES[id] ? MUSCLES[id].n : id).join(' · ');
@@ -1225,54 +1300,349 @@ function renderPracHome() {
   box.querySelectorAll('.prac-item').forEach(b => b.addEventListener('click', () => openPractice(list.find(x => x.f === b.dataset.f), list)));
 }
 renderPracHome();
-/* ---------- control muscular (práctica de domingo) ---------- */
-const CM = [
-  { f: 'cm-transverso', n: 'Vacío abdominal (transverso)', m: ['abdominales'], d: 'El músculo más profundo del abdomen. Es el que distingue "contraer el abdomen" de "meter la panza". Base para separar después recto y oblicuos.' },
-  { f: 'cm-gluteo', n: 'Glúteo, uno por vez', m: ['gluteo'], d: 'El músculo que más gente no sabe contraer a voluntad. Si no lo sentís acá, en hip thrust y peso muerto lo están haciendo los isquios por él.' },
-  { f: 'cm-escapulas', n: 'Escápulas: juntar y bajar', m: ['romboides', 'trapecio'], d: 'Romboides y trapecio inferior. Es la base de la postura que querés corregir y de todos los remos.' },
-  { f: 'cm-dorsal', n: 'Dorsal: "bajar el hombro"', m: ['dorsal'], d: 'El dorsal se contrae llevando el brazo hacia abajo y atrás, no doblando el codo. Si en dominadas y tirones te cansa el bíceps antes que la espalda, es esto.' },
-  { f: 'cm-pectoral', n: 'Pectoral, sin empujar nada', m: ['pectoral'], d: 'Contraer el pecho sin mover los brazos. Es lo que buscás en la pausa de arriba de las aperturas.' },
-  { f: 'cm-abdomen', n: 'Recto vs. oblicuos', m: ['abdominales', 'oblicuos'], d: 'Los cubos no se aíslan de a uno: el recto es un solo músculo. Lo que sí se aprende es separar recto (acercar costillas a cadera) de oblicuos (acortar un costado) y transverso (el vacío).' },
-  { f: 'cm-puente', n: 'Puente: glúteo y no isquios', m: ['gluteo', 'isquios'], d: 'Con una mano en el glúteo y otra en el isquio, aprender a que el puente lo haga el glúteo. Con instrucción táctil la activación del glúteo sube y la del isquio baja (estudios con electromiografía en puente supino).' },
-  { f: 'cm-cuadriceps', n: 'Cuádriceps y vasto interno', m: ['cuadriceps'], d: 'Sentado con la pierna estirada, apretar la rodilla hacia abajo. La "lágrima" de adentro de la rodilla es lo último que se enciende.' },
-  { f: 'cm-posterior', n: 'Deltoides posterior', m: ['deltoides-post'], d: 'El músculo de los vuelos posteriores, que casi nadie siente. Codo atrás sin que el tronco rote ni el trapecio se encoja.' },
-  { f: 'cm-brazos', n: 'Bíceps y tríceps, un lado contra el otro', m: ['biceps', 'triceps'], d: 'Flexionar fuerte un brazo y compararlo con el otro en el espejo. Las diferencias de control entre lados aparecen acá antes que en los pesos.' },
-  { f: 'cm-poses', n: 'Posar: todo junto', m: ['dorsal', 'biceps', 'abdominales', 'cuadriceps'], d: 'Las poses de culturismo son control muscular aplicado: cada una obliga a contraer varios músculos a la vez, a voluntad y sin carga. Tres poses, 10 segundos cada una.' }
+/* ---------- control muscular (domingo), rehecho el 22/11 ----------
+   Foco de José: aislar UN músculo y relajar activamente el resto (Maxick), no "contraer fuerte".
+   Rotación por zonas, un domingo cada una; en cada zona, ejercicios para aislar cada músculo y pares para separar vecinos.
+   Niveles 1 a 3 y registro (nivel, intensidad máxima aislada 1 a 10, nota) en la colección cm_reg (id fecha-f). */
+const CM_ZONAS = [
+  { id: 'brazos', n: 'Brazos' },
+  { id: 'pecho', n: 'Pecho y hombros' },
+  { id: 'espalda', n: 'Espalda y escápulas' },
+  { id: 'abdomen', n: 'Abdomen' },
+  { id: 'piernas', n: 'Piernas y glúteo' }
 ];
-Object.assign(PRAC, {
-  'cm-transverso': { pasos: ['Boca arriba, rodillas flexionadas, una mano sobre el ombligo.', 'Soltá todo el aire por la boca, despacio, hasta el final.', 'Sin volver a inspirar, llevá el ombligo hacia la columna, como si quisieras tocarla desde adentro. Las costillas no se mueven.', 'Sostené 5 segundos, soltá, respirá normal. 5 veces. Después probalo de pie y sentado.'], sentir: 'La mano baja y el abdomen se pone duro pero chato, no abombado. Si se abomba, estás usando el recto.', errores: ['Aguantar la respiración con el pecho inflado: el aire va afuera primero.', 'Empujar la panza hacia afuera (eso es el recto o presión, no el transverso).', 'Apretar los glúteos o las piernas para ayudar.'] },
-  'cm-gluteo': { pasos: ['De pie, una mano sobre cada glúteo.', 'Apretá solo el derecho, 5 segundos. El izquierdo tiene que quedar blando bajo la mano.', 'Soltá del todo. Ahora solo el izquierdo. 5 veces cada lado.', 'Si no sale, boca abajo: estirá la pierna derecha y levantala 5 cm del piso sin arquear la espalda; sentí cuál de los dos glúteos se endurece.'], sentir: 'Que el glúteo se endurece bajo la mano sin que la cadera se incline ni la pierna se mueva. El otro lado, blando.', errores: ['Apretar los dos a la vez (lo más común al principio).', 'Inclinar la pelvis o cerrar los muslos para "ayudar": eso son aductores.', 'Arquear la zona lumbar.'] },
-  'cm-escapulas': { pasos: ['De pie o sentado, brazos colgando. Imaginá que tenés una moneda entre los omóplatos.', 'Juntá los omóplatos como para apretarla, y al mismo tiempo bajalos, como metiéndolos en los bolsillos de atrás.', 'Sostené 5 segundos. Los hombros no suben ni un milímetro.', '5 veces. Después probalo con los brazos adelante a la altura de los hombros (es más difícil).'], sentir: 'Trabajo entre y debajo de los omóplatos. El cuello, suelto.', errores: ['Encoger los hombros hacia las orejas (trapecio superior tomando el mando).', 'Arquear la espalda baja para sacar pecho.', 'Llevar la cabeza hacia adelante.'] },
-  'cm-dorsal': { pasos: ['De pie, brazo derecho colgando. Mano izquierda apoyada en el costado de la espalda, debajo de la axila derecha.', 'Sin doblar el codo, empujá el brazo derecho hacia abajo y un poco hacia atrás, como si quisieras meter la mano en el bolsillo de atrás.', 'Sentí con la mano izquierda cómo se endurece el dorsal. 5 segundos, 5 veces.', 'Cambiá de lado. Después hacelo con los dos brazos adelante, como al final de un tirón.'], sentir: 'Una banda que se tensa desde la axila hacia la cintura. El bíceps no participa.', errores: ['Doblar el codo (eso es bíceps).', 'Encoger el hombro en vez de bajarlo.', 'Rotar el tronco.'] },
-  'cm-pectoral': { pasos: ['De pie, codos semiflexionados, palmas juntas frente al pecho sin hacer fuerza entre ellas.', 'Contraé el pecho como si quisieras acercar los codos entre sí sin moverlos. Mano libre o espejo para verificar.', '5 segundos, soltá. 5 veces. Después un lado solo: brazo derecho contra la pared, contraer el pectoral derecho sin empujar la pared.'], sentir: 'El pectoral se levanta y se endurece; en el espejo se ve. Los hombros quedan abajo y atrás.', errores: ['Empujar las palmas con fuerza (eso recluta todo, no enseña nada).', 'Subir los hombros.', 'Contener la respiración.'] },
-  'cm-abdomen': { pasos: ['Boca arriba, rodillas flexionadas, una mano en el abdomen y otra en un costado.', 'Recto: acercá las costillas a la cadera sin levantar la cabeza del todo (un crunch de 2 cm) y sostené 5 segundos. Mano del medio dura, la del costado blanda.', 'Oblicuo: de pie, acortá el costado derecho como si quisieras llevar las costillas derechas a la cadera derecha, sin inclinarte casi. Mano en el costado: tiene que endurecerse. 5 veces cada lado.', 'Transverso: el vacío (primera práctica). Alterná los tres sin descansar y notá la diferencia.'], sentir: 'Tres sensaciones distintas: franja del medio, costado, y profundo-chato. Si no distinguís el oblicuo, es normal: es el que menos usás.', errores: ['Tirar del cuello con las manos.', 'Inclinarse mucho al costado: eso lo hace el cuadrado lumbar, no el oblicuo.', 'Querer "aislar un cubo": no se puede, el recto se contrae entero.'] },
-  'cm-puente': { pasos: ['Boca arriba, pies apoyados cerca de la cola, una mano en el glúteo y la otra en la parte de atrás del muslo.', 'Antes de subir, apretá los glúteos. Recién después levantá la cadera, empujando con los talones.', 'Arriba 5 segundos: la mano del glúteo tiene que sentir duro, la del isquio relativamente blando.', 'Bajá despacio. 8 veces. Si el isquio se acalambra, apoyá los pies más cerca de la cola.'], sentir: 'El trabajo en los glúteos, no detrás del muslo ni en la espalda baja.', errores: ['Subir demasiado y arquear la lumbar.', 'Pies lejos de la cola (eso carga los isquios).', 'Empujar con las puntas de los pies.'] },
-  'cm-cuadriceps': { pasos: ['Sentado en el piso, piernas estiradas, manos atrás.', 'Apretá la rodilla derecha contra el piso: la rótula sube y el muslo se endurece. 5 segundos.', 'Tocá la parte interna, justo arriba de la rodilla: ahí está el vasto interno. Tiene que ponerse duro también; si no, girá un poco el pie hacia afuera.', '5 veces cada pierna. Después de pie: contraer el cuádriceps sin flexionar la rodilla.'], sentir: 'Toda la cara anterior del muslo dura y la rótula que "sube".', errores: ['Levantar la pierna en vez de apretar.', 'Compensar con el pie (flexionar el tobillo fuerte).'] },
-  'cm-posterior': { pasos: ['De pie, brazo derecho colgando con el codo apenas flexionado. Mano izquierda sobre la parte de atrás del hombro derecho.', 'Llevá el codo derecho hacia atrás 5 cm, como si alguien te tirara del codo. El tronco no gira, el hombro no sube.', 'Sentí con la mano izquierda que se endurece la parte de atrás del hombro. 5 segundos, 5 veces.', 'Cambiá de lado. Después inclinado hacia adelante, los dos brazos, como en vuelos posteriores pero sin peso.'], sentir: 'Un músculo chico atrás del hombro, nada en el trapecio ni en la nuca.', errores: ['Encoger el hombro.', 'Rotar el tronco para "ayudar" al brazo.', 'Mover la muñeca o la mano en vez del codo.'] },
-  'cm-brazos': { pasos: ['Frente al espejo, codo derecho flexionado a 90°, puño cerrado.', 'Contraé el bíceps al máximo sin mover el brazo, 5 segundos. Mirá la forma. Soltá.', 'Ahora estirá el brazo y contraé el tríceps al máximo, 5 segundos. Mirá la parte de atrás.', 'Repetí con el izquierdo. Compará: cuál se marca más, cuál responde más rápido, cuál tiembla.'], sentir: 'Dureza clara en el músculo que elegiste y nada en el opuesto. Un lado suele controlarse peor: ese es el que después hay que mirar en el gym.', errores: ['Apretar el puño tan fuerte que el antebrazo tapa todo.', 'Mover la articulación en vez de contraer.', 'Compararse con otro cuerpo: la comparación es entre tus dos brazos.'] },
-  'cm-poses': { pasos: ['Doble bíceps de frente: brazos arriba en L, contraer bíceps, abdomen y cuádriceps a la vez. 10 segundos.', 'Expansión dorsal de frente: puños en la cintura, codos adelante, "abrir" los dorsales hacia los costados mientras el pecho sube. 10 segundos.', 'Abdominales y muslo: manos detrás de la cabeza, una pierna adelante, soplar el aire y contraer abdomen y cuádriceps. 10 segundos.', 'Las tres, dos vueltas. Entre poses, soltar todo 20 segundos.'], sentir: 'Cansancio raro, de concentración más que de esfuerzo. Es normal temblar.', errores: ['Contener la respiración (respirá corto y seguido).', 'Hacerlo rápido: la pose se construye músculo por músculo.', 'Tomarlo como ejercicio y sumar más vueltas. Es práctica de control, no entrenamiento.'] }
-});
+const CM_NIV = {
+  1: { n: 'Suave', d: 'Contraé al 30 o 40 % con todo lo demás flojo. Si se suma otro músculo, bajá la fuerza hasta que se vaya.' },
+  2: { n: 'Más fuerte', d: 'Subí la intensidad todo lo que puedas sin que entre nada más. Cuando algo se cuela, bajá un poco y sostené ahí.' },
+  3: { n: 'Alternar', d: 'Pasá de este músculo al vecino y volvé, 3 s cada uno y soltando del todo entre medio, sin que se mezclen.' }
+};
+/* t = músculos a contraer, r = músculos que tienen que quedar flojos (ids de MUSCLES o de CM_REG) */
+const CM = [
+  /* brazos */
+  { f: 'cm-biceps', zona: 'brazos', tipo: 'aislar', n: 'Bíceps solo', t: ['biceps'], r: ['triceps', 'pectoral', 'antebrazo'],
+    d: 'Contraer el bíceps con el tríceps, el pecho y la mano flojos.',
+    donde: 'Adelante del brazo, entre el hombro y el codo.',
+    pasos: ['Parado, codo pegado al costado y doblado a 90°, palma hacia abajo, mano floja (sin cerrar el puño).', 'Girá la palma hacia arriba con fuerza, como abriendo un frasco al revés, sin mover el codo de lugar.', 'Con la otra mano tocá el bíceps (duro) y después el tríceps, atrás (tiene que estar blando).', 'Sostené 5 s y soltá del todo. 5 veces, después el otro brazo.'],
+    relajar: 'Tríceps blando bajo la mano. La mano abierta: si apretás el puño se suma el antebrazo. El hombro abajo y el codo quieto al costado: si el brazo va hacia adelante, entra el pecho.',
+    sentir: 'El bíceps se levanta y se endurece con el giro de la palma. Atrás del brazo, nada.',
+    errores: ['Apretar el puño.', 'Llevar el codo hacia adelante (entra el pecho y el hombro).', '"Sacar músculo" sin girar la palma: trabás todo el brazo.'],
+    alt: 'Bíceps 3 s, soltar, tríceps 3 s (brazo estirado hacia atrás), soltar.' },
+  { f: 'cm-triceps', zona: 'brazos', tipo: 'aislar', n: 'Tríceps solo', t: ['triceps'], r: ['biceps', 'pectoral', 'antebrazo'],
+    d: 'Contraer el tríceps sin que se sumen el bíceps ni el pecho.',
+    donde: 'Atrás del brazo, del hombro al codo. Es dos tercios del brazo.',
+    pasos: ['Parado, brazo estirado al costado y un poco por detrás del cuerpo. Mano abierta y floja.', 'Empujá la mano hacia abajo y hacia atrás, como si te apoyaras en una mesa que está a tu costado.', 'Con la otra mano tocá atrás del brazo (duro) y adelante (blando).', '5 s, soltá. 5 veces por brazo.'],
+    relajar: 'Bíceps blando. Pecho suelto: con el brazo atrás del cuerpo el pecho no tiene cómo ayudar; si se endurece, estás llevando el brazo hacia adentro.',
+    sentir: 'La herradura de atrás del brazo dura, hasta cerca del hombro.',
+    errores: ['Llevar el brazo hacia adentro o adelante (entra el pecho).', 'Trabar el codo de golpe.', 'Encoger el hombro.'],
+    alt: 'Tríceps 3 s, soltar, bíceps 3 s (codo a 90°, girando la palma), soltar.' },
+  { f: 'cm-biceps-pecho', zona: 'brazos', tipo: 'separar', n: 'Separar bíceps del pecho', t: ['biceps'], r: ['pectoral'],
+    d: 'Lo que hoy te sale suave pero se mezcla cuando hacés fuerza.',
+    donde: 'Bíceps adelante del brazo; pecho abajo de la clavícula.',
+    pasos: ['Mano izquierda apoyada sobre el pecho derecho.', 'Brazo derecho: codo pegado al costado, a 90°.', 'Girá la palma hacia arriba y contraé el bíceps, empezando suave. El pecho bajo la mano no se mueve.', 'Subí la fuerza de a poco. En el momento en que el pecho se endurece, bajá un poco y sostené ahí 5 s. 5 veces por lado.'],
+    relajar: 'El pecho. Se suma cuando el brazo va hacia adelante o hacia adentro: el codo queda clavado al costado, un poco hacia atrás si hace falta.',
+    sentir: 'Bíceps duro, pecho blando bajo la mano.',
+    errores: ['Juntar los codos adelante.', 'Sacar pecho para "ayudar".'],
+    alt: 'Bíceps 3 s, soltar, pecho 3 s (codo quieto, apretar como acercando el codo al ombligo), soltar.' },
+  { f: 'cm-triceps-pecho', zona: 'brazos', tipo: 'separar', n: 'Separar tríceps del pecho', t: ['triceps'], r: ['pectoral'],
+    d: 'Hoy cuando contraés el tríceps se te prende el pecho solo. Es por la posición del brazo.',
+    donde: 'Tríceps atrás del brazo; pecho abajo de la clavícula.',
+    pasos: ['Mano izquierda sobre el pecho derecho.', 'Brazo derecho estirado y llevado un poco hacia atrás del cuerpo, nunca hacia adelante.', 'Empujá la mano hacia atrás, como cerrando un cajón con el dorso. Empezá suave.', 'Si el pecho se mueve, llevá el brazo más atrás. 5 s, 5 veces por lado.'],
+    relajar: 'El pecho. Con el brazo detrás del cuerpo el pecho no puede trabajar: si igual se endurece, estás empujando hacia adentro, no hacia atrás.',
+    sentir: 'Tríceps duro, pecho blando bajo la mano.',
+    errores: ['Empujar hacia abajo y adentro (es el movimiento del pecho).', 'Encoger el hombro.'],
+    alt: 'Tríceps 3 s, soltar, pecho 3 s, soltar.' },
+  { f: 'cm-brazo-alternar', zona: 'brazos', tipo: 'separar', n: 'Bíceps ↔ tríceps', t: ['biceps', 'triceps'], r: ['pectoral', 'antebrazo'],
+    d: 'Son opuestos: cuando "sacás músculo" sin moverte se contraen los dos para trabar el codo. Acá se aprende a pasar de uno al otro.',
+    donde: 'Bíceps adelante, tríceps atrás del brazo.',
+    pasos: ['Codo a 90° al costado, mano floja.', 'Bíceps: girá la palma hacia arriba, 3 s. Tocá atrás: blando.', 'Soltá todo 2 s.', 'Tríceps: estirá apenas el codo empujando la mano hacia atrás, 3 s. Tocá adelante: blando. 5 vueltas por brazo.'],
+    relajar: 'El que no toca, totalmente blando. Si los dos están duros, estás trabando el codo: soltá y empezá más suave.',
+    sentir: 'Que la dureza "salta" de adelante hacia atrás del brazo.',
+    errores: ['Apretar el puño.', 'Ir rápido: el cambio se aprende lento.'],
+    alt: 'Hacé el cambio sin soltar entre medio: de bíceps directo a tríceps.' },
+  /* pecho y hombros */
+  { f: 'cm-pectoral', zona: 'pecho', tipo: 'aislar', n: 'Pectoral solo', t: ['pectoral'], r: ['deltoides', 'biceps', 'trap-sup'],
+    d: 'Contraer el pecho sin empujar nada y sin que se suba el hombro.',
+    donde: 'Debajo de la clavícula, del esternón hasta el frente del hombro.',
+    pasos: ['Parado, hombros abajo y atrás, palmas juntas frente al pecho sin hacer fuerza entre ellas.', 'Pensá en acercar los codos entre sí sin moverlos. Empezá suave.', 'Mirá en el espejo cómo se levanta el pecho. 5 s, soltá.', '5 veces. Después un lado solo, con la otra mano sobre ese pecho.'],
+    relajar: 'Hombros: abajo, lejos de las orejas. Brazos: no empujar las palmas (si empujás, se suma todo).',
+    sentir: 'El pecho se endurece y sube. El frente del hombro, poco o nada.',
+    errores: ['Empujar las palmas con fuerza.', 'Subir los hombros.', 'Contener la respiración.'],
+    alt: 'Pecho 3 s, soltar, deltoides anterior 3 s (subir el brazo 5 cm hacia adelante sin apretar el pecho), soltar.' },
+  { f: 'cm-deltoides-lat', zona: 'pecho', tipo: 'aislar', n: 'Deltoides lateral', t: ['deltoides'], r: ['trap-sup', 'pectoral'],
+    d: 'El músculo de los vuelos laterales. El que más se confunde con el trapecio de arriba.',
+    donde: 'La parte de afuera del hombro, la "pelota" del costado.',
+    pasos: ['Parado, brazo colgando, codo apenas doblado. Mano libre sobre el costado del hombro.', 'Separá el brazo del cuerpo 10 cm, como llevando el codo hacia la pared de al lado.', 'El hombro no sube: el cuello queda largo.', '5 s, 5 veces por lado.'],
+    relajar: 'El trapecio de arriba (entre el cuello y el hombro). Si se endurece, estás encogiendo: bajá el hombro y separá menos.',
+    sentir: 'Duro el costado del hombro bajo la mano; el cuello suelto.',
+    errores: ['Encoger el hombro.', 'Levantar con la mano en vez del codo.', 'Inclinar el tronco.'],
+    alt: 'Deltoides 3 s, soltar, trapecio de arriba 3 s (encoger), soltar. Para notar la diferencia.' },
+  { f: 'cm-posterior', zona: 'pecho', tipo: 'aislar', n: 'Deltoides posterior', t: ['deltoides-post'], r: ['trap-sup', 'romboides'],
+    d: 'El músculo de los vuelos posteriores, que casi nadie siente. Suma a la postura.',
+    donde: 'La parte de atrás del hombro.',
+    pasos: ['Parado, brazo derecho colgando con el codo apenas doblado. Mano izquierda sobre la parte de atrás del hombro derecho.', 'Llevá el codo 5 cm hacia atrás, como si alguien te tirara del codo. El tronco no gira y el hombro no sube.', '5 s, 5 veces. Cambiá de lado.', 'Después inclinado hacia adelante, los dos brazos, como en vuelos posteriores sin peso.'],
+    relajar: 'El trapecio de arriba y el cuello. Los omóplatos no se juntan del todo: si se juntan fuerte, trabajan los romboides.',
+    sentir: 'Un músculo chico atrás del hombro.',
+    errores: ['Encoger el hombro.', 'Rotar el tronco.', 'Mover la mano en vez del codo.'],
+    alt: 'Posterior 3 s, soltar, romboides 3 s (juntar omóplatos sin mover el brazo), soltar.' },
+  { f: 'cm-pecho-hombro', zona: 'pecho', tipo: 'separar', n: 'Separar pecho de hombro', t: ['pectoral'], r: ['deltoides'],
+    d: 'En press y aperturas el frente del hombro le roba trabajo al pecho. Acá se aprende a que no.',
+    donde: 'Pecho debajo de la clavícula; deltoides anterior en el frente del hombro.',
+    pasos: ['Mano izquierda sobre el frente del hombro derecho.', 'Brazo derecho al costado, codo doblado, antebrazo adelante.', 'Apretá el pecho llevando el codo hacia el ombligo (adentro y abajo), no hacia adelante.', 'El frente del hombro bajo la mano no se endurece. 5 s, 5 veces por lado.'],
+    relajar: 'El frente del hombro. Se suma si el brazo sube o va hacia adelante: el codo va hacia adentro y abajo.',
+    sentir: 'Pecho duro, frente del hombro blando.',
+    errores: ['Subir el brazo.', 'Hombro adelante (dejarlo atrás y abajo).'],
+    alt: 'Pecho 3 s (codo al ombligo), soltar, hombro 3 s (codo hacia adelante y arriba), soltar.' },
+  /* espalda y escápulas */
+  { f: 'cm-trap-sup', zona: 'espalda', tipo: 'aislar', n: 'Trapecio de arriba: prender y apagar', t: ['trap-sup'], r: [],
+    d: 'El que se mete en todo cuando no debería. Primero hay que sentirlo para después saber apagarlo.',
+    donde: 'Entre el cuello y la punta del hombro.',
+    pasos: ['Parado, brazos colgando.', 'Encogé los hombros hacia las orejas, 3 s.', 'Soltá y dejalos caer todo lo que puedan, como si te sacaras una mochila pesada. Quedate 5 s sintiéndolos pesados.', '5 veces. La parte importante es la segunda: soltar.'],
+    relajar: 'Al soltar, el cuello tiene que quedar largo y blando. Si no baja del todo, respirá y soltá en la exhalación.',
+    sentir: 'Al encoger, duro arriba del hombro. Al soltar, peso.',
+    errores: ['Soltar a medias.', 'Llevar la cabeza adelante.'],
+    alt: 'Encoger 3 s, soltar, bajar (trapecio de abajo) 3 s, soltar.' },
+  { f: 'cm-trap-inf', zona: 'espalda', tipo: 'aislar', n: 'Trapecio de abajo: bajar', t: ['trap-inf'], r: ['trap-sup'],
+    d: 'Casi el centro de tu postura: pecho bajo y hombros adelante tienen mucho que ver con un trapecio de abajo que no se activa.',
+    donde: 'La parte de abajo del trapecio, con forma de V: arranca en el borde de adentro de cada omóplato y baja en diagonal hacia el centro de la columna, a mitad de la espalda. Abajo y entre los omóplatos, no cerca del cuello.',
+    pasos: ['Parado, brazos colgando, sin moverlos.', 'Llevá los omóplatos hacia abajo y hacia adentro, como metiéndolos en los bolsillos de atrás del pantalón.', 'Sostené 5 s. Soltá. 5 veces.', 'Si no lo sentís: boca abajo, brazos en Y con los pulgares para arriba. Primero bajá los omóplatos y recién después levantá los brazos 2 cm.'],
+    relajar: 'El trapecio de arriba y el cuello. Si se te suben los hombros o se tensa el cuello, es el de arriba haciendo el trabajo.',
+    sentir: 'Abajo y entre los omóplatos. El cuello suelto.',
+    errores: ['Encoger.', 'Arquear la espalda baja para sacar pecho.', 'Mover los brazos.'],
+    alt: 'Bajar 3 s, soltar, encoger 3 s, soltar.' },
+  { f: 'cm-romboides', zona: 'espalda', tipo: 'aislar', n: 'Romboides: juntar', t: ['romboides'], r: ['trap-sup', 'pectoral'],
+    d: 'Juntar los omóplatos sin subirlos ni bajarlos. Base de todos los remos.',
+    donde: 'Entre los omóplatos, a la altura del medio de la espalda alta.',
+    pasos: ['Parado, brazos colgando. Imaginá una moneda entre los omóplatos.', 'Juntá los omóplatos para apretarla. Ni para arriba ni para abajo: solo hacia el centro.', '5 s, soltá. 5 veces.', 'Después con los brazos adelante a la altura de los hombros (más difícil).'],
+    relajar: 'Hombros sin subir. El pecho no se infla: no es sacar pecho, es juntar atrás.',
+    sentir: 'Una banda dura entre los omóplatos.',
+    errores: ['Encoger.', 'Arquear la espalda baja.', 'Llevar la cabeza adelante.'],
+    alt: 'Juntar 3 s, soltar, bajar 3 s, soltar.' },
+  { f: 'cm-dorsal', zona: 'espalda', tipo: 'aislar', n: 'Dorsal: "bajar el hombro"', t: ['dorsal'], r: ['biceps', 'trap-sup'],
+    d: 'El dorsal baja el brazo, no dobla el codo. Si en dominadas te cansa el bíceps antes que la espalda, es esto.',
+    donde: 'El costado de la espalda, de la axila hacia la cintura.',
+    pasos: ['Parado, brazo derecho colgando. Mano izquierda debajo de la axila derecha, en el costado de la espalda.', 'Sin doblar el codo, empujá el brazo hacia abajo y un poco atrás, como metiendo la mano en el bolsillo de atrás.', '5 s, 5 veces. Cambiá de lado.', 'Después los dos brazos adelante, como al final de un tirón.'],
+    relajar: 'Bíceps: el codo no se dobla. Hombro: no sube.',
+    sentir: 'Una banda que se tensa desde la axila hacia la cintura.',
+    errores: ['Doblar el codo.', 'Encoger el hombro.', 'Rotar el tronco.'],
+    alt: 'Dorsal 3 s, soltar, bíceps 3 s, soltar.' },
+  { f: 'cm-trap-separar', zona: 'espalda', tipo: 'separar', n: 'Separar trapecio de arriba y de abajo', t: ['trap-inf'], r: ['trap-sup'],
+    d: 'Es lo que querés que pase sin pensarlo en cada remo y cada dominada: bajar sin encoger.',
+    donde: 'Arriba: entre cuello y hombro. Abajo: la V entre los omóplatos.',
+    pasos: ['Brazos adelante a la altura de los hombros (más difícil que colgando).', 'Bajá los omóplatos sin bajar los brazos. 3 s.', 'Soltá. Encogé 3 s. Soltá.', '5 vueltas. Después repetí solo el "bajar" con los brazos arriba de la cabeza, como en una dominada.'],
+    relajar: 'Cuando bajás, el de arriba blando. Cuando encogés, notá la diferencia: es otro músculo.',
+    sentir: 'Dos lugares distintos que se prenden y se apagan.',
+    errores: ['Mover los brazos en vez de los omóplatos.', 'Arquear la espalda.'],
+    alt: 'Bajar con los brazos arriba de la cabeza, sostener 5 s sin que suban los hombros.' },
+  /* abdomen */
+  { f: 'cm-transverso', zona: 'abdomen', tipo: 'aislar', n: 'Transverso (el vacío)', t: ['abdominales'], r: ['gluteo'],
+    d: 'El músculo más profundo del abdomen. Distingue "contraer el abdomen" de "meter la panza".',
+    donde: 'Por debajo de los otros abdominales, como una faja alrededor de la cintura.',
+    pasos: ['Boca arriba, rodillas flexionadas, una mano sobre el ombligo.', 'Soltá todo el aire por la boca, despacio, hasta el final.', 'Sin volver a inspirar, llevá el ombligo hacia la columna. Las costillas no se mueven.', 'Sostené 5 s, soltá, respirá normal. 5 veces.'],
+    relajar: 'Glúteos y piernas flojos. El recto no empuja hacia afuera: el abdomen queda duro pero chato.',
+    sentir: 'Duro y chato, no abombado.',
+    errores: ['Aguantar con el pecho inflado.', 'Empujar la panza hacia afuera.', 'Apretar glúteos.'],
+    alt: 'Vacío 3 s, soltar, recto 3 s (crunch de 2 cm), soltar.' },
+  { f: 'cm-recto', zona: 'abdomen', tipo: 'aislar', n: 'Recto solo', t: ['abdominales'], r: ['oblicuos', 'cuello'],
+    d: 'La franja del medio. Los cubos no se aíslan de a uno: el recto es un solo músculo.',
+    donde: 'El centro del abdomen, del esternón al pubis.',
+    pasos: ['Boca arriba, rodillas flexionadas, una mano en el centro del abdomen y otra en un costado.', 'Acercá las costillas a la cadera, despegando apenas los hombros (un crunch de 2 cm).', 'Mano del medio dura, la del costado lo más blanda posible.', '5 s, 5 veces.'],
+    relajar: 'Cuello: la cabeza acompaña, no tira. Costados lo más flojos que puedas.',
+    sentir: 'La franja del medio dura.',
+    errores: ['Tirar del cuello.', 'Subir mucho: es un movimiento chico.'],
+    alt: 'Recto 3 s, soltar, oblicuo derecho 3 s, soltar.' },
+  { f: 'cm-oblicuo', zona: 'abdomen', tipo: 'aislar', n: 'Oblicuo, de un lado', t: ['oblicuos'], r: ['abdominales'],
+    d: 'El que menos usás. Todo boca arriba, sin levantarte.',
+    donde: 'El costado del abdomen, entre las costillas y la cadera.',
+    pasos: ['Boca arriba, rodillas flexionadas, hombros apoyados o apenas despegados.', 'Deslizá la mano derecha por el costado del muslo hacia el talón, acortando el costado derecho. Pocos centímetros.', 'La otra mano en el costado derecho: tiene que endurecerse.', 'Sostené 5 s, lento. 5 veces de cada lado.'],
+    relajar: 'El recto: hombros casi apoyados, así la franja del medio trabaja lo menos posible. El cuello suelto.',
+    sentir: 'El costado duro bajo la mano.',
+    errores: ['Ir rápido de lado a lado (el impulso hace el trabajo).', 'Levantar la cabeza.', 'Inclinarse mucho: eso lo hace la zona lumbar.'],
+    alt: 'Oblicuo derecho 3 s, soltar, izquierdo 3 s, soltar.' },
+  { f: 'cm-abdomen', zona: 'abdomen', tipo: 'separar', n: 'Recto, oblicuo y transverso', t: ['abdominales', 'oblicuos'], r: [],
+    d: 'Los tres, uno detrás del otro, todo boca arriba.',
+    donde: 'Recto: franja del medio. Oblicuo: costado. Transverso: profundo.',
+    pasos: ['Boca arriba, rodillas flexionadas, una mano en el centro y otra en un costado.', 'Recto: crunch de 2 cm, 3 s. Soltá.', 'Oblicuo: deslizá la mano hacia el talón de ese lado, 3 s. Soltá.', 'Transverso: aire afuera y ombligo a la columna, 3 s. Soltá. 5 vueltas.'],
+    relajar: 'Entre uno y otro, todo flojo 2 s.',
+    sentir: 'Tres sensaciones distintas: franja del medio, costado, profundo y chato.',
+    errores: ['No soltar entre uno y otro.', 'Tirar del cuello.'],
+    alt: 'Sin soltar entre medio.' },
+  /* piernas y glúteo */
+  { f: 'cm-gluteo', zona: 'piernas', tipo: 'aislar', n: 'Glúteo, uno por vez', t: ['gluteo'], r: ['isquios', 'lumbar', 'aductores'],
+    d: 'Si no lo sentís acá, en hip thrust y peso muerto lo están haciendo los isquios.',
+    donde: 'La cola.',
+    pasos: ['Parado, una mano sobre cada glúteo.', 'Apretá solo el derecho. El izquierdo blando bajo la mano.', '5 s, soltá del todo. Después el izquierdo. 5 veces cada lado.', 'Si no sale: boca abajo, pierna estirada, levantala 5 cm sin arquear la espalda.'],
+    relajar: 'El otro glúteo, los muslos (no cerrarlos: eso son aductores) y la zona lumbar.',
+    sentir: 'Uno duro y el otro blando.',
+    errores: ['Apretar los dos.', 'Inclinar la pelvis.', 'Cerrar los muslos.'],
+    alt: 'Derecho 3 s, soltar, izquierdo 3 s, soltar.' },
+  { f: 'cm-cuadriceps', zona: 'piernas', tipo: 'aislar', n: 'Cuádriceps y vasto interno', t: ['cuadriceps'], r: ['gemelos', 'flexores'],
+    d: 'La "lágrima" de adentro de la rodilla es lo último que se enciende.',
+    donde: 'El frente del muslo. El vasto interno, justo arriba y adentro de la rodilla.',
+    pasos: ['Sentado en el piso, piernas estiradas, manos atrás.', 'Apretá la rodilla derecha contra el piso: la rótula sube y el muslo se endurece.', 'Tocá arriba y adentro de la rodilla: también tiene que ponerse duro.', '5 s, 5 veces por pierna.'],
+    relajar: 'Pantorrilla y pie: no flexionar fuerte el tobillo. No levantar la pierna (eso es flexor de cadera).',
+    sentir: 'Todo el frente del muslo duro y la rótula que "sube".',
+    errores: ['Levantar la pierna.', 'Compensar con el pie.'],
+    alt: 'Cuádriceps 3 s, soltar, isquio 3 s (talón contra el piso hacia la cola), soltar.' },
+  { f: 'cm-isquios', zona: 'piernas', tipo: 'aislar', n: 'Isquios sin glúteo', t: ['isquios'], r: ['gluteo', 'gemelos'],
+    d: 'Atrás del muslo, sin que la cola haga el trabajo.',
+    donde: 'La parte de atrás del muslo, de la cola a la rodilla.',
+    pasos: ['Boca abajo, rodilla derecha doblada a 30°.', 'Empujá el talón hacia la cola sin moverlo (contra la otra pierna o el aire).', 'Mano en el glúteo derecho: tiene que quedar lo más blando posible.', '5 s, 5 veces por pierna.'],
+    relajar: 'El glúteo. La cadera no se despega del piso. Pie flojo: si estirás la punta, entra la pantorrilla.',
+    sentir: 'Atrás del muslo, no en la cola.',
+    errores: ['Despegar la cadera.', 'Apretar el glúteo.', 'Acalambrarse: soltá y bajá la fuerza.'],
+    alt: 'Isquio 3 s, soltar, glúteo 3 s, soltar.' },
+  { f: 'cm-puente', zona: 'piernas', tipo: 'separar', n: 'Puente: glúteo y no isquios', t: ['gluteo'], r: ['isquios', 'lumbar'],
+    d: 'Con una mano en el glúteo y otra en el isquio, aprender a que el puente lo haga el glúteo.',
+    donde: 'Glúteo: la cola. Isquio: atrás del muslo.',
+    pasos: ['Boca arriba, pies cerca de la cola, una mano en el glúteo y otra atrás del muslo.', 'Antes de subir, apretá los glúteos. Recién después levantá la cadera empujando con los talones.', 'Arriba 5 s: glúteo duro, isquio relativamente blando.', 'Bajá despacio. 8 veces.'],
+    relajar: 'Isquios y zona lumbar. Si el isquio se acalambra, pies más cerca de la cola.',
+    sentir: 'El trabajo en la cola, no atrás del muslo ni en la espalda baja.',
+    errores: ['Subir demasiado y arquear la lumbar.', 'Pies lejos de la cola.'],
+    alt: 'Arriba del puente: glúteo 3 s, aflojar el glúteo y sostener con isquio 3 s.' }
+];
+/* repaso: el último domingo del ciclo (zona de piernas), corto, al final */
+const CM_REPASO = { f: 'cm-repaso', zona: 'repaso', tipo: 'separar', n: 'Repaso del ciclo: de un músculo a otro', t: ['biceps', 'triceps', 'pectoral', 'dorsal', 'abdominales', 'gluteo', 'cuadriceps'], r: [],
+  d: 'Todo lo del ciclo, en fila. No es posar: es pasar de un músculo al otro sin que se arrastren los vecinos.',
+  donde: 'Todo el cuerpo.',
+  pasos: ['De pie frente al espejo.', 'Bíceps derecho 3 s, soltar. Tríceps derecho 3 s, soltar. Igual el izquierdo.', 'Pecho 3 s, soltar. Dorsales (bajar los hombros) 3 s, soltar. Trapecio de abajo 3 s, soltar.', 'Recto 3 s, soltar. Glúteo derecho, izquierdo. Cuádriceps derecho, izquierdo.', 'Si te queda resto: doble bíceps de frente, 10 s, sumando abdomen y cuádriceps. Una sola vez.'],
+  relajar: 'Entre uno y otro, todo flojo. El objetivo es que cada uno se prenda solo.',
+  sentir: 'Cuáles salen limpios y cuáles se arrastran a otros: esos van primero en el próximo ciclo.',
+  errores: ['Ir rápido.', 'Contener la respiración.'],
+  alt: '' };
+const CM_ALL = CM.concat([CM_REPASO]);
+/* regiones extra del dibujo (no están en MUSCLES): partes del trapecio */
+const CM_REG = {
+  'trap-sup': ['b', 'M100 56 C116 58 130 64 140 70 C128 74 114 74 100 70 Z M100 56 C84 58 70 64 60 70 C72 74 86 74 100 70 Z', 'Trapecio de arriba'],
+  'trap-inf': ['b', 'M100 168 C98 150 94 126 82 94 L90 92 C96 110 99 130 100 140 Z M100 168 C102 150 106 126 118 94 L110 92 C104 110 101 130 100 140 Z', 'Trapecio de abajo']
+};
+function cmMusName(id) { return CM_REG[id] ? CM_REG[id][2] : MUSCLES[id] ? MUSCLES[id].n : id; }
+function cmBody(it) {
+  const t = it.t || [], r = it.r || [];
+  const cls = id => t.includes(id) ? ' p' : r.includes(id) ? ' x' : '';
+  const extra = side => Object.entries(CM_REG).filter(([id, [s]]) => s === side && (t.includes(id) || r.includes(id))).map(([id, [, d]]) => `<path class="m${cls(id)}" d="${d}"/>`).join('');
+  const view = (parts, side) => `<g class="sil">${SIL}</g>${parts.map(([id, d]) => `<path class="m${cls(id)}" d="${d}"/>`).join('')}${extra(side)}`;
+  return `<svg class="body mini cm-body" viewBox="0 0 400 420" aria-hidden="true">${view(FRONT, 'f')}<g transform="translate(200 0)">${view(BACK, 'b')}</g></svg>`;
+}
 FIG.cm = '<circle cx="60" cy="50" r="30" fill="none" stroke="var(--line)" stroke-width="2"/><path d="M48 40c0-4 6-4 6 0v14M54 38c0-4 6-4 6 0v16M60 40c0-4 6-4 6 0v14M66 44c0-4 6-4 6 0v10c0 10-6 16-14 16s-12-5-14-12l-3-10c-1-3 4-5 6-2l3 6" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
-CM.forEach(it => { if (!FIG[it.f]) FIG[it.f] = FIG.cm; it.dose = '5 s × 5, cada lado'; });
+CM_ALL.forEach(it => { it.dose = it.tipo === 'separar' ? '5 vueltas por lado' : '5 s × 5, cada lado'; if (!FIG[it.f]) FIG[it.f] = FIG.cm; });
+/* rotación: la zona sigue a la última que tiene registro; el mismo día se queda; se puede cambiar a mano (seg-cmzona) */
+function nextSunday(f) { const d = new Date((f || today()) + 'T12:00:00'); const add = (7 - d.getDay()) % 7; d.setDate(d.getDate() + add); return d.toISOString().slice(0, 10); }
+function cmZonaHoy(fecha) {
+  fecha = fecha || today();
+  let man = null; try { man = JSON.parse(localStorage.getItem('seg-cmzona') || 'null'); } catch (e) {}
+  if (man && man.fecha === fecha && CM_ZONAS.some(z => z.id === man.z)) return man.z;
+  const regs = (S.cmReg || []).filter(r => r.zona && r.zona !== 'repaso' && r.fecha <= fecha).sort((a, b) => a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : String(a.mod || '') < String(b.mod || '') ? -1 : 1);
+  const last = regs[regs.length - 1]; if (!last) return CM_ZONAS[0].id;
+  if (last.fecha === fecha) return last.zona;
+  const i = CM_ZONAS.findIndex(z => z.id === last.zona); return CM_ZONAS[(i + 1) % CM_ZONAS.length].id;
+}
+function cmZonaName(z) { return (CM_ZONAS.find(x => x.id === z) || { n: z }).n; }
+function cmItemsOf(z) { const l = CM.filter(x => x.zona === z); return z === CM_ZONAS[CM_ZONAS.length - 1].id ? l.concat([CM_REPASO]) : l; }
+function cmRegs(f) { return (S.cmReg || []).filter(r => r.f === f).sort((a, b) => a.fecha < b.fecha ? -1 : 1); }
+function cmRegOf(f, fecha) { return (S.cmReg || []).find(r => r.id === fecha + '-' + f) || null; }
+/* nivel sugerido: el de la última vez; sube si las dos últimas en ese nivel llegaron a 7 o más */
+function cmSug(f, fecha) {
+  const regs = cmRegs(f).filter(r => r.fecha < fecha && r.int != null);
+  const last = regs[regs.length - 1]; if (!last) return { niv: 1, txt: 'Primera vez: arrancá en nivel 1.' };
+  const lv = last.nivel || 1, same = regs.filter(r => (r.nivel || 1) === lv).slice(-2);
+  const up = lv < 3 && same.length === 2 && same.every(r => r.int >= 7);
+  return { niv: up ? lv + 1 : lv, last, txt: `Última: nivel ${lv} · ${last.int}/10 · ${dmy(last.fecha)}.` + (up ? ` Las dos últimas llegaste a 7 o más: probá el nivel ${lv + 1}.` : '') };
+}
+function cmCardHtml(it, fecha, big) {
+  const reg = cmRegOf(it.f, fecha), sug = cmSug(it.f, fecha), niv = (reg && reg.nivel) || sug.niv;
+  const tn = (it.t || []).map(cmMusName).join(', '), rn = (it.r || []).map(cmMusName).join(', ');
+  const nivTxt = niv === 3 && it.alt ? CM_NIV[3].d + ' Acá: ' + it.alt : CM_NIV[niv].d;
+  return `<div class="box cm-card${big ? ' fs-st' : ''}" data-cm="${esc(it.f)}" data-fecha="${esc(fecha)}">
+    <div class="cm-top"><span class="k">${it.zona === 'repaso' ? 'Repaso del ciclo' : esc(cmZonaName(it.zona))}</span><span class="cm-tipo">${it.tipo === 'separar' ? 'Separar' : 'Aislar'}</span></div>
+    <h2>${esc(it.n)}</h2>
+    <div class="prac-mini">${cmBody(it)}</div>
+    <p class="cm-leg"><span><i class="p"></i>Contraer: <b>${esc(tn)}</b></span>${rn ? `<span><i class="x"></i>Flojo: ${esc(rn)}</span>` : ''}</p>
+    <p>${esc(it.d)}</p>
+    <h3>Dónde está</h3><p>${esc(it.donde)}</p>
+    <h3>Cómo</h3><ol>${it.pasos.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+    ${it.relajar ? `<h3>Qué tiene que quedar flojo</h3><p>${esc(it.relajar)}</p>` : ''}
+    <details class="cm-more"><summary>Qué sentir y errores</summary><p>${esc(it.sentir || '')}</p>${(it.errores || []).length ? `<ul>${it.errores.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</details>
+    <div class="cm-reg">
+      <span class="k">Nivel</span>
+      <div class="seg cm-niv">${[1, 2, 3].map(n => `<button type="button" data-niv="${n}" aria-pressed="${n === niv}">${n} · ${CM_NIV[n].n}</button>`).join('')}</div>
+      <p class="hint cm-nivtxt">${esc(nivTxt)}</p>
+      <span class="k">Intensidad máxima aislada</span>
+      <div class="cm-int">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button type="button" data-int="${n}" aria-pressed="${!!reg && reg.int === n}">${n}</button>`).join('')}</div>
+      <p class="hint">Hasta qué fuerza llegaste sin que se sumara otro músculo. 10 = a tope y limpio.</p>
+      <textarea data-cm-nota rows="2" placeholder="Nota: qué se coló, qué lado cuesta más">${esc((reg && reg.nota) || '')}</textarea>
+      <p class="hint cm-last">${reg && reg.int != null ? '<b>Anotado ✓</b> · ' : ''}${esc(sug.txt)}</p>
+    </div>
+  </div>`;
+}
+const cmNotaT = {};
+async function cmSave(root, patch) {
+  if (!S.db) return;
+  const f = root.dataset.cm, fecha = root.dataset.fecha, it = CM_ALL.find(x => x.f === f); if (!it) return;
+  const prev = cmRegOf(f, fecha) || {}, sel = root.querySelector('.cm-niv [aria-pressed="true"]');
+  const body = Object.assign({ fecha, f, zona: it.zona, nivel: sel ? Number(sel.dataset.niv) : 1 }, prev, patch, { mod: new Date().toISOString() });
+  delete body.id;
+  const id = fecha + '-' + f;
+  const i = (S.cmReg || []).findIndex(r => r.id === id); const loc = Object.assign({ id }, body);
+  S.cmReg = S.cmReg || []; if (i >= 0) S.cmReg[i] = loc; else S.cmReg.push(loc);
+  try { await S.db.collection('cm_reg').doc(id).set(body); } catch (e) { err(e); }
+  const l = root.querySelector('.cm-last'); if (l && body.int != null) l.innerHTML = '<b>Anotado ✓</b> · ' + esc(cmSug(f, fecha).txt);
+  if (S.focus) fsStrip();
+}
+function wireCm(root) {
+  root.querySelectorAll('.cm-card').forEach(card => {
+    const f = card.dataset.cm, it = CM_ALL.find(x => x.f === f);
+    card.querySelectorAll('.cm-niv button').forEach(b => b.addEventListener('click', () => {
+      card.querySelectorAll('.cm-niv button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      const n = Number(b.dataset.niv); card.querySelector('.cm-nivtxt').textContent = n === 3 && it.alt ? CM_NIV[3].d + ' Acá: ' + it.alt : CM_NIV[n].d;
+      if (cmRegOf(f, card.dataset.fecha)) cmSave(card, { nivel: n });
+    }));
+    card.querySelectorAll('.cm-int button').forEach(b => b.addEventListener('click', () => {
+      card.querySelectorAll('.cm-int button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      cmSave(card, { int: Number(b.dataset.int) });
+    }));
+    const t = card.querySelector('[data-cm-nota]');
+    if (t) { grow(t); t.addEventListener('input', () => { grow(t); clearTimeout(cmNotaT[f]); cmNotaT[f] = setTimeout(() => cmSave(card, { nota: t.value.trim() }), 900); }); t.addEventListener('blur', () => { clearTimeout(cmNotaT[f]); if (t.value.trim() !== ((cmRegOf(f, card.dataset.fecha) || {}).nota || '')) cmSave(card, { nota: t.value.trim() }); }); }
+  });
+}
+/* calistenia del domingo (~25 min): práctica de habilidad y core del nivel elegido en Calistenia en casa; nada de empuje al fallo (el lunes es Empuje A) */
+function calDomingo() {
+  let niv = 1; try { niv = +localStorage.getItem('seg-calniv') || 1; } catch (e) {}
+  const l = CAL.filter(x => x.nivel === niv && (x.pat === 'Core' || x.pat === 'Habilidad'));
+  if (niv === 1) { const ytw = CAL.find(x => x.f === 'cal-ytw'); if (ytw) l.push(ytw); }
+  return l.slice(0, 5).map(x => Object.assign({ t: 0 }, x, { f: x.f, fig: x.fig }));
+}
+
 PRAC.cadera = { pasos: ['Pies al ancho de los hombros, rodillas apenas flojas, manos en la cintura.', 'Llevá la cadera adelante, a un costado, atrás, al otro costado: un círculo grande y lento.', '10 hacia un lado, 10 hacia el otro.'], sentir: 'Que la cadera y la zona lumbar se aflojan. Sin dolor en la espalda baja.', errores: ['Mover los hombros en vez de la cadera.', 'Círculos chiquitos y rápidos: grandes y lentos.'] };
 /* manos en la cintura, codos afuera, y el círculo marcado en la cadera (antes usaba la figura de círculos de brazos; aviso de José 22/11) */
 FIG.cadera = `${G}<circle class="h" cx="60" cy="16" r="7"/><path class="b" d="M60 24V58M60 58L52 90M60 58L68 90M60 30L42 44L55 56M60 30L78 44L65 56"/><ellipse class="a" cx="60" cy="58" rx="20" ry="6"/>`;
 
-function renderCmHome() {
-  const box = $('cm-home'); if (!box) return;
-  box.innerHTML = `<h2>Control muscular</h2><p class="hint">Práctica para el día libre, 20 a 30 min, sin cargas: aprender a contraer cada músculo a voluntad y a distinguirlo de los vecinos. En ejercicios aislados, pensar en el músculo (y no en mover el peso) aumenta la activación y el crecimiento (Schoenfeld 2018: bíceps +12 % vs +7 % en 8 semanas); en compuestos pesados no cambia nada, ahí pensás en mover la carga. Sirve para los que "no sentís": oblicuos, glúteo, dorsal, deltoides posterior.</p>
-    <p class="hint"><b>Reglas:</b> mano sobre el músculo (si no se endurece bajo la mano, no está contrayendo) · un lado por vez y comparar en el espejo · contraer 5 s, soltar del todo, 5 veces · nada de dolor ni de aguantar la respiración · no es entrenamiento: no se progresa ni se suma.</p>
-    <div class="prac-grid">${CM.map(it => `<button type="button" class="prac-item" data-f="${esc(it.f)}"><svg class="fig" viewBox="0 0 120 100" aria-hidden="true">${FIG[it.f]}</svg><span>${esc(it.n)}</span></button>`).join('')}</div>
-    <p class="hint">Primero la elongación de siempre; después esto, en el orden de la lista. Si un músculo no aparece, es normal al principio: volvé a él la semana siguiente.</p>
-    <details class="cm-hist"><summary>De dónde viene esto: Maxick (Bregenz 1882 – Buenos Aires 1961)</summary>
+const MAXICK_HTML = `<details class="cm-hist"><summary>De dónde viene esto: Maxick (Bregenz 1882 – Buenos Aires 1961)</summary>
       <p>Max Sick nació en 1882 en Bregenz, Austria, de padres suizos. Entre los dos y los cinco años estuvo casi siempre enfermo: pulmones, raquitismo, hidropesía. No caminó hasta los seis. A los diez se armó sus propias pesas; sus padres se las destruyeron. De adulto medía 1,63 y pesaba 67 kg, y levantaba en dos tiempos el doble de su peso.</p>
       <p>Su marca no fue la fuerza sino el control: aprendió a contraer y relajar cada músculo a voluntad, por separado, y a hacerlo "bailar" bajo la piel. En 1910 publicó <i>Muscle Control</i>, el libro que inventa la práctica que estás por hacer. Su socio inglés, Monte Saldo, fusionó "Max" y "Sick" en <b>Maxick</b>: alguien que vendía salud no podía apellidarse "enfermo". El método se siguió vendiendo como "Maxalding" hasta los años 70.</p>
       <p>En 1933, cuando llegaron los nazis, se fue de Alemania. Recorrió Centro y Sudamérica y se instaló en Buenos Aires, donde tuvo un gimnasio y estudio de salud. Murió acá en 1961, a punto de cumplir 80. La última mañana pulseó con un amigo, ganó como siempre, volvió en bicicleta a su casa y ahí lo encontraron. Dejó una nota doblada bajo el talón derecho, fechada "10 de mayo de 1961, 22 horas": <i>"Mi corazón late bastante lento, siento mucho frío, creo que pronto va a terminar. Recuerden: lo infinito es nuestra libertad manifestada a través de nuestra conciencia."</i> (Original en inglés, citado por Dennis Mitchell, USAWA, 2010.) Dónde quedaba su gimnasio en Buenos Aires no figura en ninguna fuente publicada: queda por investigar en archivos.</p>
       <p class="hint">Fuentes: Wikipedia (Max Sick); R. Tyrrell, "Marvelous Max" (The Iron Master, 2000); D. Mitchell, "Max Sick (Maxick)" (USAWA, 2010); J. Roark, "Gyms of the Past" (Iron Game History, 1992).</p>
     </details>`;
-  box.querySelectorAll('.prac-item').forEach(b => b.addEventListener('click', () => openPractice(CM.find(x => x.f === b.dataset.f), CM)));
+function renderCmHome() {
+  const box = $('cm-home'); if (!box) return;
+  const dom = nextSunday(), z = cmZonaHoy(dom), last = CM_ZONAS[CM_ZONAS.length - 1].id;
+  let sel = z; try { sel = sessionStorage.getItem('seg-cmver') || z; } catch (e) {}
+  if (!CM_ZONAS.some(x => x.id === sel)) sel = z;
+  const list = cmItemsOf(sel);
+  box.innerHTML = `<h2>Control muscular</h2>
+    <p class="hint"><b>La idea:</b> contraer UN músculo y dejar activamente flojo todo lo demás. No es contraer fuerte: es aislar. Lo que se mide es hasta qué intensidad lo sostenés sin que se sumen los vecinos (como planteaba Maxick).</p>
+    <p class="hint"><b>Cómo:</b> una zona por domingo, rotando sola (${CM_ZONAS.map(x => esc(x.n)).join(' → ')}). En cada zona, un ejercicio por músculo y pares para separar los que se confunden. El último domingo del ciclo cierra con un repaso corto. Niveles: 1 suave y aislado, 2 más fuerte sin que entre nada, 3 alternar con el vecino.</p>
+    <div class="cm-zona"><span>${dom === today() ? 'Hoy' : 'El domingo ' + esc(dmy(dom))} toca: <b>${esc(cmZonaName(z))}</b></span>
+      <label class="cm-zch">Cambiarla<select id="cm-zona-set" aria-label="Cambiar la zona de este domingo">${CM_ZONAS.map(x => `<option value="${x.id}"${x.id === z ? ' selected' : ''}>${esc(x.n)}</option>`).join('')}</select></label></div>
+    <p class="hint" style="margin:8px 0 0">Ver los ejercicios de cada zona:</p>
+    <div class="seg cm-tabs">${CM_ZONAS.map(x => `<button type="button" data-z="${x.id}" aria-pressed="${x.id === sel}">${esc(x.n)}</button>`).join('')}</div>
+    <div class="cm-list">${list.map(it => { const s = cmSug(it.f, '9999'), lr = s.last; return `<button type="button" class="cm-row" data-f="${esc(it.f)}"><span class="cm-ico">${cmBody(it)}</span><span><b>${esc(it.n)}</b><small>${it.tipo === 'separar' ? 'Separar' : 'Aislar'}${lr ? ` · nivel ${lr.nivel || 1} · ${lr.int}/10` : ''}</small></span><span class="go">›</span></button>`; }).join('')}</div>
+    <p class="hint">Mano sobre el músculo (si no se endurece bajo la mano, no está contrayendo) · un lado por vez · espejo · nada de dolor ni de aguantar la respiración. El registro se hace en el modo sesión del domingo, o acá adentro de cada ejercicio.</p>
+    ${MAXICK_HTML}`;
+  box.querySelectorAll('.cm-tabs button').forEach(b => b.addEventListener('click', () => { try { sessionStorage.setItem('seg-cmver', b.dataset.z); } catch (e) {} renderCmHome(); }));
+  $('cm-zona-set').addEventListener('change', e => { try { localStorage.setItem('seg-cmzona', JSON.stringify({ fecha: dom, z: e.target.value })); sessionStorage.setItem('seg-cmver', e.target.value); } catch (x) {} renderCmHome(); if (S.focus) fsRender(); });
+  box.querySelectorAll('.cm-row').forEach(b => b.addEventListener('click', () => openPractice(list.find(x => x.f === b.dataset.f), list)));
 }
-renderCmHome();
+/* renderCmHome() se llama en el arranque, después de definir FRONT/BACK */
 /* ---------- calistenia en casa, por dificultad (desde 21/11) ---------- */
 Object.assign(FIG, {
   'cal-flex': `${G}<circle class="h" cx="101" cy="62" r="7"/><path class="b" d="M93 66L16 89M90 67V91"/>`,
@@ -1386,18 +1756,36 @@ function renderCalHome() {
   box.querySelectorAll('.prac-item').forEach(b => b.addEventListener('click', () => openPractice(list.find(x => x.f === b.dataset.f), list)));
 }
 renderCalHome();
-function stCard(item) {
+/* lo hecho en calentamiento, elongación y calistenia: por sesión en localStorage, así no se pierde al cerrar o actualizar la app (22/11) */
+const STD_K = 'seg-stdone';
+function stdAll() { try { return JSON.parse(localStorage.getItem(STD_K) || '{}') || {}; } catch (e) { return {}; } }
+function stdGet(key) { return (stdAll()[sessionId()] || {})[key] ?? null; }
+function stdSet(key, v) {
+  const a = stdAll(), k = sessionId(); a[k] = a[k] || {};
+  if (v == null) delete a[k][key]; else a[k][key] = v;
+  const ks = Object.keys(a).sort(); while (ks.length > 14) delete a[ks.shift()];
+  try { localStorage.setItem(STD_K, JSON.stringify(a)); } catch (e) {}
+}
+function stdDone(v) { return v === 'ok' || v === 'skip'; }
+function stCard(item, pre) {
+  const key = (pre || 'st') + ':' + item.f;
   const el = document.createElement('div');
   el.className = 'st';
   el.innerHTML = `<svg class="fig" viewBox="0 0 120 100" role="img" aria-label="${esc(item.n)}">${FIG[item.f]}</svg>
     <div class="info"><h3>${esc(item.n)}</h3><p>${esc(item.d)}</p>
-    <div class="meta"><span class="dose">${esc(item.dose)}</span>${item.t ? '<button class="timer" type="button"></button>' : ''}${PRAC[item.f] ? '<button class="linkbtn prac-open" type="button">Practicar</button>' : ''}</div></div>`;
+    <div class="meta"><span class="dose">${esc(item.dose)}</span>${item.t ? '<button class="timer" type="button"></button>' : ''}${PRAC[item.f] || item.pasos ? '<button class="linkbtn prac-open" type="button">Practicar</button>' : ''}</div>
+    <div class="st-mark"><button type="button" class="st-ok">✓ Hecho</button><button type="button" class="st-skip">Saltear</button></div></div>`;
   const po = el.querySelector('.prac-open'); if (po) po.addEventListener('click', () => openPractice(item, [item]));
+  const paint = () => { const v = stdGet(key); el.classList.toggle('done', v === 'ok'); el.classList.toggle('skip', v === 'skip'); el.querySelector('.st-ok').textContent = v === 'ok' ? 'Hecho ✓ (deshacer)' : '✓ Hecho'; el.querySelector('.st-skip').textContent = v === 'skip' ? 'Salteado (deshacer)' : 'Saltear'; };
+  const mark = v => { stdSet(key, stdGet(key) === v ? null : v); paint(); if (S.focus) { fsStrip(); fsUpdateNext(); } };
+  el.querySelector('.st-ok').addEventListener('click', () => mark('ok'));
+  el.querySelector('.st-skip').addEventListener('click', () => mark('skip'));
+  paint();
   const btn = el.querySelector('.timer');
   if (btn) {
-    let side = 1; const sides = item.sides || 1;
+    const sides = item.sides || 1; const sv = stdGet(key); let side = typeof sv === 'number' ? Math.min(sides, sv + 1) : 1;
     const label = () => sides > 1 ? `Lado ${side} · ${item.t} s` : `Empezar ${item.t} s`;
-    btn.textContent = label();
+    btn.textContent = stdGet(key) === 'ok' ? 'Listo ✓' : label(); if (stdGet(key) === 'ok') btn.classList.add('done');
     btn.addEventListener('click', () => {
       if (btn.classList.contains('running')) { stopTimer(); return; }
       if (btn.classList.contains('done')) { side = 1; btn.classList.remove('done'); btn.textContent = label(); return; }
@@ -1411,7 +1799,7 @@ function stCard(item) {
         if (left > 0) { btn.textContent = `${left} s`; return; }
         clearInterval(iv); activeTimer = null; btn.classList.remove('running');
         vibrate(200); beep(3);
-        if (side < sides) { side += 1; btn.textContent = label(); } else { btn.classList.add('done'); btn.textContent = 'Listo ✓'; }
+        if (side < sides) { stdSet(key, side); side += 1; btn.textContent = label(); } else { btn.classList.add('done'); btn.textContent = 'Listo ✓'; stdSet(key, 'ok'); paint(); if (S.focus) { fsStrip(); fsUpdateNext(); } }
       }, 1000);
       activeTimer = { iv, btn, reset: label };
     });
@@ -1424,10 +1812,10 @@ function renderStretch() {
   const a = $('antes-list'), p = $('despues-list');
   a.innerHTML = ''; p.innerHTML = '';
   const dom = dia(S.color || 'verde').elong === 'domingo';
-  d.antes.forEach(it => a.appendChild(stCard(it)));
-  d.despues.forEach(it => p.appendChild(stCard(it)));
-  if (dom) CM.forEach(it => p.appendChild(stCard(it)));
-  $('despues-label').textContent = dom ? 'cuerpo entero + control muscular' : d.label;
+  d.antes.forEach(it => a.appendChild(stCard(it, 'antes')));
+  d.despues.forEach(it => p.appendChild(stCard(it, 'despues')));
+  if (dom) { cmItemsOf(cmZonaHoy(S.fecha)).forEach(it => p.appendChild(stCard(it, 'cmlist'))); calDomingo().forEach(it => p.appendChild(stCard(it, 'cal'))); }
+  $('despues-label').textContent = dom ? 'cuerpo entero + control muscular (' + cmZonaName(cmZonaHoy(S.fecha)) + ') + calistenia' : d.label;
   $('despues-box').hidden = !d.despues.length;
 }
 
@@ -1916,7 +2304,7 @@ if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message',
 /* ---------- modo sesión (pantalla completa, cards) ---------- */
 function fsSteps() {
   const d = STRETCH[dia(S.color).elong] || { label: 'general', antes: MOV_SUP, despues: [] };
-  if (dia(S.color).elong === 'domingo') return [{ type: 'antes', items: d.antes }, { type: 'despues', items: d.despues, label: d.label }, { type: 'despues', items: CM, label: 'control muscular', cm: true }];
+  if (dia(S.color).elong === 'domingo') { const z = cmZonaHoy(S.fecha); return [{ type: 'antes', items: d.antes }, { type: 'despues', items: d.despues, label: d.label }, ...cmItemsOf(z).map(it => ({ type: 'cm', it, z })), { type: 'cal', items: calDomingo(), label: 'calistenia' }]; }
   const steps = [{ type: 'antes', items: d.antes }];
   todayOrder().forEach(e => steps.push({ type: 'ex', e }));
   if (d.despues.length) steps.push({ type: 'despues', items: d.despues, label: d.label });
@@ -1950,7 +2338,7 @@ function fsCanNext() {
 }
 function fsUpdateNext() {
   const steps = fsSteps(), last = S.focusIdx >= steps.length - 1;
-  { const b = $('fs-dots').querySelector('.on'), st = steps[S.focusIdx], p = st && fsStepProg(st); if (b && p && !p.skip) { const nm = st.e.nombre; b.textContent = nm + (p.d >= p.n ? ' ✓' : p.d ? ` ${p.d}/${p.n}` : ''); b.classList.toggle('ok', p.d >= p.n); } }
+  { const b = $('fs-dots').querySelector('.on'), st = steps[S.focusIdx], p = st && fsStepProg(st); if (b && p && !p.skip) { const nm = fsStepName(st); b.textContent = nm + (p.d >= p.n ? ' ✓' : p.d ? ` ${p.d}/${p.n}` : ''); b.classList.toggle('ok', p.d >= p.n); } }
   const ok = fsCanNext();
   const b = $('fs-next'); b.disabled = !ok; b.textContent = last ? 'Terminar ✓' : ok ? 'Siguiente →' : 'Completá kg y reps';
   $('fs-prev').disabled = S.focusIdx === 0;
@@ -2085,12 +2473,17 @@ function fsRender(dir) {
     html = `<div class="box stretch fs-st"><h2>Calentamiento <small>movilidad · 3 min</small></h2><div class="fs-stlist"></div></div>`;
   } else if (step.type === 'despues') {
     html = step.type === 'despues' && step.cm ? `<div class="box stretch fs-st"><h2>Control muscular <small>5 s × 5 por músculo</small></h2><p class="rule">Mano sobre el músculo, un lado por vez, espejo. Si no se endurece bajo la mano, no está contrayendo. Nada de dolor ni de aguantar la respiración.</p><div class="fs-stlist"></div></div>` : `<div class="box stretch fs-st"><h2>Elongación <small>${esc(step.label)}</small></h2><p class="rule">Que tire, que no duela. Sin rebotes, respirando lento.</p><div class="fs-stlist"></div></div>`;
+  } else if (step.type === 'cal') {
+    html = `<div class="box stretch fs-st"><h2>Calistenia <small>habilidad y core · 25 min</small></h2><p class="rule">Práctica, no series al fallo: 2 o 3 reps en reserva. Nada de empuje fuerte: mañana es Empuje A. El nivel se cambia en Cuerpo → Calistenia en casa.</p><div class="fs-stlist"></div></div>`;
+  } else if (step.type === 'cm') {
+    html = cmCardHtml(step.it, S.fecha, true);
   } else html = exCardHtml(step.e, items, true);
   card.innerHTML = html;
-  if (step.type !== 'ex') { const l = card.querySelector('.fs-stlist'); step.items.forEach(it => l.appendChild(stCard(it))); }
+  if (step.type === 'cm') wireCm(card);
+  else if (step.type !== 'ex') { const l = card.querySelector('.fs-stlist'); step.items.forEach(it => l.appendChild(stCard(it, step.type === 'cal' ? 'cal' : step.type))); }
   else wireCards(card, [step.e]);
   $('fs-pos').textContent = `${S.focusIdx + 1} / ${steps.length}`;
-  $('fs-title').textContent = step.type === 'ex' ? dia(S.color).nombre : step.type === 'antes' ? 'Calentamiento' : step.cm ? 'Control muscular' : 'Elongación';
+  $('fs-title').textContent = step.type === 'ex' ? dia(S.color).nombre : step.type === 'antes' ? 'Calentamiento' : step.type === 'cm' ? 'Control · ' + (step.it.zona === 'repaso' ? 'Repaso' : cmZonaName(step.z)) : step.type === 'cal' ? 'Calistenia' : 'Elongación';
   fsStrip(steps);
   fsUpdateNext();
   if (dir) { card.classList.remove('in-l', 'in-r'); void card.offsetWidth; card.classList.add(dir > 0 ? 'in-l' : 'in-r'); }
@@ -2098,7 +2491,10 @@ function fsRender(dir) {
   saveResume();
 }
 /* tira con todos los pasos del día: se ve qué sigue y se puede saltar a cualquiera (para hacer dos ejercicios alternados) */
+function fsStepName(st) { return st.type === 'antes' ? 'Calentamiento' : st.type === 'despues' ? 'Elongación' : st.type === 'cal' ? 'Calistenia' : st.type === 'cm' ? st.it.n : st.e.nombre; }
 function fsStepProg(step) {
+  if (step.type === 'antes' || step.type === 'despues' || step.type === 'cal') { const pre = step.type === 'cal' ? 'cal' : step.type; return { d: step.items.filter(it => stdDone(stdGet(pre + ':' + it.f))).length, n: step.items.length }; }
+  if (step.type === 'cm') { const r = cmRegOf(step.it.f, S.fecha); return { d: r && r.int != null ? 1 : 0, n: 1, cm: true }; }
   if (step.type !== 'ex') return null;
   const e = step.e, n = Math.max(1, Number(e.series) || 3);
   const art = $('fs-card').querySelector(`.ex[data-ej="${CSS.escape(e.id)}"]`);
@@ -2112,8 +2508,8 @@ function fsStrip(steps) {
   const el = $('fs-dots');
   el.innerHTML = steps.map((st, i) => {
     const p = fsStepProg(st), on = i === S.focusIdx;
-    const name = st.type === 'antes' ? 'Calentamiento' : st.type === 'despues' ? (st.cm ? 'Control' : 'Elongación') : st.e.nombre;
-    const tag = !p ? '' : p.skip ? ' · –' : p.d >= p.n ? ' ✓' : p.d ? ` ${p.d}/${p.n}` : '';
+    const name = fsStepName(st);
+    const tag = !p ? '' : p.skip ? ' · –' : p.d >= p.n ? ' ✓' : p.d && !p.cm ? ` ${p.d}/${p.n}` : '';
     const cls = (on ? 'on' : '') + (p && !p.skip && p.d >= p.n ? ' ok' : '') + (p && p.skip ? ' sk' : '') + (st.type !== 'ex' ? ' st' : '') + (rest && st.type === 'ex' && rest.ej === st.e.id && !on ? ' resting' : '');
     return `<button type="button" class="${cls.trim()}" data-go="${i}">${esc(name)}${tag}${cls.includes('resting') ? ` <b data-rest-tag>${clockText(Math.max(0, rest.end - Date.now()))}</b>` : ''}</button>`;
   }).join('');
@@ -3283,7 +3679,7 @@ function err(e, statusId) {
    Resumen: lo escribe Claude en estilo-claude.json del repo privado de datos (principio, áreas, próximo paso, sugerencias).
    Mis notas / Bitácora / Referencias: lo que carga José (colecciones est_notas, est_bitacora, est_refs, est_sug). Las fotos quedan solo en el teléfono. */
 Object.assign(S, { sec: 'gym', estTab: 'resumen', estNotas: [], estBit: [], estRefs: [], estSug: [], estClaude: null, refF: { area: '', g: '' } });
-const EST_TABS = ['resumen', 'bitacora', 'refs'];
+const EST_TABS = ['resumen', 'explorar', 'bitacora', 'refs'];
 const EST_AREAS = [{ id: 'pelo', nombre: 'Pelo' }, { id: 'barba', nombre: 'Barba y bigote' }, { id: 'ropa', nombre: 'Ropa' }, { id: 'calzado', nombre: 'Calzado' }, { id: 'otro', nombre: 'Otro' }];
 const EST_CK = 'seg-estilo-claude';
 try { S.estClaude = JSON.parse(localStorage.getItem(EST_CK) || 'null'); } catch (e) {}
@@ -3295,13 +3691,15 @@ function estAreas() {
 function areaName(id) { const a = estAreas().find(x => x.id === id); return a ? a.nombre : (id || ''); }
 function fillAreaSelects() { ['bit-area', 'ref-area'].forEach(i => { const s = $(i), v = s.value; s.innerHTML = estAreas().map(a => `<option value="${esc(a.id)}">${esc(a.nombre)}</option>`).join(''); if (v) s.value = v; }); }
 function secApply(sec) {
-  S.sec = sec; document.body.classList.toggle('sec-estilo', sec === 'estilo'); document.body.classList.toggle('sec-home', sec === 'home');
-  $('sec-title').textContent = sec === 'estilo' ? 'Estilo' : 'Gym';
+  S.sec = sec; document.body.classList.toggle('sec-estilo', sec === 'estilo'); document.body.classList.toggle('sec-home', sec === 'home'); document.body.classList.toggle('sec-conf', sec === 'confianza'); document.body.classList.toggle('sec-comida', sec === 'comida');
+  $('sec-title').textContent = { estilo: 'Estilo', confianza: 'Confianza', comida: 'Comida' }[sec] || 'Gym';
   try { sessionStorage.setItem('seg-sec', sec); } catch (e) {}
 }
 function showSec(sec) {
   if (sec === 'estilo') { flushSave(); secApply('estilo'); showEst(S.estTab); }
   else if (sec === 'home') { flushSave(); secApply('home'); window.scrollTo({ top: 0 }); }
+  else if (sec === 'confianza') { flushSave(); secApply('confianza'); window.scrollTo({ top: 0 }); renderConf(); }
+  else if (sec === 'comida') { flushSave(); secApply('comida'); window.scrollTo({ top: 0 }); renderComida(); }
   else { secApply('gym'); showTab(S.tab); }
 }
 function showEst(t) {
@@ -3311,7 +3709,7 @@ function showEst(t) {
   EST_TABS.forEach(p => { $('p-est-' + p).hidden = p !== t; });
   window.scrollTo({ top: 0 });
   try { localStorage.setItem('seg-esttab', t); } catch (e) {}
-  if (t === 'resumen') { renderEstResumen(); loadEstClaude(); } else if (t === 'bitacora') renderBit(); else renderRefs();
+  if (t === 'resumen') { renderEstResumen(); loadEstClaude(); } else if (t === 'explorar') { renderExplorar(); loadEstClaude(); } else if (t === 'bitacora') renderBit(); else renderRefs();
 }
 document.querySelectorAll('.homecard').forEach(b => b.addEventListener('click', () => showSec(b.dataset.sec)));
 $('back-home').addEventListener('click', () => showSec('home'));
@@ -3330,7 +3728,7 @@ async function loadEstClaude(force) {
     if (!r || typeof r !== 'object') return;
     const changed = JSON.stringify(r) !== JSON.stringify(S.estClaude);
     S.estClaude = r; try { localStorage.setItem(EST_CK, JSON.stringify(r)); } catch (e) {}
-    if (changed) { fillAreaSelects(); renderEstResumen(); if (S.estTab === 'bitacora') renderBit(); if (S.estTab === 'refs') renderRefs(); }
+    if (changed) { fillAreaSelects(); renderEstResumen(); if (S.estTab === 'bitacora') renderBit(); if (S.estTab === 'refs') renderRefs(); if (S.estTab === 'explorar') renderExplorar(); }
   } catch (e) { console.warn('estilo', e); }
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.sec === 'estilo') loadEstClaude(); });
@@ -3485,17 +3883,153 @@ fillAreaSelects();
 
 /* ---------- arranque ---------- */
 ['fis-fecha', 'ses-fecha', 'bit-fecha'].forEach(i => $(i).value = today());
+/* ---------- Confianza (desde 22/11): registro de cosas hechas a pesar de la vergüenza + escalera de retos ----------
+   Se mide lo que hacés, no lo que sentís. conf_log {fecha, texto, dif 1-10, reto?}; conf_retos {texto, dif (estimada), creado}. */
+const CONF_IDEAS = [
+  ['Preguntarle algo a alguien en el gym (una máquina, un ejercicio)', 3],
+  ['Decirle al peluquero exactamente cómo querés la barba, sin dudar', 4],
+  ['Saludar y hacer un comentario a alguien que ves seguido y no conocés', 4],
+  ['Contar una anécdota en una juntada con gancho al principio y remate al final', 5],
+  ['Dar tu opinión en una charla preguntando primero qué piensa el otro, sin buscar ganar', 5],
+  ['Subir algo tuyo con errores (un cover, un video, un dibujo)', 6],
+  ['Hablarle a un desconocido sin motivo práctico', 7],
+  ['Ir a una clase de prueba de impro, canto o baile', 8],
+  ['Proponerle un plan a alguien que te cae bien y conocés poco', 7]
+];
+let confDif = null, confHice = null;
+function confWeek(f) { return weekStart(f); }
+function renderConf() {
+  const box = $('conf-body'); if (!box) return;
+  if (box.contains(document.activeElement) && /^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName)) return;
+  const log = (S.confLog || []).slice().sort((a, b) => a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : String(b.mod || '') < String(a.mod || '') ? -1 : 1);
+  const retos = (S.confRetos || []).slice().sort((a, b) => (a.dif || 0) - (b.dif || 0) || String(a.creado || '').localeCompare(String(b.creado || '')));
+  const first = !log.length;
+  /* semanas: últimas 8, lunes a domingo */
+  const wk = []; { let d = new Date(confWeek(today()) + 'T12:00:00'); for (let i = 0; i < 8; i++) { wk.unshift(d.toISOString().slice(0, 10)); d.setDate(d.getDate() - 7); } }
+  const per = wk.map(w => log.filter(x => confWeek(x.fecha) === w).length), max = Math.max(1, ...per);
+  const thisW = per[per.length - 1];
+  const asc = (a, b) => a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : String(a.mod || '') < String(b.mod || '') ? -1 : 1;
+  const rep = retos.map(r => ({ r, l: log.filter(x => x.reto === r.id).sort(asc) })).filter(x => x.l.length >= 2);
+  box.innerHTML = `
+    <div class="box"><h2>Confianza</h2>
+      <p class="hint">Se mide lo que hacés, no lo que sentís. Anotá cada cosa que hiciste aunque te diera vergüenza, con qué tan difícil fue del 1 al 10. La escalera la armás vos, de fácil a difícil: subís de escalón cuando el anterior ya no te cuesta.</p></div>
+    <div class="box conf-new"><h2>Anotar algo que hice</h2>
+      ${first ? '<p class="hint"><b>Tu primera:</b> el cover del 22/11. Ponele la dificultad y guardala.</p>' : ''}
+      <textarea id="conf-texto" rows="2" placeholder="Qué hiciste">${first ? 'Subí a YouTube el cover que venía tocando hace mucho, con errores, porque quería.' : ''}</textarea>
+      <span class="k">Qué tan difícil fue</span>
+      <div class="cm-int" id="conf-dif">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button type="button" data-d="${n}" aria-pressed="${confDif === n}">${n}</button>`).join('')}</div>
+      <div class="row"><label style="flex:1">Fecha<input type="date" id="conf-fecha" value="${first ? '2026-11-22' : today()}"></label><button class="btn" type="button" id="conf-ok">Guardar</button></div>
+      <span class="status" id="conf-status"></span></div>
+    <div class="box"><h2>Progreso</h2>
+      <p>Esta semana: <b>${thisW}</b> ${thisW === 1 ? 'cosa' : 'cosas'}.${log.length ? ` En total: ${log.length}.` : ''}</p>
+      <div class="conf-bars">${per.map((n, i) => `<div class="cb"><i style="height:${Math.round(n / max * 100)}%"></i><span>${n || ''}</span><small>${esc(dmy(wk[i]))}</small></div>`).join('')}</div>
+      ${rep.length ? `<span class="k">Lo que repetiste</span><ul class="conf-rep">${rep.map(({ r, l }) => `<li>${esc(r.texto)}: <b>${l[0].dif ?? '?'} → ${l[l.length - 1].dif ?? '?'}</b> (${l.length} veces)</li>`).join('')}</ul><p class="hint">Si la dificultad baja, ese escalón ya está: pasá al siguiente.</p>` : '<p class="hint">Cuando repitas un reto de la escalera, acá se ve si te cuesta menos.</p>'}</div>
+    <div class="box"><h2>Escalera</h2>
+      ${retos.length ? `<div class="conf-esc">${retos.map(r => { const n = log.filter(x => x.reto === r.id).length, last = log.filter(x => x.reto === r.id).sort(asc).pop(); return `<div class="conf-r" data-id="${esc(r.id)}"><span class="cd">${r.dif ?? '·'}</span><span class="ct">${esc(r.texto)}<small>${n ? `${n} ${n === 1 ? 'vez' : 'veces'} · última ${esc(dmy(last.fecha))} · ${last.dif ?? '?'}/10` : 'todavía no'}</small></span><span class="ca"><button type="button" class="btn small" data-hice="${esc(r.id)}">Lo hice</button><button type="button" class="linkbtn" data-del-reto="${esc(r.id)}">borrar</button></span>
+        ${confHice === r.id ? `<div class="conf-hice"><span class="k">¿Qué tan difícil fue esta vez?</span><div class="cm-int">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(d => `<button type="button" data-hd="${d}">${d}</button>`).join('')}</div></div>` : ''}</div>`; }).join('')}</div>` : '<p class="hint">Vacía. Agregá tus escalones abajo, o tocá una idea.</p>'}
+      <div class="row conf-add"><input id="conf-reto" placeholder="Nuevo escalón"><select id="conf-reto-dif" aria-label="Dificultad estimada">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<option value="${n}"${n === 5 ? ' selected' : ''}>${n}</option>`).join('')}</select><button class="btn small" type="button" id="conf-reto-ok">Agregar</button></div>
+      <details><summary>Ideas para la escalera</summary><div class="conf-ideas">${CONF_IDEAS.filter(([t]) => !retos.some(r => r.texto === t)).map(([t, d]) => `<button type="button" class="conf-idea" data-t="${esc(t)}" data-d="${d}"><span class="cd">${d}</span>${esc(t)}</button>`).join('')}</div><p class="hint">La dificultad es una estimación: corregila borrando y volviendo a agregar.</p></details></div>
+    <div class="box"><h2>Registro</h2>${log.length ? `<div class="conf-log" id="conf-log">${log.map(x => `<div class="item" data-id="${esc(x.id)}"><span class="d">${esc(dmy(x.fecha))}</span><span class="v"><b>${x.dif ?? '?'}/10</b> ${esc(x.texto)}</span><button type="button" class="del" aria-label="Borrar">✕</button></div>`).join('')}</div>` : '<p class="hint">Todavía nada.</p>'}</div>`;
+  const t = $('conf-texto'); grow(t); t.addEventListener('input', () => grow(t));
+  box.querySelectorAll('#conf-dif button').forEach(b => b.addEventListener('click', () => { confDif = Number(b.dataset.d); box.querySelectorAll('#conf-dif button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
+  $('conf-ok').addEventListener('click', async () => {
+    const texto = t.value.trim(); if (!texto) { setStatus('conf-status', 'Escribí qué hiciste', 'err'); return; }
+    if (confDif == null) { setStatus('conf-status', 'Elegí la dificultad', 'err'); return; }
+    const fecha = $('conf-fecha').value || today(), id = fecha + '-' + Date.now().toString(36);
+    try { await S.db.collection('conf_log').doc(id).set({ fecha, texto, dif: confDif, mod: new Date().toISOString() }); confDif = null; t.value = ''; t.blur(); setStatus('conf-status', 'Guardado ✓', 'ok'); } catch (e) { err(e, 'conf-status'); }
+  });
+  box.querySelectorAll('[data-hice]').forEach(b => b.addEventListener('click', () => { confHice = confHice === b.dataset.hice ? null : b.dataset.hice; renderConf(); }));
+  box.querySelectorAll('[data-hd]').forEach(b => b.addEventListener('click', async () => {
+    const r = retos.find(x => x.id === confHice); if (!r) return; const fecha = today();
+    try { await S.db.collection('conf_log').doc(fecha + '-' + Date.now().toString(36)).set({ fecha, texto: r.texto, dif: Number(b.dataset.hd), reto: r.id, mod: new Date().toISOString() }); confHice = null; } catch (e) { err(e); }
+  }));
+  box.querySelectorAll('[data-del-reto]').forEach(b => { let armed = false; b.addEventListener('click', async () => { if (!armed) { armed = true; b.textContent = '¿seguro?'; setTimeout(() => { armed = false; b.textContent = 'borrar'; }, 2500); return; } try { await S.db.collection('conf_retos').doc(b.dataset.delReto).delete(); } catch (e) { err(e); } }); });
+  const addReto = async (texto, dif) => { if (!texto || !S.db) return; try { await S.db.collection('conf_retos').doc('r-' + Date.now().toString(36)).set({ texto, dif, creado: new Date().toISOString() }); } catch (e) { err(e); } };
+  $('conf-reto-ok').addEventListener('click', () => { const v = $('conf-reto').value.trim(); if (!v) return; $('conf-reto').value = ''; $('conf-reto').blur(); addReto(v, Number($('conf-reto-dif').value)); });
+  box.querySelectorAll('.conf-idea').forEach(b => b.addEventListener('click', () => addReto(b.dataset.t, Number(b.dataset.d))));
+  if ($('conf-log')) wireDel($('conf-log'), id => S.db.collection('conf_log').doc(id).delete());
+}
+
+/* ---------- Comida (desde 22/11): la distribución del día y qué entra en cada categoría, a mano ----------
+   Sale de claude/plan-de-comida.md (nutricionista 12/11) y de lo que José dijo que come. ★ = lo que ya come seguido. */
+const COMIDA_DIA = [
+  ['Desayuno', '3 huevos + 2 tostadas con queso o manteca + 1 fruta + café con leche con 1 scoop de whey', '700 kcal · 55 g prot'],
+  ['Almuerzo', 'Plato mitad proteína, mitad carbohidrato. Verdura si entra.', '800 kcal · 40 g prot'],
+  ['Licuado (21:30, después del gym)', '300 ml leche entera + 1 scoop whey + 1 banana + 2 cdas avena + 1 cda mantequilla de maní + 5 g creatina', '600 kcal · 40 g prot'],
+  ['Cena', 'Plato mitad proteína, un cuarto carbohidrato, un cuarto verdura.', '750 kcal · 35 g prot'],
+  ['Snack (si hay hambre)', 'Puñado de maní, yogur entero, sándwich de queso, o una fruta.', '150 a 250 kcal']
+];
+const COMIDA_CAT = [
+  { id: 'prot', n: 'Proteína', d: 'Una en cada comida.', l: [['Milanesas', 1], ['Huevos', 1], ['Pollo', 1], ['Carne (bife, picada)'], ['Atún en lata'], ['Cerdo'], ['Queso, yogur entero'], ['Whey']] },
+  { id: 'carb', n: 'Carbohidrato', d: 'Al mediodía, la mitad del plato.', l: [['Fideos', 1], ['Arroz', 1], ['Tostadas, pan, wraps', 1], ['Papa o puré'], ['Batata'], ['Avena'], ['Pizza o empanadas (1 vez por semana)']] },
+  { id: 'verd', n: 'Verdura', d: 'Un cuarto del plato a la noche. Es lo que te está faltando.', l: [['Verduras congeladas salteadas (las más fáciles)'], ['Ensalada de bolsa'], ['Tomate'], ['Zanahoria rallada'], ['Palta'], ['Lechuga, rúcula'], ['Cebolla en lo que cocines']] },
+  { id: 'leg', n: 'Legumbres', d: 'Te faltan. Las de lata ya vienen cocidas: enjuagar y mezclar en el arroz, los fideos o la ensalada.', l: [['Lentejas de lata'], ['Garbanzos de lata'], ['Porotos de lata'], ['Hummus con las tostadas']] },
+  { id: 'fruta', n: 'Fruta', d: '2 o 3 por día: la banana del licuado y una o dos más.', l: [['Banana', 1], ['Mandarina', 1], ['Naranja'], ['Manzana']] },
+  { id: 'extra', n: 'Para sumar calorías', d: 'Siempre un chorro de aceite o queso en el plato.', l: [['Aceite'], ['Queso'], ['Maní y mantequilla de maní'], ['Leche en polvo (2 cdas en el licuado o el café)']] }
+];
+function comidaHoyGet() { try { const o = JSON.parse(localStorage.getItem('seg-comida-hoy') || 'null'); return o && o.f === today() ? o.m : {}; } catch (e) { return {}; } }
+function renderComida() {
+  const box = $('comida-body'); if (!box) return;
+  const hoy = comidaHoyGet();
+  box.innerHTML = `
+    <div class="box"><h2>Hoy</h2><p class="hint">Tocá lo que ya comiste hoy. Se borra solo al día siguiente. Sirve para ver de un vistazo qué falta.</p>
+      <div class="com-hoy">${COMIDA_CAT.filter(c => c.id !== 'extra').map(c => `<button type="button" data-c="${c.id}" aria-pressed="${!!hoy[c.id]}">${esc(c.n)}${hoy[c.id] ? ' ✓' + (hoy[c.id] > 1 ? ' ×' + hoy[c.id] : '') : ''}</button>`).join('')}</div>
+      <p class="hint">Meta: unas 3.000 kcal y 160 g de proteína por día. Legumbres con algo de vitamina C en la misma comida (mandarina, tomate): ayuda a absorber el hierro (la hemoglobina te dio apenas baja).</p></div>
+    <div class="box"><h2>El día</h2><div class="com-dia">${COMIDA_DIA.map(([m, q, k]) => `<div class="item"><span class="v"><b>${esc(m)}</b> <em>${esc(k)}</em><small>${esc(q)}</small></span></div>`).join('')}</div>
+      <p class="hint">Almuerzo y cena: proteína + carbohidrato + verdura, uno de cada lista. Comé primero la proteína y el carbohidrato; la verdura al final. Nunca saltear el licuado.</p></div>
+    ${COMIDA_CAT.map(c => `<div class="box"><h2>${esc(c.n)}</h2><p class="hint">${esc(c.d)}</p><div class="com-l">${c.l.map(([n, fav]) => `<span class="${fav ? 'fav' : ''}">${fav ? '★ ' : ''}${esc(n)}</span>`).join('')}</div></div>`).join('')}
+    <p class="hint" style="text-align:center">★ lo que ya comés seguido. Sale del plan de la nutricionista (12/11); si algo cambia, el plan del Google Doc manda.</p>`;
+  box.querySelectorAll('.com-hoy button').forEach(b => b.addEventListener('click', () => {
+    const m = comidaHoyGet(), c = b.dataset.c; m[c] = ((m[c] || 0) + 1) % 4;
+    if (!m[c]) delete m[c];
+    try { localStorage.setItem('seg-comida-hoy', JSON.stringify({ f: today(), m })); } catch (e) {}
+    renderComida();
+  }));
+}
+function otherDirty() { const a = document.activeElement; return !!(a && a.closest && a.closest('.panel.conf') && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) || confHice != null; }
+
+/* ---------- Estilo → Explorar (desde 22/11): tandas de sugerencias que arma Claude en estilo-claude.json (tandas[]),
+   para marcar 👍/👎/🤔 con un por qué de una línea. Reacciones en est_tanda {r, porque, mod}, id = id del ítem. */
+const tandaT = {};
+function renderExplorar() {
+  const box = $('est-explorar'); if (!box) return;
+  if (box.contains(document.activeElement) && estTyping()) return;
+  const c = S.estClaude || {}, tandas = Array.isArray(c.tandas) ? c.tandas.filter(t => t && Array.isArray(t.items)) : [];
+  const reac = Object.fromEntries((S.estTanda || []).map(x => [x.id, x]));
+  if (!tandas.length) { box.innerHTML = '<div class="box"><p class="hint">Todavía no hay tandas. Las arma Claude con lo que vas marcando y cargando; aparecen acá cuando la app sincroniza.</p></div>'; return; }
+  const card = it => { const r = reac[it.id] || {}; const url = it.link || (it.q ? 'https://ar.pinterest.com/search/pins/?q=' + encodeURIComponent(it.q) : ''); return `<div class="tanda-it" data-id="${esc(it.id)}">
+      ${it.img ? `<a href="${esc(url || it.img)}" target="_blank" rel="noopener"><img src="${esc(it.img)}" alt="" loading="lazy"></a>` : ''}
+      <span class="k">${esc(areaName(it.area))}</span><b>${esc(it.titulo)}</b>${it.porque ? `<small>${esc(it.porque)}</small>` : ''}
+      ${url ? `<a class="btn ghost small tanda-ver" href="${esc(url)}" target="_blank" rel="noopener">Ver ${it.img ? 'más' : 'imágenes'} en Pinterest ↗</a>` : ''}
+      <div class="tanda-r">${REF_G.map(([g, e]) => `<button type="button" data-g="${g}" aria-pressed="${r.r === g}">${e}</button>`).join('')}</div>
+      <input data-porque placeholder="Por qué, en una línea" value="${esc(r.porque || '')}">
+    </div>`; };
+  const t0 = tandas[0], hechas = t0.items.filter(it => reac[it.id] && reac[it.id].r != null).length;
+  box.innerHTML = `<div class="box"><h2>${esc(t0.titulo || 'Tanda')}</h2><p class="hint">${esc(t0.nota || 'Abrí cada una, mirá y marcá. 👍 me gusta, 👎 no, 🤔 no sé. El por qué es lo que más sirve, aunque sea una palabra.')}</p><p class="hint"><b>${hechas} / ${t0.items.length}</b> marcadas${t0.fecha ? ' · tanda del ' + esc(dmy(t0.fecha)) : ''}.</p>
+    <div class="tanda">${t0.items.map(card).join('')}</div></div>
+    ${tandas.slice(1).map(t => `<details class="box"><summary>${esc(t.titulo || 'Tanda')} ${t.fecha ? '· ' + esc(dmy(t.fecha)) : ''}</summary><div class="tanda">${t.items.map(card).join('')}</div></details>`).join('')}
+    <p class="hint" style="text-align:center">Las imágenes se abren en Pinterest con la búsqueda armada para cada idea: la app no puede traer fotos de Pinterest adentro. Con lo que marques, Claude arma la próxima tanda.</p>`;
+  const save = (id, patch) => { if (!S.db) return; const prev = reac[id] || {}; const body = Object.assign({}, prev, patch, { mod: new Date().toISOString() }); delete body.id; reac[id] = Object.assign({ id }, body); S.db.collection('est_tanda').doc(id).set(body).catch(err); };
+  box.querySelectorAll('.tanda-it').forEach(el => {
+    const id = el.dataset.id;
+    el.querySelectorAll('.tanda-r button').forEach(b => b.addEventListener('click', () => { const g = Number(b.dataset.g), cur = (reac[id] || {}).r; el.querySelectorAll('.tanda-r button').forEach(x => x.setAttribute('aria-pressed', String(x === b && cur !== g))); save(id, { r: cur === g ? null : g }); }));
+    const inp = el.querySelector('[data-porque]');
+    inp.addEventListener('input', () => { clearTimeout(tandaT[id]); tandaT[id] = setTimeout(() => save(id, { porque: inp.value.trim() }), 900); });
+    inp.addEventListener('blur', () => { clearTimeout(tandaT[id]); if (inp.value.trim() !== ((reac[id] || {}).porque || '')) save(id, { porque: inp.value.trim() }); });
+  });
+}
+
 let startTab = 'entreno';
 const h = (location.hash || '').slice(1);
 if (TABS.includes(h)) startTab = h;
 else { try { const t = localStorage.getItem('seg-tab'); if (t && TABS.includes(t)) startTab = t; } catch (e) {} }
-drawBody('body-front', FRONT); drawBody('body-back', BACK);
+drawBody('body-front', FRONT); drawBody('body-back', BACK); renderCmHome();
 setBodyView('both');
 S.color = 'verde'; applyDay(); renderColors(); renderRtColors(); renderDias(); renderRutina(); renderPeso(); renderFotos(); renderMedidas(); renderClock(); renderProgreso();
 showTab(startTab);
 try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes(et)) S.estTab = et; } catch (e) {}
 /* arranque en frío: pantalla de inicio. Una recarga automática vuelve a donde estaba (sessionStorage); una sesión en curso entra directo a Gym (ver snapshot de sesiones) */
-{ let sec = 'home'; try { const st = sessionStorage.getItem('seg-sec'); if (st === 'estilo' || st === 'gym') sec = st; } catch (e) {} const hh = (location.hash || '').slice(1); if (hh === 'estilo') sec = 'estilo'; else if (TABS.includes(hh)) sec = 'gym'; if (sec !== 'gym') showSec(sec); }
+{ let sec = 'home'; try { const st = sessionStorage.getItem('seg-sec'); if (['estilo', 'gym', 'confianza', 'comida'].includes(st)) sec = st; } catch (e) {} const hh = (location.hash || '').slice(1); if (hh === 'estilo') sec = 'estilo'; else if (TABS.includes(hh)) sec = 'gym'; if (sec !== 'gym') showSec(sec); }
 
 (async () => {
   const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
@@ -3531,14 +4065,18 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
   snap('est_sug', 'estSug', renderEstResumen);
   snap('est_bitacora', 'estBit', renderBit);
   snap('est_refs', 'estRefs', renderRefs);
+  snap('cm_reg', 'cmReg', () => { renderCmHome(); if (S.focus && !formBusy()) fsStrip(); });
+  snap('conf_log', 'confLog', () => { if (S.sec === 'confianza') renderConf(); });
+  snap('conf_retos', 'confRetos', () => { if (S.sec === 'confianza') renderConf(); });
+  snap('est_tanda', 'estTanda', () => { if (S.estTab === 'explorar') renderExplorar(); });
   loadRespuestas();
 })();
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.22-1449';
+const APP_VERSION = '2026.11.22-1705';
 let updateTo = null;
-function safeToReload() { return !formBusy() && !estDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
+function safeToReload() { return !formBusy() && !estDirty() && !activeTimer && !otherDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
   if (!updateTo) return;
   if (!safeToReload()) { setTimeout(tryReload, 3000); return; }
