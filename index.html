@@ -559,6 +559,21 @@ body:not(.sec-conf) .panel.conf, body:not(.sec-comida) .panel.comida { display: 
 .conf-idea { display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: center; text-align: left; font: inherit; font-size: .88rem; color: var(--ink); background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 6px 8px; }
 .conf-add { margin-top: 8px; } .conf-add input { flex: 1 1 160px; } .conf-new textarea { width: 100%; }
 .conf-rep { margin: 4px 0; padding-left: 18px; font-size: .9rem; }
+.cdots { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 6px 0; }
+.cdot { display: grid; place-items: center; height: 34px; border-radius: 50%; border: 1.5px solid var(--line); font-size: .8rem; color: var(--muted); }
+.cdot.on { background: var(--ink); border-color: var(--ink); color: var(--bg); font-weight: 700; }
+.cdot.hoy { border-color: var(--day); border-width: 2.5px; }
+.cdot.fut { opacity: .45; }
+.conf-chica { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; border: 1px dashed var(--line); border-radius: 10px; padding: 8px 10px; }
+.conf-chica .ca { display: grid; gap: 2px; justify-items: end; }
+.conf-pick { display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: center; font-weight: 600; }
+.conf-logros { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.conf-logros .cl { font-size: .82rem; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.conf-logros .cl small { color: var(--muted); }
+.conf-logros .cl.next { border-style: dashed; color: var(--muted); }
+.conf-fiesta { text-align: center; border: 2px solid var(--day); }
+.conf-fiesta .cf-ic { font-size: 2.6rem; animation: cfpop .6s ease-out; }
+@keyframes cfpop { 0% { transform: scale(.3) rotate(-20deg); opacity: 0; } 70% { transform: scale(1.2) rotate(8deg); opacity: 1; } 100% { transform: scale(1); } }
 .com-hoy { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
 .com-hoy button { font: inherit; font-size: .88rem; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
 .com-hoy button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
@@ -3895,15 +3910,86 @@ const CONF_IDEAS = [
   ['Preguntarle algo a alguien en el gym (una máquina, un ejercicio)', 3],
   ['Decirle al peluquero exactamente cómo querés la barba, sin dudar', 4],
   ['Saludar y hacer un comentario a alguien que ves seguido y no conocés', 4],
+  ['Mandarle un mensaje a alguien con quien no hablás hace mucho, sin excusa', 4],
   ['Contar una anécdota en una juntada con gancho al principio y remate al final', 5],
   ['Dar tu opinión en una charla preguntando primero qué piensa el otro, sin buscar ganar', 5],
+  ['Contar algo tuyo que te importa (un proyecto, un gusto) sin quitarle peso', 5],
   ['Subir algo tuyo con errores (un cover, un video, un dibujo)', 6],
-  ['Hablarle a un desconocido sin motivo práctico', 7],
+  ['Charlar un rato con alguien en una espera o una fila', 6],
+  ['Sumarte a una charla de un grupo que ya está hablando', 7],
+  ['Proponerle un plan a alguien que te cae bien y conocés poco', 7],
   ['Ir a una clase de prueba de impro, canto o baile', 8],
-  ['Proponerle un plan a alguien que te cae bien y conocés poco', 7]
+  ['Organizar vos una juntada e invitar a gente que no se conoce entre sí', 8]
 ];
+/* Las chicas: para el día a día (1 por día, la semana se cumple con 5 de 7). Regla (José, 22/11): nada que al otro le resulte raro o incómodo. */
+const CONF_CHICAS = [
+  'Preguntarle al que te atiende cómo viene el día, y escuchar la respuesta',
+  'Pedir una recomendación en un negocio o en un bar',
+  'Cuando alguien te cuente algo, hacerle una pregunta más sobre eso',
+  'Agradecer algo concreto ("me sirvió mucho lo de…")',
+  'Hacerle un comentario o un cumplido sincero a alguien sobre algo que hizo',
+  'Al hablar con alguien, mirarlo a la cara en vez de al piso',
+  'Decir "prefiero otra cosa" sin dar mil explicaciones',
+  'Llamar por teléfono en vez de mandar un mensaje',
+  'Saludar por el nombre a alguien que ves seguido',
+  'Contar algo que te pasó hoy, aunque sea chico',
+  'Preguntar algo en voz alta (en una clase, un negocio, un grupo)',
+  'Responderle a alguien con tu opinión real, no la que queda bien',
+  /* observar (idea de José, 22/11): fijarse en el otro y decírselo */
+  'Fijarte qué tiene puesto alguien y decirle algo que te guste ("qué buena esa remera")',
+  'Notar un detalle de alguien (un corte nuevo, un tatuaje, un libro) y preguntarle por eso',
+  'Fijarte en qué está haciendo alguien en el gym o en un bar y hacerle una pregunta',
+  'Acordarte de algo que alguien te contó la última vez y preguntarle cómo siguió',
+  'Fijarte cómo está alguien (cansado, contento) y comentárselo o preguntarle',
+  'Elogiarle algo al que te atiende (el café, la comida, la música que puso)'
+];
+const CONF_META = 5; /* días con algo por semana */
+let confHiceSem = false;
+function confSeed(s) { let h = 7; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); }
+function confShift(f, n) { const d = new Date(f + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function confRetoState() { let st = null; try { st = JSON.parse(localStorage.getItem('seg-conf-reto') || 'null'); } catch (e) {} const w = weekStart(today()); return st && st.w === w ? st : { w, off: 0, ok: false }; }
+function confRetoSave(st) { try { localStorage.setItem('seg-conf-reto', JSON.stringify(st)); } catch (e) {} }
+/* Reto de la semana: uno solo, un poco más difícil que el promedio de las últimas 4 semanas. Sale de la escalera y de las ideas. */
+function confRetoPick(log, retos, st) {
+  if (st.pick && st.pickOff === st.off) return st.pick;
+  const desde = confShift(st.w, -28), difs = log.filter(x => x.fecha >= desde && x.dif != null).map(x => x.dif);
+  const prom = difs.length ? difs.reduce((a, b) => a + b, 0) / difs.length : 3;
+  const target = Math.min(9, Math.max(3, Math.round(prom) + 1));
+  const hace14 = confShift(today(), -14), hechos = new Set(log.filter(x => x.fecha >= hace14).map(x => x.texto));
+  const pool = retos.map(r => ({ t: r.texto, d: r.dif ?? 5, rid: r.id }))
+    .concat(CONF_IDEAS.filter(([t]) => !retos.some(r => r.texto === t)).map(([t, d]) => ({ t, d })))
+    .filter(c => !hechos.has(c.t));
+  if (!pool.length) return null;
+  pool.sort((a, b) => Math.abs(a.d - target) - Math.abs(b.d - target) || confSeed(st.w + a.t) - confSeed(st.w + b.t));
+  const pick = pool[st.off % pool.length];
+  st.pick = pick; st.pickOff = st.off; confRetoSave(st);
+  return pick;
+}
+/* Semanas cumplidas (5 de 7 días con algo) y logros para festejar */
+function confDias(log, w) { const fin = confShift(w, 6); return new Set(log.filter(x => x.fecha >= w && x.fecha <= fin).map(x => x.fecha)); }
+function confHitos(log) {
+  const asc = log.slice().sort((a, b) => a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0), out = [];
+  const p7 = asc.find(x => (x.dif || 0) >= 7), p9 = asc.find(x => (x.dif || 0) >= 9);
+  if (p7) out.push({ id: 'primer7', t: 'Tu primer 7', d: p7.texto, f: p7.fecha });
+  if (p9) out.push({ id: 'primer9', t: 'Tu primer 9', d: p9.texto, f: p9.fecha });
+  if (asc.length) {
+    let w = weekStart(asc[0].fecha), hoyW = weekStart(today()), run = 0, s1 = null, s4 = null;
+    while (w <= hoyW) { const ok = confDias(log, w).size >= CONF_META; if (ok) { run++; if (!s1) s1 = w; if (run >= 4 && !s4) s4 = w; } else if (w !== hoyW) run = 0; w = confShift(w, 7); }
+    if (s1) out.push({ id: 'sem1', t: 'Primera semana cumplida', d: `${CONF_META} días de 7 con algo`, f: s1 });
+    if (s4) out.push({ id: 'sem4', t: '4 semanas seguidas', d: 'Un mes entero cumpliendo', f: s4 });
+  }
+  return out;
+}
+function confRacha(log) {
+  let w = weekStart(today()), n = 0;
+  if (confDias(log, w).size >= CONF_META) n++;
+  w = confShift(w, -7);
+  while (confDias(log, w).size >= CONF_META) { n++; w = confShift(w, -7); }
+  return n;
+}
 let confDif = null, confHice = null, confEdit = null, confEditDif = null;
 function confWeek(f) { return weekStart(f); }
+function confSeen() { try { return JSON.parse(localStorage.getItem('seg-conf-hitos') || '[]'); } catch (e) { return []; } }
 function renderConf() {
   const box = $('conf-body'); if (!box) return;
   if (box.contains(document.activeElement) && /^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName)) return;
@@ -3916,9 +4002,30 @@ function renderConf() {
   const thisW = per[per.length - 1];
   const asc = (a, b) => a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : String(a.mod || '') < String(b.mod || '') ? -1 : 1;
   const rep = retos.map(r => ({ r, l: log.filter(x => x.reto === r.id).sort(asc) })).filter(x => x.l.length >= 2);
+  /* meta diaria y semanal, reto de la semana, logros (22/11) */
+  const hoy = today(), w0 = confWeek(hoy), dias = confDias(log, w0), racha = confRacha(log);
+  const dots = [0, 1, 2, 3, 4, 5, 6].map(i => { const f = confShift(w0, i); return `<span class="cdot${dias.has(f) ? ' on' : ''}${f === hoy ? ' hoy' : ''}${f > hoy ? ' fut' : ''}">${'LMMJVSD'[i]}</span>`; }).join('');
+  let ch = null; try { ch = JSON.parse(localStorage.getItem('seg-conf-chica') || 'null'); } catch (e) {}
+  if (!ch || ch.f !== hoy) ch = { f: hoy, off: 0 };
+  const chica = CONF_CHICAS[(confSeed(hoy) + ch.off) % CONF_CHICAS.length];
+  const st = confRetoState(), rs = log.find(x => x.retoSem === st.w), pick = rs ? null : confRetoPick(log, retos, st);
+  const hitos = confHitos(log), seen = confSeen(), nuevo = hitos.find(h => !seen.includes(h.id));
+  const prox = !hitos.some(h => h.id === 'primer7') ? 'tu primer 7' : !hitos.some(h => h.id === 'sem1') ? `tu primera semana de ${CONF_META}/7` : !hitos.some(h => h.id === 'sem4') ? '4 semanas seguidas' : !hitos.some(h => h.id === 'primer9') ? 'tu primer 9' : null;
   box.innerHTML = `
+    ${nuevo ? `<div class="box conf-fiesta"><div class="cf-ic">🎉</div><h2>${esc(nuevo.t)}</h2><p>${esc(nuevo.d)}${nuevo.f ? ` · ${esc(dmy(nuevo.f))}` : ''}</p><button class="btn" type="button" id="conf-fiesta-ok" data-h="${esc(nuevo.id)}">¡Vamos!</button></div>` : ''}
     <div class="box"><h2>Confianza</h2>
-      <p class="hint">Se mide lo que hacés, no lo que sentís. Anotá cada cosa que hiciste aunque te diera vergüenza, con qué tan difícil fue del 1 al 10. La escalera la armás vos, de fácil a difícil: subís de escalón cuando el anterior ya no te cuesta.</p></div>
+      <p class="hint">Se mide lo que hacés, no lo que sentís. Meta: algo por día, aunque sea chico; la semana se cumple con ${CONF_META} de 7. El día que se pierde, se pierde: no se recupera haciendo dos. Regla para todo: tiene que ser algo que al otro le resulte normal o agradable.</p></div>
+    <div class="box conf-hoy"><h2>Esta semana</h2>
+      <div class="cdots">${dots}</div>
+      <p><b>${dias.size}/${CONF_META}</b> días${dias.size >= CONF_META ? ' · <b>semana cumplida ✓</b>' : ` · faltan ${CONF_META - dias.size}`}${racha >= 2 ? ` · ${racha} semanas seguidas` : ''}</p>
+      ${dias.has(hoy) ? '<p class="hint">Hoy ya anotaste algo ✓</p>' : `<span class="k">Una chica para hoy</span><div class="conf-chica"><span>${esc(chica)}</span><span class="ca"><button type="button" class="btn small" id="conf-chica-ok">Lo hice</button><button type="button" class="linkbtn" id="conf-chica-otra">otra</button></span></div>`}</div>
+    <div class="box conf-sem"><h2>Reto de la semana</h2>
+      ${rs ? `<p>✓ <b>${esc(rs.texto)}</b> <small>(${esc(dmy(rs.fecha))}, ${rs.dif ?? '?'}/10)</small></p><p class="hint">El lunes aparece otro.</p>`
+      : pick ? `<p class="conf-pick"><span class="cd">${pick.d}</span>${esc(pick.t)}</p>
+        ${confHiceSem ? `<div class="conf-hice"><span class="k">¿Qué tan difícil fue?</span><div class="cm-int" id="conf-sem-dif">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(d => `<button type="button" data-sd="${d}">${d}</button>`).join('')}</div><button type="button" class="linkbtn" id="conf-sem-cancel">cancelar</button></div>`
+        : st.ok ? `<div class="row"><button class="btn" type="button" id="conf-sem-hice">Lo hice</button><button class="linkbtn" type="button" id="conf-sem-otro">cambiar</button></div><p class="hint">Lo elegiste: tenés hasta el domingo.</p>`
+        : `<div class="row"><button class="btn" type="button" id="conf-sem-lohago">Lo hago</button><button class="btn ghost" type="button" id="conf-sem-otro">Otro</button></div><p class="hint">Uno solo, un poco más difícil que lo que venís haciendo.</p>`}`
+      : '<p class="hint">No hay retos disponibles: agregá escalones abajo.</p>'}</div>
     <div class="box conf-new"><h2>Anotar algo que hice</h2>
       ${first ? '<p class="hint"><b>Tu primera:</b> el cover del 22/11. Ponele la dificultad y guardala.</p>' : ''}
       <textarea id="conf-texto" rows="2" placeholder="Qué hiciste">${first ? 'Subí a YouTube el cover que venía tocando hace mucho, con errores, porque quería.' : ''}</textarea>
@@ -3928,6 +4035,7 @@ function renderConf() {
       <span class="status" id="conf-status"></span></div>
     <div class="box"><h2>Progreso</h2>
       <p>Esta semana: <b>${thisW}</b> ${thisW === 1 ? 'cosa' : 'cosas'}.${log.length ? ` En total: ${log.length}.` : ''}</p>
+      <span class="k">Logros</span><div class="conf-logros">${hitos.map(h => `<span class="cl">🏅 ${esc(h.t)} <small>${esc(dmy(h.f))}</small></span>`).join('')}${prox ? `<span class="cl next">Próximo: ${esc(prox)}</span>` : ''}</div>
       <div class="conf-bars">${per.map((n, i) => `<div class="cb"><i style="height:${Math.round(n / max * 100)}%"></i><span>${n || ''}</span><small>${esc(dmy(wk[i]))}</small></div>`).join('')}</div>
       ${rep.length ? `<span class="k">Lo que repetiste</span><ul class="conf-rep">${rep.map(({ r, l }) => `<li>${esc(r.texto)}: <b>${l[0].dif ?? '?'} → ${l[l.length - 1].dif ?? '?'}</b> (${l.length} veces)</li>`).join('')}</ul><p class="hint">Si la dificultad baja, ese escalón ya está: pasá al siguiente.</p>` : '<p class="hint">Cuando repitas un reto de la escalera, acá se ve si te cuesta menos.</p>'}</div>
     <div class="box"><h2>Escalera</h2>
@@ -3941,7 +4049,7 @@ function renderConf() {
         <div class="cm-int" id="conf-e-dif">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button type="button" data-d="${n}" aria-pressed="${(confEditDif ?? x.dif) === n}">${n}</button>`).join('')}</div>
         <div class="row"><label style="flex:1">Fecha<input type="date" id="conf-e-fecha" value="${esc(x.fecha)}"></label></div>
         <div class="row"><button class="btn small" type="button" id="conf-e-ok">Guardar</button><button class="btn ghost small" type="button" id="conf-e-cancel">Cancelar</button><button type="button" class="del" data-del="${esc(x.id)}">Borrar</button></div></div>`
-      : `<div class="item" data-id="${esc(x.id)}"><span class="d">${esc(dmy(x.fecha))}</span><span class="v conf-tap"><b>${x.dif ?? '?'}/10</b> ${esc(x.texto)}${x.reto ? ' <small>(escalera)</small>' : ''}</span><button type="button" class="del" data-del="${esc(x.id)}" aria-label="Borrar">✕</button></div>`).join('')}</div>` : '<p class="hint">Todavía nada.</p>'}</div>`;
+      : `<div class="item" data-id="${esc(x.id)}"><span class="d">${esc(dmy(x.fecha))}</span><span class="v conf-tap"><b>${x.dif ?? '?'}/10</b> ${esc(x.texto)}${x.retoSem ? ' <small>(reto de la semana)</small>' : x.reto ? ' <small>(escalera)</small>' : ''}</span><button type="button" class="del" data-del="${esc(x.id)}" aria-label="Borrar">✕</button></div>`).join('')}</div>` : '<p class="hint">Todavía nada.</p>'}</div>`;
   const t = $('conf-texto'); grow(t); t.addEventListener('input', () => grow(t));
   box.querySelectorAll('#conf-dif button').forEach(b => b.addEventListener('click', () => { confDif = Number(b.dataset.d); box.querySelectorAll('#conf-dif button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
   $('conf-ok').addEventListener('click', async () => {
@@ -3959,6 +4067,17 @@ function renderConf() {
   const addReto = async (texto, dif) => { if (!texto || !S.db) return; try { await S.db.collection('conf_retos').doc('r-' + Date.now().toString(36)).set({ texto, dif, creado: new Date().toISOString() }); } catch (e) { err(e); } };
   $('conf-reto-ok').addEventListener('click', () => { const v = $('conf-reto').value.trim(); if (!v) return; $('conf-reto').value = ''; $('conf-reto').blur(); addReto(v, Number($('conf-reto-dif').value)); });
   box.querySelectorAll('.conf-idea').forEach(b => b.addEventListener('click', () => addReto(b.dataset.t, Number(b.dataset.d))));
+  const fo = $('conf-fiesta-ok'); if (fo) fo.addEventListener('click', () => { const v = confSeen(); v.push(fo.dataset.h); try { localStorage.setItem('seg-conf-hitos', JSON.stringify(v)); } catch (e) {} renderConf(); });
+  const cOk = $('conf-chica-ok'); if (cOk) cOk.addEventListener('click', () => { t.value = chica; grow(t); $('conf-fecha').value = hoy; box.querySelector('.conf-new').scrollIntoView({ behavior: 'smooth', block: 'center' }); setStatus('conf-status', 'Elegí la dificultad y guardá', ''); });
+  const cOtra = $('conf-chica-otra'); if (cOtra) cOtra.addEventListener('click', () => { ch.off++; try { localStorage.setItem('seg-conf-chica', JSON.stringify(ch)); } catch (e) {} renderConf(); });
+  const sOtro = $('conf-sem-otro'); if (sOtro) sOtro.addEventListener('click', () => { st.off++; st.ok = false; confRetoSave(st); renderConf(); });
+  const sLo = $('conf-sem-lohago'); if (sLo) sLo.addEventListener('click', () => { st.ok = true; confRetoSave(st); renderConf(); });
+  const sHice = $('conf-sem-hice'); if (sHice) sHice.addEventListener('click', () => { confHiceSem = true; renderConf(); });
+  const sCan = $('conf-sem-cancel'); if (sCan) sCan.addEventListener('click', () => { confHiceSem = false; renderConf(); });
+  box.querySelectorAll('[data-sd]').forEach(b => b.addEventListener('click', async () => {
+    if (!pick || !S.db) return; const fecha = today(), d = { fecha, texto: pick.t, dif: Number(b.dataset.sd), retoSem: st.w, mod: new Date().toISOString() }; if (pick.rid) d.reto = pick.rid;
+    try { await S.db.collection('conf_log').doc(fecha + '-' + Date.now().toString(36)).set(d); confHiceSem = false; renderConf(); } catch (e) { err(e); }
+  }));
   /* borrar: el ✕ no llevaba data-del y wireDel borraba un id vacío (aviso de José 22/11) */
   if ($('conf-log')) wireDel($('conf-log'), async id => { if (!id) return; try { await S.db.collection('conf_log').doc(id).delete(); if (confEdit === id) { confEdit = null; confEditDif = null; } renderConf(); } catch (e) { err(e); } });
   /* editar: tocar la entrada abre el formulario en el lugar */
@@ -4012,7 +4131,7 @@ function renderComida() {
     renderComida();
   }));
 }
-function otherDirty() { const a = document.activeElement; return !!(a && a.closest && a.closest('.panel.conf') && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) || confHice != null || confEdit != null; }
+function otherDirty() { const a = document.activeElement; return !!(a && a.closest && a.closest('.panel.conf') && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) || confHice != null || confEdit != null || confHiceSem; }
 
 /* ---------- Estilo → Explorar (desde 22/11): tandas de sugerencias que arma Claude en estilo-claude.json (tandas[]),
    para marcar 👍/👎/🤔 con un por qué de una línea. Reacciones en est_tanda {r, porque, mod}, id = id del ítem. */
@@ -4100,7 +4219,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.22-1958';
+const APP_VERSION = '2026.11.22-2046';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !activeTimer && !otherDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
