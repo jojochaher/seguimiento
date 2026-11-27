@@ -1932,21 +1932,40 @@ function plan(e) {
   const kgs = setKgs(it, sets.length), b = 0, bw = bodyKg(), wl = workLoad(it, n);
   const load = v => e.asistida ? Math.max(1, bw - v) : isBody(e) ? bw + v : v + b;
   if (!(load(wl) > 0)) return null; // sesión anotada con 0 kg (p. ej. hecha en casa): sin meta
-  const work = done.filter(x => (kgs[x.k] ?? it.carga) === wl);
+  const kgOf = x => kgs[x.k] ?? it.carga, e1 = x => load(kgOf(x)) * (1 + Math.min(x.r, 15) / 30);
+  let work = done.filter(x => kgOf(x) === wl);
+  /* referencia (27/11, pedido de José): el grupo de series del mismo peso con la mejor fuerza estimada (peso y reps juntos),
+     no el más pesado a ciegas: 16 × 14 rinde más que 18 × 6. Para la cuenta se topean las reps en 15 (Epley pierde precisión).
+     Las series de prueba (todas de menos de 4 reps) ya quedan afuera vía workLoad. Asistidas: sin cambios. */
+  if (!e.asistida) {
+    const by = {}; done.forEach(x => { const v = kgOf(x); if (v == null) return; (by[v] = by[v] || []).push(x); });
+    const ok = Object.keys(by).map(Number).filter(v => v <= wl);
+    const avg = v => by[v].reduce((a, x) => a + e1(x), 0) / by[v].length;
+    const best = ok.length ? ok.reduce((m, v) => avg(v) > avg(m) + 1e-9 ? v : m, wl) : wl;
+    if (best !== wl && by[best]) work = by[best];
+  }
   const use = work.length ? work : done;
-  const L = use.reduce((a, x) => a + load(kgs[x.k] ?? it.carga) * (1 + x.r / 30), 0) / use.length;
+  const L = use.reduce((a, x) => a + load(kgOf(x)) * (1 + x.r / 30), 0) / use.length;
   const T = L * f, step = Math.abs(increment(e)) || 5;
   const [lo, hi] = repRange(e);
+  /* primero el peso en todas las series (27/11, pedido de José): si el peso más alto se hizo solo en algunas series
+     (16×12 · 16×12 · 18×10), la meta es ese peso en todas con las reps que ya salieron (18 × 10), sin sumar reps.
+     Recién cuando el peso está en todas las series vuelve la progresión normal. */
+  const workKg = use.length ? kgOf(use[0]) : wl;
+  if (!e.asistida && workKg === wl && use.length < done.length) {
+    const rm = Math.min(...use.map(x => x.r)), ra = Math.round(use.reduce((a, x) => a + x.r, 0) / use.length);
+    if (rm >= lo) return { W: wl, r: Math.max(rm, ra), rmin: rm, it, l, b, T: L, L, load, wl, consol: true };
+  }
   const up = v => Math.round((Math.floor(v / step + 1e-9) + 1) * step * 100) / 100, down = v => Math.round((Math.ceil(v / step - 1e-9) - 1) * step * 100) / 100;
   const heavier = v => e.asistida ? Math.max(0, down(v)) : up(v), lighter = v => e.asistida ? up(v) : Math.max(e.barra || 0, down(v));
-  let W = wl, guard = 0, forced = false;
+  let W = workKg, guard = 0, forced = false;
   const rr = v => Math.round(repsFor(T, load(v)));
   /* si la última vez pasó el tope de reps, sube sí o sí aunque la fórmula (Epley, floja con muchas reps y pesos chicos) diga que el peso siguiente deja menos del mínimo: con mancuernas de 6 kg se quedaba clavado en 6 × 14 para siempre */
   while (rr(W) > hi && guard++ < 20) { const nw = heavier(W); if (nw === W) break; if (rr(nw) < lo) { W = nw; forced = true; break; } W = nw; }
   if (!forced) while (rr(W) < lo && guard++ < 40) { const nw = lighter(W); if (nw === W) break; W = nw; }
   const rmin = forced ? lo : Math.max(1, Math.round(repsFor(L, load(W))));
   let r = forced ? lo : Math.max(1, Math.round(repsFor(T, load(W)))); if (!forced && f > 1 && r <= rmin) r = rmin + 1;
-  return { W, r, rmin, it, l, b, T, L, load, wl };
+  return { W, r, rmin, it, l, b, T, L, load, wl: workKg };
 }
 /* reps para un peso dado según la meta de hoy (misma cuenta que plan) */
 function repsAt(pl, v) {
@@ -1976,7 +1995,7 @@ function suggestion(e) {
   if (!p) return { cls: '', html: `${head} Hoy anotá kg y reps para poder sugerirte.` };
   if (p.body) return { cls: '', html: `${head}<br>Meta hoy: <b>${p.r} reps por serie</b> · mínimo ${p.rmin}.` };
   const w = kgTxt(p.W), changed = p.W !== p.wl;
-  return { cls: changed ? 'ok' : '', html: `${head}<br>Meta hoy: <b>${w} × ${p.r}</b> por serie · mínimo ${p.rmin}.${changed ? (e.asistida ? ' Cambia la asistencia.' : p.W > p.wl ? ' Subís de peso.' : ' Bajás un poco el peso.') : ''}` };
+  return { cls: changed ? 'ok' : '', html: `${head}<br>Meta hoy: <b>${w} × ${p.r}</b> ${p.consol ? `en todas las series · mínimo ${p.rmin}. Primero el peso en todas, después más reps` : `por serie · mínimo ${p.rmin}`}.${changed ? (e.asistida ? ' Cambia la asistencia.' : p.W > p.wl ? ' Subís de peso.' : ' Bajás un poco el peso.') : ''}` };
 }
 /* métrica de progreso: 'e1rm' (Epley con la mejor serie), 'carga' o 'volumen' */
 let PG_METRIC = 'e1rm', PG_BY = 'musculo', PG_RIR = true;
@@ -4219,7 +4238,7 @@ try { const et = localStorage.getItem('seg-esttab'); if (et && EST_TABS.includes
 
 
 /* actualización automática: si hay versión nueva, recarga en un momento seguro (sin escribir, sin descanso, sin cámara) */
-const APP_VERSION = '2026.11.22-2046';
+const APP_VERSION = '2026.11.27-2033';
 let updateTo = null;
 function safeToReload() { return !formBusy() && !estDirty() && !activeTimer && !otherDirty() && !rest && $('cam').hidden && $('crop').hidden && $('lb').hidden && $('prac').hidden; }
 function tryReload() {
